@@ -1,0 +1,32 @@
+# CompileFlags:
+#   CompilationDatabase: "build"
+#   Add: [-Isubprojects/SDL3/include]
+#
+# Index:
+#   External:
+#     FileFilter: ".*"
+#     Exclude: ["**/src/dynapi/**"]
+#
+# Diagnostics:
+#   UnusedIncludes: Strict
+#
+
+CompileFlags:
+  CompilationDatabase: build
+
+Index:
+  Background: Build
+
+External:
+  File: compile_commands.json
+
+Files:
+  Exclude:
+    - ./**/build/**
+    - ./**/subprojects/sdl3/src/**
+
+---
+If:
+  PathMatch: .*\.(h|hpp|hh)
+Index:
+  StandardLibrary: true

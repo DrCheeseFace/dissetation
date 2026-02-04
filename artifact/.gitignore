@@ -1,0 +1,17 @@
+*.out
+.cache
+compile_commands.json
+mahc.txt
+/subprojects/*
+!/subprojects/*.wrap
+dist
+dist_win
+*.exe
+*.AppImage
+*.deb
+src/mahc.h
+
+# perf generated stuff
+*.perf
+*.data
+*.old
