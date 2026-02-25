@@ -3,6 +3,8 @@
 visu/.cache/
 compile_commands.json
 
+node_modules/
+
 notes.md
 
 visu/public/

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<indexing>
+ <object alt="" name="Image1" object_type="graphic"/>
+ <paragraph index="9" node_type="writer">Figure : Project Timeline</paragraph>
+ <paragraph index="15" node_type="writer">Project Proposal – Missing Data Imputation and Result Comparison Application </paragraph>
+ <paragraph index="17" node_type="writer">Context</paragraph>
+ <paragraph index="18" node_type="writer">Rationale</paragraph>
+ <paragraph index="19" node_type="writer">The workflow of a data-scientist typically follows the following order. </paragraph>
+ <paragraph index="20" node_type="writer">1. Capturing of data</paragraph>
+ <paragraph index="21" node_type="writer">2. Preprocessing of data</paragraph>
+ <paragraph index="22" node_type="writer">3. Exploratory analysis</paragraph>
+ <paragraph index="23" node_type="writer">4. Final analysis</paragraph>
+ <paragraph index="24" node_type="writer">A large chunk of time out of this workflow is consumed by the preprocessing of data step. This is a manual process that requires human judgement. This critical step requires tedious and rigorous testing; In particular, unfit data imputation can result in unnatural or even worse, misleading distributions of values. The side affects of which can include, poorly performing prediction models and inaccurate exploratory and final analysis. </paragraph>
+ <paragraph index="25" node_type="writer">This project’s aim is to make the decision making step for data imputation easier by providing a touch screen dashboard interface for comparing different imputation results that are derived from different methods/ algorithms of imputation implemented.  </paragraph>
+ <paragraph index="26" node_type="writer">While applications in the past have been developed to ease data imputation such as VIM , MANET  and AmeliaView , there has been little development in the way of comparing different imputations of the same dataset. Older applications as the ones mentioned before lack newly discovered visualisation methods such as MissiG  that could prove to be more useful for analysing missing-ness of data.</paragraph>
+ <paragraph index="28" node_type="writer">Key Background Sources</paragraph>
+ <object index="29" name="Table1" object_type="table"/>
+ <paragraph index="31" node_type="writer" parent_index="29">Paper</paragraph>
+ <paragraph index="34" node_type="writer" parent_index="29">Summary and Relevance</paragraph>
+ <paragraph index="37" node_type="writer" parent_index="29">Visualisation of missing data: a state-of-the-art survey </paragraph>
+ <paragraph index="40" node_type="writer" parent_index="29">Summary: This paper provides an overview of researched literature which focus on visualisations of missing-ness of data. </paragraph>
+ <paragraph index="42" node_type="writer" parent_index="29">Reason: This paper collates reviewed literature in the field of missing-ness data visualisations comparing them on factors such as “Tasks”, “Interactability” and “Data Type.” This is highly relevant as it gives a view into what is already studied well in the field and what is yet to be explored/ not studied thoroughly. </paragraph>
+ <paragraph index="45" node_type="writer" parent_index="29">To identify what is not there: A definition of missing-ness patterns and evaluation of missing value visualisation </paragraph>
+ <paragraph index="48" node_type="writer" parent_index="29">Summary: This paper presents an overview of the visualisation of missing data values and defines three relevant patterns of missing-ness to aid in understanding missing-ness in data. </paragraph>
+ <paragraph index="50" node_type="writer" parent_index="29">Reason: The paper performs a user study of how different visualisations of missing-ness of data perform in how effective they are for users in identifying categories of missing data. Using such results can prove useful in creating a user interface tailored to ease of use.</paragraph>
+ <paragraph index="53" node_type="writer" parent_index="29">To Explore What Isn't There - Glyph-Based Visualisation for Analysis of Missing Values </paragraph>
+ <paragraph index="56" node_type="writer" parent_index="29">Summary: This paper proposes a new visualisation method for missing-ness of data called MissiG and compares its performance to other visualisation methods such as Heatmaps and Parallel coordinates.</paragraph>
+ <paragraph index="58" node_type="writer" parent_index="29">Reason: This will prove to be directly helpful for my research as the user-study specifically tests the visualisation methods based on users answering questions directly applicable to the user interface I will implement in the artifact. E.g. “Which of the following trends is most related to missing values in variable X?”</paragraph>
+ <paragraph index="61" node_type="writer" parent_index="29">Exploring incomplete data using visualisation techniques </paragraph>
+ <paragraph index="64" node_type="writer" parent_index="29">Summary: This is the introductory paper presenting the tool VIM (Visualisation and Imputation of Missing Values) to the scientific community. It describes the mechanics of missing data and provides examples of visualisations provided by the R package VIM.</paragraph>
+ <paragraph index="66" node_type="writer" parent_index="29">Reason: The VIM package is a highly optimised library of data imputation methods containing algorithms such as “kNN” and “hotdeck” via an API. This library will be utilised in my backend implementation for the purpose of imputing data. This will also address the need for a responsive UI as the VIM package core calculations are implemented using C++. </paragraph>
+ <paragraph index="69" node_type="writer" parent_index="29">Profiler: integrated statistical analysis and visualisation for data quality assessment </paragraph>
+ <paragraph index="72" node_type="writer" parent_index="29">Summary: This paper introduces “Profiler”. Profiler is a GUI application that uses data mining methods to automatically suggest visualisations for missing data which is then intended to be used to make decisions on what method is best to use when imputing data. It also describes the architecture of the program as well as the algorithms used to identify anomalies in data.  </paragraph>
+ <paragraph index="74" node_type="writer" parent_index="29">Reason: This will prove useful when designing the interface for my artifact. It gives examples of possible designs for signifying “data quality” to the user. The paper shows a variety of visualisation methods; this can be improved upon by implementing newer visualisations methods proven to be affective that have since been discovered in other research papers .</paragraph>
+ <paragraph index="77" node_type="writer" parent_index="29">Impute-VSS: A comprehensive web-based Visualisation and simulation suite for comparative data imputation and statistical evaluation </paragraph>
+ <paragraph index="80" node_type="writer" parent_index="29">Summary: Similar to Profiler , “Impute-VSS” is data imputation GUI application with a focus on comparing a dataset after imputation by multiple algorithms.</paragraph>
+ <paragraph index="82" node_type="writer" parent_index="29">Reason: This paper provides the packages used and architecture of the application which will prove useful when creating the artifact for this dissertation. The paper includes in its conclusion possible improvements and future development which can be looked into to further the research of missing data visualisation.  The paper points out the use of deep learning methodologies could be used to help draw “more profound and comprehensive comparative assessments”.</paragraph>
+ <paragraph index="86" node_type="writer">Aims and Objectives</paragraph>
+ <paragraph index="87" node_type="writer">Create a touch-screen data imputation application with a focus on comparing different imputation results. Research and design visualisations for missing-ness of data suited for comparing sets of imputed data with user interactive elements. </paragraph>
+ <paragraph index="88" node_type="writer">Objectives:</paragraph>
+ <paragraph index="89" node_type="writer">Conduct research on:</paragraph>
+ <paragraph index="90" node_type="writer">Visualisation methods of missing-ness of data yet to be implemented within a data imputation applications.</paragraph>
+ <paragraph index="91" node_type="writer">Previously implemented missing-ness of data visualisations in data imputation applications. Identify. </paragraph>
+ <paragraph index="92" node_type="writer">Design a user interface suited for a touch screen interface with the purpose of letting users both impute data and comparing the output imputed data from various methods of imputation.</paragraph>
+ <paragraph index="93" node_type="writer">Architect and develop a full-stack solution for: </paragraph>
+ <paragraph index="94" node_type="writer">Parsing and Imputation of datasets utilising multiple algorithms for imputation.</paragraph>
+ <paragraph index="95" node_type="writer">Displaying unimputed and imputed datasets with interactive elements for viewing.</paragraph>
+ <paragraph index="96" node_type="writer">Allowing users to performs imputations via an GUI interface.</paragraph>
+ <paragraph index="97" node_type="writer">Prepare a demonstration with artificially created datasets to exhibit an example usage of missing data analysis and imputation.</paragraph>
+ <paragraph index="99" node_type="writer">	</paragraph>
+ <paragraph index="105" node_type="writer">Planning</paragraph>
+ <paragraph index="107" node_type="writer">­The chart  provides an overview on the project plan. Arrows drawn signify dependency. E.g. Project Proposal Write-up depends on Project Proposal Research. Due to a tight time constraint, an agile workflow will be most suited as opposed to the waterfall methodology. </paragraph>
+ <paragraph index="109" node_type="writer">Risks</paragraph>
+ <paragraph index="110" node_type="writer">As shown in , there is an overlap in development between the backend and frontend implementation. To start the frontend implementation, it would require a skeleton backend at minimum to have a demonstrable prototype. If the skeleton backend would happen to take longer than expected, the frontend step would have to be rushed or omit features. There is literature to draw upon to help with this step of the process . </paragraph>
+ <paragraph index="111" node_type="writer">Another risk is my limited knowledge of the VIM  and the R programming language. Depending on the language’s learning curve, development of the backend service may be slow as first. I have experience with other similar scripting languages such as Python, which will make this risk less significant.</paragraph>
+ <paragraph index="112" node_type="writer">As development of this project is time constrained, bugs will appear during the implementation stage. I have mitigated this by allotting a period for testing and a bug fix reserve period as shown in . If a certain step of development were to take longer than expected, this time can be taken out of the bug fix reserve.</paragraph>
+ <paragraph index="129" node_type="writer">References</paragraph>
+ <paragraph index="131" node_type="writer">[1]</paragraph>
+ <paragraph index="132" node_type="writer">M. Templ, A. Alfons, and P. Filzmoser, ‘Exploring incomplete data using visualization techniques’, Adv Data Anal Classif, vol. 6, no. 1, pp. 29–47, Apr. 2012, doi: 10.1007/s11634-011-0102-y.</paragraph>
+ <paragraph index="134" node_type="writer">[2]</paragraph>
+ <paragraph index="135" node_type="writer">V. Shrivastava and S. Shukla, ‘Impute-VSS: A comprehensive web-based visualization and simulation suite for comparative data imputation and statistical evaluation’, SoftwareX, vol. 30, p. 102130, May 2025, doi: 10.1016/j.softx.2025.102130.</paragraph>
+ <paragraph index="137" node_type="writer">[3]</paragraph>
+ <paragraph index="138" node_type="writer">A. Unwin, G. Hawkins, H. Hofmann, and B. Siegl, ‘Interactive Graphics for Data Sets with Missing Values—MANET’, Journal of Computational and Graphical Statistics, vol. 5, no. 2, pp. 113–122, Jun. 1996, doi: 10.1080/10618600.1996.10474700.</paragraph>
+ <paragraph index="140" node_type="writer">[4]</paragraph>
+ <paragraph index="141" node_type="writer">S. Kandel, R. Parikh, A. Paepcke, J. M. Hellerstein, and J. Heer, ‘Profiler: integrated statistical analysis and visualization for data quality assessment’, in Proceedings of the International Working Conference on Advanced Visual Interfaces, Capri Island Italy: ACM, May 2012, pp. 547–554. doi: 10.1145/2254556.2254659.</paragraph>
+ <paragraph index="143" node_type="writer">[5]</paragraph>
+ <paragraph index="144" node_type="writer">S. J. Fernstad and J. J. Westberg, ‘To Explore What Isn’t There—Glyph-Based Visualization for Analysis of Missing Values’, IEEE Trans. Visual. Comput. Graphics, vol. 28, no. 10, pp. 3513–3529, Oct. 2022, doi: 10.1109/TVCG.2021.3065124.</paragraph>
+ <paragraph index="146" node_type="writer">[6]</paragraph>
+ <paragraph index="147" node_type="writer">S. J. Fernstad, ‘To identify what is not there: A definition of missingness patterns and evaluation of missing value visualization’, Information Visualization, vol. 18, no. 2, pp. 230–250, Apr. 2019, doi: 10.1177/1473871618785387.</paragraph>
+ <paragraph index="149" node_type="writer">[7]</paragraph>
+ <paragraph index="150" node_type="writer">S. Alsufyani, M. Forshaw, and S. J. Fernstad, ‘Visualization of missing data: a state-of-the-art survey’, Sep. 27, 2024, arXiv: arXiv:2410.03712. doi: 10.48550/arXiv.2410.03712.</paragraph>
+ <paragraph index="152" node_type="writer">[8]</paragraph>
+ <paragraph index="153" node_type="writer">J. Honaker, G. King, and M. Blackwell, Amelia: A Program for Missing Data. (Nov. 08, 2024). Accessed: Feb. 16, 2026. [Online]. Available: https://cran.r-project.org/web/packages/Amelia/</paragraph>
+</indexing>

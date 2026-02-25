@@ -1,0 +1,4 @@
+service:
+  host: ${SERVICE_HOST}
+  port: ${SERVICE_PORT}
+
