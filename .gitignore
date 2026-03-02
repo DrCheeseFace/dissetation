@@ -6,6 +6,7 @@ compile_commands.json
 node_modules/
 
 notes.md
+synthetic_missing_data/out_datasets/*
 
 visu/public/
 build/
