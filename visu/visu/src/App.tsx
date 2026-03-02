@@ -4,10 +4,10 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { useState, type ChangeEvent } from 'react';
 import { useRootStore } from './mobx/rootstore';
 import { observer } from 'mobx-react-lite';
+import { TypographyH1, TypographyP } from './components/typography';
 
 const App = observer(() => {
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const { globalStore } = useRootStore();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -16,36 +16,15 @@ const App = observer(() => {
     }
   };
 
-  const uploadFile = async () => {
-    if (!file) return;
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append('myFile', file);
-
-    try {
-      const response = await fetch('http://localhost:5155/test/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        alert('Upload complete!');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <>
-      <Button onClick={globalStore.IncrementTemp}>
-        {globalStore.REMOVEME_TEMP}
-      </Button>
-      <Button onClick={globalStore.DecrementTemp}>DECREMENT</Button>
-      <div style={{ marginTop: '20px' }}>
+      <TypographyH1>{globalStore.REMOVEME_TEMP}</TypographyH1>
+
+      <Button onClick={globalStore.IncrementTemp}>increment</Button>
+      <Button onClick={globalStore.DecrementTemp}>decrement</Button>
+      <Button onClick={globalStore.HealthCheck}>healthcheck</Button>
+
+      <div>
         <Field>
           <FieldLabel htmlFor="file-test">Large File Upload</FieldLabel>
           <Input id="file-test" type="file" onChange={handleFileChange} />
@@ -53,12 +32,12 @@ const App = observer(() => {
             Stream large files to local storage
           </FieldDescription>
         </Field>
+
         <Button
-          onClick={uploadFile}
-          disabled={!file || uploading}
-          style={{ marginTop: '10px' }}
+          onClick={() => globalStore.TestUploadFile(file)}
+          disabled={!file || globalStore.uploading}
         >
-          {uploading ? 'Uploading...' : 'Upload File'}
+          {globalStore.uploading ? 'Uploading...' : 'Upload File'}
         </Button>
       </div>
     </>

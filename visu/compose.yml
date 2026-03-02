@@ -1,0 +1,36 @@
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      frontend-dev:
+        condition: service_started
+      go-server:
+        condition: service_started
+
+  frontend-dev:
+    container_name: frontend_dev
+    build:
+      context: ./visu
+      dockerfile: dev.Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - './visu:/app'
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: true
+
+  go-server:
+    container_name: go_server 
+    build:
+      context: ./visu-backend
+      dockerfile: dev.Dockerfile
+    restart: always
+    ports:
+      - "5155:5155"
+    env_file:
+      - ./visu-backend/.env
