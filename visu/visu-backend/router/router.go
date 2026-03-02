@@ -28,5 +28,13 @@ func NewRoutes() chi.Router {
 		r.Get("/", testHandler.GetHealth)
 	})
 
+	r.Route("/test", func(r chi.Router) {
+
+		r.Route("/upload", func(r chi.Router) {
+			r.Post("/", testHandler.UploadFile)
+		})
+
+	})
+
 	return r
 }
