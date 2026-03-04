@@ -1,9 +1,9 @@
-- mobx stores
-- routes.ts
-- enving it up for frontend
-- dockerise everything
+- [x] mobx stores
+- [x] routes.ts
+- [x] enving it up for frontend
+- [x] dockerise everything
 
-- creating synthetic missing data type examples
+- [x] creating synthetic missing data type examples
     - Joint Missingness (JM)
     - Conditional Missingness (CM)
     ---

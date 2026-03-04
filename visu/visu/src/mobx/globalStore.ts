@@ -1,46 +1,53 @@
 import { makeAutoObservable } from "mobx";
 
-import { RootStore } from "./rootstore.ts";
-import { healthCheck, testUploadFile } from "@/utils/routes.ts";
+import { RootStore } from "@/mobx/rootstore.ts";
+import { Page } from "@/model/Page";
+import { healthCheck, uploadParentFile } from "@/utils/routes.ts";
 
 export class GlobalStore {
   root: RootStore;
-  REMOVEME_TEMP: number = 0;
-  uploading: boolean = false;
+  currentPage: Page = Page.LandingPage;
+  currentDataset?: File;
+
+  REMOVEME_TEMP: number = 0; // TODO REMOVE ME
+  uploading: boolean = false; // TODO REMOVE ME
 
   constructor(root: RootStore) {
     this.root = root;
     makeAutoObservable(this);
   }
 
+  setPage = (page: Page) => {
+    this.currentPage = page;
+  };
+
   setUploading = (uploading: boolean) => {
     this.uploading = uploading;
   };
 
-  IncrementTemp = (): void => {
+  incrementTemp = (): void => {
     this.REMOVEME_TEMP++;
   };
 
-  DecrementTemp = (): void => {
+  decrementTemp = (): void => {
     this.REMOVEME_TEMP--;
   };
 
-  TestUploadFile = async (file: File | null) => {
+  uploadParentFile = async (file: File | null) => {
     if (!file) return;
     this.setUploading(true);
 
     const formData = new FormData();
-    formData.append("myFile", file); // TODO do i need this
+    formData.append("myFile", file);
 
     try {
-      // TODO routing to /api
-      const response = await fetch(testUploadFile, {
+      const response = await fetch(uploadParentFile, {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        alert("Upload complete!");
+        this.setPage(Page.Dashboard);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -49,18 +56,17 @@ export class GlobalStore {
     }
   };
 
-  HealthCheck = async (): Promise<void> => {
+  healthCheck = async (): Promise<void> => {
     try {
       const response = await fetch(healthCheck, {
         method: "GET",
       });
 
       if (response.ok) {
-        alert("life is good");
+        alert(JSON.stringify(response));
       }
     } catch (error) {
       console.error("Error:", error);
     }
   };
-
 }

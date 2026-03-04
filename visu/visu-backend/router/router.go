@@ -21,19 +21,15 @@ func NewRoutes() chi.Router {
 		MaxAge:           300,
 	}))
 
-	testSvc := service.NewTestService()
-	testHandler := handler.NewTestHandler(testSvc)
+	fileService := service.NewFileService()
+	fileHandler := handler.NewFileHandler(fileService)
 
 	r.Route("/health", func(r chi.Router) {
-		r.Get("/", testHandler.GetHealth)
+		r.Get("/", fileHandler.GetHealth)
 	})
 
-	r.Route("/test", func(r chi.Router) {
-
-		r.Route("/upload", func(r chi.Router) {
-			r.Post("/", testHandler.UploadFile)
-		})
-
+	r.Route("/upload", func(r chi.Router) {
+		r.Post("/", fileHandler.UploadRootFile)
 	})
 
 	return r

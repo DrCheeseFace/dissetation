@@ -1,47 +1,23 @@
-import { Button } from './components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
-import { useState, type ChangeEvent } from 'react';
 import { useRootStore } from './mobx/rootstore';
 import { observer } from 'mobx-react-lite';
-import { TypographyH1, TypographyP } from './components/typography';
+import { Page } from '@/model/Page';
+import { TypographyP } from '@/components/typography';
+import LandingPage from '@/pages/LandingPage';
+import Dashboard from '@/pages/Dashboard';
 
 const App = observer(() => {
-  const [file, setFile] = useState<File | null>(null);
+  // todo handle which page gets shown
+
   const { globalStore } = useRootStore();
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-    }
-  };
-
-  return (
-    <>
-      <TypographyH1>{globalStore.REMOVEME_TEMP}</TypographyH1>
-
-      <Button onClick={globalStore.IncrementTemp}>increment</Button>
-      <Button onClick={globalStore.DecrementTemp}>decrement</Button>
-      <Button onClick={globalStore.HealthCheck}>healthcheck</Button>
-
-      <div>
-        <Field>
-          <FieldLabel htmlFor="file-test">Large File Upload</FieldLabel>
-          <Input id="file-test" type="file" onChange={handleFileChange} />
-          <FieldDescription>
-            Stream large files to local storage
-          </FieldDescription>
-        </Field>
-
-        <Button
-          onClick={() => globalStore.TestUploadFile(file)}
-          disabled={!file || globalStore.uploading}
-        >
-          {globalStore.uploading ? 'Uploading...' : 'Upload File'}
-        </Button>
-      </div>
-    </>
-  );
+  switch (globalStore.currentPage) {
+    case Page.LandingPage:
+      return <LandingPage />;
+    case Page.Dashboard:
+      return <Dashboard />;
+    default:
+      return <TypographyP> TODO 404 no page here. App.tsx </TypographyP>;
+  }
 });
 
 export default App;
