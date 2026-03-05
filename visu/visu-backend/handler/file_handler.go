@@ -10,11 +10,13 @@ import (
 type (
 	FileHandler interface {
 
-		// upload file
-		UploadRootFile(w http.ResponseWriter, r *http.Request)
+		// upload parent file
+		UploadParentFile(w http.ResponseWriter, r *http.Request)
+
+		// return parent file info dump. cached if needed
+		GetParentFileInfo(w http.ResponseWriter, r *http.Request)
 
 		// returns ok
-		// TODO move this to another handler-service
 		GetHealth(w http.ResponseWriter, r *http.Request)
 	}
 
@@ -27,7 +29,7 @@ func NewFileHandler(svc service.FileService) FileHandler {
 	return fileHandler{svc}
 }
 
-func (fH fileHandler) UploadRootFile(w http.ResponseWriter, r *http.Request) {
+func (fH fileHandler) UploadParentFile(w http.ResponseWriter, r *http.Request) {
 
 	err := fH.fileSvc.CloseAllFiles()
 	if err != nil {
@@ -45,6 +47,15 @@ func (fH fileHandler) UploadRootFile(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (fH fileHandler) GetParentFileInfo(w http.ResponseWriter, r *http.Request) {
+	if !fH.fileSvc.IsParentFileSet() {
+		logger.Log.Warning("parent file was not set")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 }
 
 func (fH fileHandler) GetHealth(w http.ResponseWriter, r *http.Request) {

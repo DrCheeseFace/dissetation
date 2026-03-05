@@ -19,6 +19,7 @@ const LandingPage = observer(() => {
   return (
     <>
       <TypographyH1>landing page todo title</TypographyH1>
+      <Button onClick={() => globalStore.healthCheck()}>health check</Button>
 
       <Field>
         <FieldLabel htmlFor="file-test">Large File Upload</FieldLabel>

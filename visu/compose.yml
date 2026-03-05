@@ -10,6 +10,8 @@ services:
         condition: service_started
       go-server:
         condition: service_started
+      imputer-service:
+        condition: service_started
 
   frontend-dev:
     container_name: frontend_dev
@@ -34,3 +36,15 @@ services:
       - "5155:5155"
     env_file:
       - ./visu-backend/.env
+
+  imputer-service:
+    container_name: imputer_service
+    build:
+      context: ./visu-backend/imputer_service
+      dockerfile: dev.Dockerfile
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./visu-backend/imputer_service:/app
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -11,11 +11,16 @@ var State GeneralConfig
 type (
 	GeneralConfig struct {
 		ServiceConfig ServiceConfig `yaml:"service"`
+		ImputerConfig ImputerConfig `yaml:"imputer"`
 	}
 
 	ServiceConfig struct {
 		Host string `yaml:"host"`
 		Port string `yaml:"port"`
+	}
+
+	ImputerConfig struct {
+		BaseUrl string `yaml:"base_url"`
 	}
 )
 

@@ -7,9 +7,7 @@ import { healthCheck, uploadParentFile } from "@/utils/routes.ts";
 export class GlobalStore {
   root: RootStore;
   currentPage: Page = Page.LandingPage;
-  currentDataset?: File;
 
-  REMOVEME_TEMP: number = 0; // TODO REMOVE ME
   uploading: boolean = false; // TODO REMOVE ME
 
   constructor(root: RootStore) {
@@ -23,14 +21,6 @@ export class GlobalStore {
 
   setUploading = (uploading: boolean) => {
     this.uploading = uploading;
-  };
-
-  incrementTemp = (): void => {
-    this.REMOVEME_TEMP++;
-  };
-
-  decrementTemp = (): void => {
-    this.REMOVEME_TEMP--;
   };
 
   uploadParentFile = async (file: File | null) => {
@@ -63,7 +53,7 @@ export class GlobalStore {
       });
 
       if (response.ok) {
-        alert(JSON.stringify(response));
+        alert(JSON.stringify(response.statusText));
       }
     } catch (error) {
       console.error("Error:", error);

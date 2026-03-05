@@ -14,6 +14,7 @@ type (
 	FileService interface {
 		// sets parent file (user fed file)
 		SetParentFile(r *http.Request) (err error)
+		IsParentFileSet() bool
 
 		// closes parent and child file
 		CloseAllFiles() error
@@ -23,13 +24,15 @@ type (
 	}
 
 	fileSvc struct {
+		imputerSvc ImputerService
 		parentFile *os.File
 		childFiles map[string]*os.File
 	}
 )
 
-func NewFileService() FileService {
+func NewFileService(imputerSvc ImputerService) FileService {
 	return fileSvc{
+		imputerSvc,
 		nil,
 		make(map[string]*os.File),
 	}
@@ -112,6 +115,10 @@ func (fS fileSvc) SetParentFile(r *http.Request) error {
 	return io.ErrUnexpectedEOF
 }
 
+func (fS fileSvc) IsParentFileSet() bool {
+	return fS.parentFile != nil
+}
+
 func (fS fileSvc) GetHealth() error {
-	return nil
+	return fS.imputerSvc.GetHealth()
 }

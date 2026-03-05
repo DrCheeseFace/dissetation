@@ -2,3 +2,6 @@ service:
   host: ${SERVICE_HOST}
   port: ${SERVICE_PORT}
 
+imputer: 
+  base_url: ${IMPUTER_BASE_URL}
+
