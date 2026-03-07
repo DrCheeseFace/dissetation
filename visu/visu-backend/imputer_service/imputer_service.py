@@ -1,7 +1,8 @@
+
 from flask import Flask, jsonify, request
 from http import HTTPStatus
 import os
-import pandas as pd
+import info
 
 app = Flask(__name__)
 
@@ -39,7 +40,7 @@ def get_unimputed_data_summary():
             "message": "No file_path provided in JSON body"
         }), HTTPStatus.BAD_REQUEST
 
-    file_path = data['file_path']
+    file_path = "../" + data['file_path']
 
     if not os.path.exists(file_path):
         return jsonify({
@@ -49,8 +50,8 @@ def get_unimputed_data_summary():
 
     return jsonify({
         "status": "success",
-        "file_path": file_path,
-        "message": "TODO"
+        "info": info.get_unimputed_dataset_info(file_path),
+        "message": "success"
     }), HTTPStatus.OK
 
 

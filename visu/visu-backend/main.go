@@ -32,7 +32,7 @@ func main() {
 	var router = router.NewRoutes()
 	err := logger.Init()
 	if err != nil {
-		err = fmt.Errorf("ERROR: %w\n ABORTING", err)
+		err = fmt.Errorf("ERROR: %v\n ABORTING", err)
 		fmt.Print(err)
 		return
 	}

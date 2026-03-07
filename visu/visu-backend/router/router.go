@@ -21,19 +21,19 @@ func NewRoutes() chi.Router {
 		MaxAge:           300,
 	}))
 
-	imputerSvc:= service.NewImputerService()
-
-	fileSvc := service.NewFileService(imputerSvc)
+	fileSvc := service.NewFileService()
 	fileHandler := handler.NewFileHandler(fileSvc)
 
+	imputerSvc := service.NewImputerService(fileSvc)
+	imputerHandler := handler.NewImputerHandler(imputerSvc, fileSvc)
+
 	r.Route("/health", func(r chi.Router) {
-		r.Get("/", fileHandler.GetHealth)
+		r.Get("/", imputerHandler.GetHealth)
 	})
 
 	r.Route("/dataset", func(r chi.Router) {
 		r.Post("/", fileHandler.UploadParentFile)
-		// TODO
-		// r.Get("/", fileHandler.GetParentFileSummary)
+		r.Get("/", imputerHandler.GetParentFileInfo)
 	})
 
 	return r

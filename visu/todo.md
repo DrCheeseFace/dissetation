@@ -13,3 +13,5 @@
 
     - https://www.kaggle.com/datasets/algozee/heart-decices attempting on this
 
+- [ ] look into d3 library bar chart
+- [ ] create implementation of glyph using this

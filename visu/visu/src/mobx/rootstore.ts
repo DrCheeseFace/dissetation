@@ -1,16 +1,18 @@
-import { createContext, useContext } from 'react'
-import { GlobalStore } from './globalStore'
+import { createContext, useContext } from "react";
+import { GlobalStore } from "./globalStore";
+import { DashboardStore } from "./dashboardStore";
 
 export class RootStore {
-  globalStore: GlobalStore
+  globalStore: GlobalStore;
+  dashboardStore: DashboardStore;
 
   constructor() {
-    this.globalStore= new GlobalStore(this)
+    this.dashboardStore = new DashboardStore(this);
+    this.globalStore = new GlobalStore(this);
   }
 }
 
-const rootStore = new RootStore()
-export const StoreContext = createContext(rootStore)
-export const useRootStore = () => useContext(StoreContext)
-export { rootStore }
-
+const rootStore = new RootStore();
+export const StoreContext = createContext(rootStore);
+export const useRootStore = () => useContext(StoreContext);
+export { rootStore };

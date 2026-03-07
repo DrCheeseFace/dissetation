@@ -37,6 +37,7 @@ export class GlobalStore {
       });
 
       if (response.ok) {
+        this.root.dashboardStore.fetchParentFileInfo();
         this.setPage(Page.Dashboard);
       }
     } catch (error) {

@@ -36,6 +36,8 @@ services:
       - "5155:5155"
     env_file:
       - ./visu-backend/.env
+    volumes:
+      - shared-uploads:/app/uploads
 
   imputer-service:
     container_name: imputer_service
@@ -46,5 +48,9 @@ services:
       - "8008:8008"
     volumes:
       - ./visu-backend/imputer_service:/app
+      - shared-uploads:/uploads
     environment:
       - PYTHONUNBUFFERED=1
+
+volumes:
+  shared-uploads:

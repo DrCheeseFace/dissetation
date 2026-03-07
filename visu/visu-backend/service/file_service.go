@@ -14,62 +14,65 @@ type (
 	FileService interface {
 		// sets parent file (user fed file)
 		SetParentFile(r *http.Request) (err error)
+
+		// checks if fileSvc.parentFile != nil
 		IsParentFileSet() bool
+
+		// returns file handler ref
+		GetParentFile() *os.File
 
 		// closes parent and child file
 		CloseAllFiles() error
-
-		// returns ok
-		GetHealth() error
 	}
 
 	fileSvc struct {
-		imputerSvc ImputerService
 		parentFile *os.File
 		childFiles map[string]*os.File
 	}
 )
 
-func NewFileService(imputerSvc ImputerService) FileService {
-	return fileSvc{
-		imputerSvc,
+func NewFileService() FileService {
+	return &fileSvc{
 		nil,
 		make(map[string]*os.File),
 	}
 }
 
-func (fS fileSvc) CloseAllFiles() (err error) {
+func (fS *fileSvc) CloseAllFiles() (err error) {
 	if fS.parentFile != nil {
 		err = fS.parentFile.Close()
 		if err != nil {
-			err := fmt.Errorf("failed to close parent file %s, %w", fS.parentFile.Name(), err)
+			err := fmt.Errorf("failed to close parent file %s, %v", fS.parentFile.Name(), err)
 			logger.Log.Error(err)
 			return err
 		}
+		fS.parentFile = nil
 	}
 
 	for _, v := range fS.childFiles {
 		err := v.Close()
 		if err != nil {
-			err := fmt.Errorf("failed to close child file %s, %w", v.Name(), err)
+			err := fmt.Errorf("failed to close child file %s, %v", v.Name(), err)
 			logger.Log.Error(err)
 			return err
 		}
 	}
 
+	fS.childFiles = nil
+
 	return nil
 }
 
-func (fS fileSvc) SetParentFile(r *http.Request) error {
+func (fS *fileSvc) SetParentFile(r *http.Request) error {
 	reader, err := r.MultipartReader()
 	if err != nil {
-		logger.Log.Errorf("failed to open multipart reader, %w", err)
+		logger.Log.Errorf("failed to open multipart reader, %v", err)
 		return err
 	}
 
 	err = fS.CloseAllFiles()
 	if err != nil {
-		logger.Log.Errorf("failed to clear root file, %w", err)
+		logger.Log.Errorf("failed to clear root file, %v", err)
 		return err
 	}
 
@@ -115,10 +118,10 @@ func (fS fileSvc) SetParentFile(r *http.Request) error {
 	return io.ErrUnexpectedEOF
 }
 
-func (fS fileSvc) IsParentFileSet() bool {
+func (fS *fileSvc) IsParentFileSet() bool {
 	return fS.parentFile != nil
 }
 
-func (fS fileSvc) GetHealth() error {
-	return fS.imputerSvc.GetHealth()
+func (fS *fileSvc) GetParentFile() *os.File {
+	return fS.parentFile
 }
