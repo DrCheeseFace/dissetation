@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"visu-backend/configuration"
-	"visu-backend/router"
 	"visu-backend/logger"
+	"visu-backend/router"
 
 	"net/http"
 )
@@ -42,4 +42,3 @@ func main() {
 	err = http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), router)
 	fmt.Println(err)
 }
-

@@ -14,8 +14,11 @@ import (
 
 type (
 	ImputerService interface {
-		GetHealth() error
+		// returns basic visualisation info json-string
 		GetParentFileInfo() (string, error)
+
+		// returns ok if imputer_service returns ok
+		GetHealth() error
 	}
 
 	imputerSvc struct {
@@ -41,7 +44,9 @@ func (i *imputerSvc) GetHealth() error {
 		return err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		logger.Log.Errorf("response was not 200. received %s %d", resp.Status, resp.StatusCode)
@@ -82,7 +87,10 @@ func (i *imputerSvc) GetParentFileInfo() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("http request failed: %v", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)

@@ -39,6 +39,16 @@ services:
     volumes:
       - shared-uploads:/app/uploads
 
+  lint:
+    image: golangci/golangci-lint:latest
+    container_name: golangci_lint
+    volumes:
+      - ./visu-backend:/app
+    working_dir: /app
+    command: golangci-lint run -v
+    restart: "no"
+
+
   imputer-service:
     container_name: imputer_service
     build:

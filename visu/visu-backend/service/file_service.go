@@ -101,13 +101,13 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 		mw := io.MultiWriter(dst, hash)
 
 		if _, err := io.Copy(mw, part); err != nil {
-			dst.Close()
+			_ = dst.Close()
 			logger.Log.Errorf("failed to copy part '%s' to dest '%s' ", part.FileName(), fp)
 			return err
 		}
 
 		if _, err := dst.Seek(0, 0); err != nil {
-			dst.Close()
+			_ = dst.Close()
 			return err
 		}
 

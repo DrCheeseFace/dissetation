@@ -1,11 +1,12 @@
 package router
 
 import (
+	"visu-backend/handler"
+	"visu-backend/service"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"visu-backend/handler"
-	"visu-backend/service"
 )
 
 func NewRoutes() chi.Router {
