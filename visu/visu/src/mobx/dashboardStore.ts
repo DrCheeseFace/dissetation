@@ -9,10 +9,15 @@ import { getParentFileInfo } from "@/utils/routes";
 
 export class DashboardStore {
   root: RootStore;
-  basicInfo?: DatasetSummary;
+  basicInfo?: DatasetSummary; // TODO make persist
 
   constructor(root: RootStore) {
     this.root = root;
+    // makePersistable(this, {
+    //   name: "DashboardStore",
+    //   properties: ["basicInfo"],
+    //   storage: window.localStorage,
+    // });
     makeAutoObservable(this);
   }
 
