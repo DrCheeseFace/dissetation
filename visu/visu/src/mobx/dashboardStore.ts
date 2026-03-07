@@ -18,7 +18,7 @@ export class DashboardStore {
 
   setBasicInfo = (info: DatasetSummary) => {
     this.basicInfo = info;
-    console.log(this.basicInfo);
+    console.log(JSON.stringify(this.basicInfo));
   };
 
   fetchParentFileInfo = async () => {
