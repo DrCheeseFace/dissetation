@@ -1,11 +1,11 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable } from 'mobx';
 
-import { RootStore } from "@/mobx/rootstore.ts";
+import { RootStore } from '@/mobx/rootstore.ts';
 import type {
   BasicInfoAPIResponse,
   DatasetSummary,
-} from "@/model/DashboardInfo";
-import { getParentFileInfo } from "@/utils/routes";
+} from '@/model/DashboardInfo';
+import { getParentFileInfo } from '@/utils/routes';
 
 export class DashboardStore {
   root: RootStore;
@@ -13,31 +13,25 @@ export class DashboardStore {
 
   constructor(root: RootStore) {
     this.root = root;
-    // makePersistable(this, {
-    //   name: "DashboardStore",
-    //   properties: ["basicInfo"],
-    //   storage: window.localStorage,
-    // });
     makeAutoObservable(this);
   }
 
   setBasicInfo = (info: DatasetSummary) => {
     this.basicInfo = info;
-    console.log(JSON.stringify(this.basicInfo));
   };
 
   fetchParentFileInfo = async () => {
     try {
       const response = await fetch(getParentFileInfo, {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
-        const result: BasicInfoAPIResponse = await response.json();
-        this.root.dashboardStore.setBasicInfo(result.info);
+        const rawResult: BasicInfoAPIResponse = await response.json();
+        this.root.dashboardStore.setBasicInfo(rawResult.info);
       }
     } catch (error) {
-      console.error("Network or Request Error:", error);
+      console.error('an error occured when fetching parent file info: ', error);
     }
   };
 }

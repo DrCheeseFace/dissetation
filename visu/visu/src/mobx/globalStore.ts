@@ -1,8 +1,8 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable } from 'mobx';
 
-import { RootStore } from "@/mobx/rootstore.ts";
-import { Page } from "@/model/Page";
-import { healthCheck, uploadParentFile } from "@/utils/routes.ts";
+import { RootStore } from '@/mobx/rootstore.ts';
+import { Page } from '@/model/Page';
+import { healthCheck, uploadParentFile } from '@/utils/routes.ts';
 
 export class GlobalStore {
   root: RootStore;
@@ -28,11 +28,11 @@ export class GlobalStore {
     this.setUploading(true);
 
     const formData = new FormData();
-    formData.append("myFile", file);
+    formData.append('myFile', file);
 
     try {
       const response = await fetch(uploadParentFile, {
-        method: "POST",
+        method: 'POST',
         body: formData,
       });
 
@@ -41,7 +41,7 @@ export class GlobalStore {
         this.setPage(Page.Dashboard);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     } finally {
       this.setUploading(false);
     }
@@ -50,14 +50,14 @@ export class GlobalStore {
   healthCheck = async (): Promise<void> => {
     try {
       const response = await fetch(healthCheck, {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
         alert(JSON.stringify(response.statusText));
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     }
   };
 }

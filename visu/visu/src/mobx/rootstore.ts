@@ -1,6 +1,6 @@
-import { createContext, useContext } from "react";
-import { GlobalStore } from "./globalStore";
-import { DashboardStore } from "./dashboardStore";
+import { createContext, useContext } from 'react';
+import { GlobalStore } from './globalStore';
+import { DashboardStore } from './dashboardStore';
 
 export class RootStore {
   globalStore: GlobalStore;

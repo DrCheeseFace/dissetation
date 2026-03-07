@@ -1,4 +1,3 @@
-import json
 import pandas as pd
 import numpy as np
 
@@ -30,7 +29,7 @@ def get_dataframe_info_json(df):
         int) @ null_mask.values.astype(int)
 
     columns_info = []
-    HISTOGRAM_BIN_COUNT = 10
+    HISTOGRAM_BIN_COUNT = 20
 
     for i, col in enumerate(column_names):
         total_col_nulls = int(null_counts.iloc[i])
@@ -115,11 +114,7 @@ def get_dataframe_info_json(df):
 
         columns_info.append(col_info)
 
-    return json.dumps({
-        "status": "success",
-        "info": {
-            "columns": columns_info,
-            "shape": [total_rows, total_cols]
-        },
-        "message": "DataFrame information retrieved successfully"
-    }, indent=4)
+    return {
+        "columns": columns_info,
+        "shape": [total_rows, total_cols]
+    }

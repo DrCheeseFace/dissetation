@@ -1,17 +1,17 @@
 export interface NumericHistogram {
-  data_type: "numeric";
+  data_type: 'numeric';
   counts: number[];
   bin_edges: number[];
 }
 
 export interface CategoricalHistogram {
-  data_type: "categorical";
+  data_type: 'categorical';
   counts: Record<string, number>;
 }
 
 export interface JointMissingnessHistogram {
   target_column: string;
-  data_type: "numeric" | "categorical";
+  data_type: 'numeric' | 'categorical';
   counts: number[] | Record<string, number>;
   bin_edges?: number[];
 }
@@ -32,7 +32,7 @@ export interface DatasetSummary {
 }
 
 export interface BasicInfoAPIResponse {
-  status: "success" | "error";
+  status: 'success' | 'error';
   info: DatasetSummary;
   message: string;
 }

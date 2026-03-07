@@ -1,105 +1,132 @@
-import type { ColumnSummary } from '@/model/DashboardInfo';
+import type {
+  CategoricalHistogram,
+  ColumnSummary,
+  NumericHistogram,
+} from '@/model/DashboardInfo';
 import { observer } from 'mobx-react-lite';
-import { useState, type FC } from 'react';
-import { TypographyP } from './typography';
+import { useMemo, type FC } from 'react';
 import * as d3 from 'd3';
 
 interface GlyphProps {
-  columnSummary?: ColumnSummary;
+  columnSummary: ColumnSummary;
   onClick?: () => void;
   selectedGlyphIdx?: number;
 }
 
 export const Glyph: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
-  columnSummary; // TODO REMOVE ME
   onClick; // TODO REMOVE ME
 
+  const total =
+    (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
+  let missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
+  console.log(missingPct);
+
+  const leftHistogramData = useMemo(() => {
+    if (!columnSummary.histogram) return null;
+
+    if (columnSummary.histogram.data_type === 'numeric') {
+      const { counts, bin_edges } = columnSummary.histogram as NumericHistogram;
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(counts) || 0])
+        .range([0, 45]);
+      const yScale = d3
+        .scaleLinear()
+        .domain([d3.min(bin_edges) || 0, d3.max(bin_edges) || 0])
+        .range([100, 0]);
+
+      return counts.map((count, i) => {
+        const yTop = yScale(bin_edges[i + 1]);
+        const yBottom = yScale(bin_edges[i]);
+        const barWidth = xScale(count);
+        return {
+          x: 50 - barWidth,
+          y: yTop,
+          width: barWidth,
+          height: Math.abs(yBottom - yTop),
+        };
+      });
+    }
+
+    if (columnSummary.histogram.data_type === 'categorical') {
+      const { counts } = columnSummary.histogram as CategoricalHistogram;
+      const entries = Object.entries(counts);
+
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(entries, (d) => d[1]) || 0])
+        .range([0, 45]);
+
+      const yScale = d3
+        .scaleBand()
+        .domain(entries.map((d) => d[0]))
+        .range([0, 100])
+
+      return entries.map(([key, count]) => {
+        const barWidth = xScale(count);
+        return {
+          x: 50 - barWidth,
+          y: yScale(key) || 0,
+          width: barWidth,
+          height: yScale.bandwidth(),
+        };
+      });
+    }
+
+    return null;
+  }, [columnSummary.histogram]);
+
   return (
-    <>
-      <svg width={'100%'} height={'100%'} style={{ overflow: 'visible' }}>
+    <div style={{ width: '100%', height: '100%' }}>
+      <svg width="100%" height="100%" style={{ overflow: 'visible' }}>
+        {/* outline whole graph */}
         <rect
-          width={'100%'}
-          height={'100%'}
-          stroke="black"
-          strokeWidth={'1px'}
-          fillOpacity={'0%'}
-        />
-      </svg>
-    </>
-  );
-});
-
-export const Temp: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  columnSummary; // TODO REMOVE ME
-  onClick; // TODO REMOVE ME
-
-  const data = [30, 80, 45, 90, 55, 70, 40, 65, 50];
-
-  const width = 400;
-  const height = 200;
-  const margin = 30;
-
-  const x = d3
-    .scaleBand()
-    .domain(data.map((_, i) => i.toString()))
-    .range([margin, width - margin])
-    .padding(0.3);
-
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(data) || 100])
-    .range([height - margin, margin]);
-
-  const lineGenerator = d3
-    .line<number>()
-    .x((_, i) => (x(i.toString()) || 0) + x.bandwidth() / 2)
-    .y((d) => y(d))
-    .curve(d3.curveMonotoneX);
-
-  return (
-    <>
-      <TypographyP>Combo Chart: Bar + Line Overlay</TypographyP>
-      <svg width={width} height={height} style={{ overflow: 'visible' }}>
-        <g fill="currentColor" opacity="0.2">
-          {data.map((d, i) => (
-            <rect
-              key={`bar-${i}`}
-              x={x(i.toString())}
-              y={y(d)}
-              width={x.bandwidth()}
-              height={height - margin - y(d)}
-              rx={4}
-            />
-          ))}
-        </g>
-
-        <path
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
           fill="none"
-          stroke="#4e79a7"
-          strokeWidth="2"
-          d={lineGenerator(data) || ''}
+          stroke="black"
+          strokeWidth="1px"
         />
 
-        <g>
-          {data.map((d, i) => (
-            <circle
-              key={`dot-${i}`}
-              cx={(x(i.toString()) || 0) + x.bandwidth() / 2}
-              cy={y(d)}
-              r={hoveredIndex === i ? 6 : 3}
-              fill={hoveredIndex === i ? '#4e79a7' : 'white'}
-              stroke="#4e79a7"
-              strokeWidth="2"
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              style={{ transition: 'all 0.2s', cursor: 'pointer' }}
-            />
-          ))}
-        </g>
+        {/* left histogram */}
+        {leftHistogramData?.map((bar, i) => (
+          <rect
+            key={i}
+            x={`${bar.x}%`}
+            y={`${bar.y}%`}
+            width={`${bar.width}%`}
+            height={`${bar.height}%`}
+            fill="gray"
+            fillOpacity="0.6"
+            stroke="white"
+            strokeWidth="0.5"
+          />
+        ))}
+
+        {/* missing % bar  */}
+        <rect
+          x="50%"
+          y={`${100 - missingPct}%`}
+          width="50%"
+          height={`${missingPct}%`}
+          fill="blue"
+          fillOpacity="0.4"
+        />
+
+        {/* middle dotted divider */}
+        <line
+          x1="50%"
+          y1="0"
+          x2="50%"
+          y2="100%"
+          stroke="black"
+          strokeWidth="0.5px"
+          strokeDasharray="4"
+        />
       </svg>
-    </>
+    </div>
   );
 });
 

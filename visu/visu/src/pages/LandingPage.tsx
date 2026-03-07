@@ -4,15 +4,7 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { useState, type ChangeEvent } from 'react';
 import { useRootStore } from '@/mobx/rootstore';
 import { observer } from 'mobx-react-lite';
-import { TypographyH1, TypographyP } from '@/components/typography';
-import Glyph from '@/components/glyph';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { TypographyH1 } from '@/components/typography';
 
 const LandingPage = observer(() => {
   const [file, setFile] = useState<File | null>(null);
@@ -42,18 +34,6 @@ const LandingPage = observer(() => {
         {globalStore.uploading ? 'Uploading...' : 'Upload File'}
       </Button>
 
-      {/* TODO iterate this */}
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>this is glpyh card title</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Glyph /> {/* TODO remove  */}
-        </CardContent>
-        <CardFooter className="flex-col gap-2">
-          <TypographyP>add buttons here in the future?</TypographyP>
-        </CardFooter>
-      </Card>
     </>
   );
 });
