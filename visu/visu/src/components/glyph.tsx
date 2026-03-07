@@ -6,15 +6,14 @@ import type {
 import { observer } from 'mobx-react-lite';
 import { useMemo, type FC } from 'react';
 import * as d3 from 'd3';
+import { useRootStore } from '@/mobx/rootstore';
 
 interface GlyphProps {
   columnSummary: ColumnSummary;
-  onClick?: () => void;
-  selectedGlyphIdx?: number;
 }
 
-export const Glyph: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
-  onClick; // TODO REMOVE ME
+export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
+  const { dashboardStore } = useRootStore();
 
   const total =
     (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
@@ -60,7 +59,7 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
       const yScale = d3
         .scaleBand()
         .domain(entries.map((d) => d[0]))
-        .range([0, 100])
+        .range([0, 100]);
 
       return entries.map(([key, count]) => {
         const barWidth = xScale(count);
@@ -75,6 +74,28 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
 
     return null;
   }, [columnSummary.histogram]);
+
+  const jointBar = useMemo(() => {
+    if (
+      dashboardStore.selectedGlyphIdx === -1 ||
+      dashboardStore.selectedGlyphIdx === undefined
+    )
+      return null;
+
+    const jointPercentageOfMissing =
+      columnSummary.joint_missingness[dashboardStore.selectedGlyphIdx] || 0;
+
+    const actualHeight = (jointPercentageOfMissing / 100) * missingPct;
+
+    return {
+      height: actualHeight,
+      y: 100 - actualHeight,
+    };
+  }, [
+    columnSummary.joint_missingness,
+    dashboardStore.selectedGlyphIdx,
+    missingPct,
+  ]);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -114,6 +135,18 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary, onClick }) => {
           fill="blue"
           fillOpacity="0.4"
         />
+
+        {/* selected missing % bar  */}
+        {jointBar && (
+          <rect
+            x="50%"
+            y={`${jointBar.y}%`}
+            width="50%"
+            height={`${jointBar.height}%`}
+            fill="red"
+            fillOpacity="0.6"
+          />
+        )}
 
         {/* middle dotted divider */}
         <line
