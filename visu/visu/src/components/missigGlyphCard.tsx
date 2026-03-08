@@ -9,16 +9,16 @@ import {
   CardTitle,
 } from './ui/card';
 import { TypographyH2, TypographyP } from './typography';
-import Glyph from './glyph';
+import MissigGlyph from './missigGlyph';
 import { useRootStore } from '@/mobx/rootstore';
 
-interface GlyphCardProps {
+interface MissigGlyphCardProps {
   columnSummary: ColumnSummary;
   onClick: (name: string) => void;
   isSelected: boolean;
 }
 
-export const GlyphCard: FC<GlyphCardProps> = observer(
+export const MissigGlyphCard: FC<MissigGlyphCardProps> = observer(
   ({ columnSummary, onClick, isSelected }) => {
     onClick;
     const { dashboardStore } = useRootStore();
@@ -43,7 +43,7 @@ export const GlyphCard: FC<GlyphCardProps> = observer(
         </CardHeader>
 
         <CardContent className="flex-grow flex items-center justify-center min-h-0 p-1 px-[5px] ">
-          <Glyph columnSummary={columnSummary} />
+          <MissigGlyph columnSummary={columnSummary} />
         </CardContent>
 
         <CardFooter className="flex-col shrink-0">
@@ -67,4 +67,4 @@ export const GlyphCard: FC<GlyphCardProps> = observer(
   },
 );
 
-export default GlyphCard;
+export default MissigGlyphCard;

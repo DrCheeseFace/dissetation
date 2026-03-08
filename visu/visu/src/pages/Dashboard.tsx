@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { TypographyH1 } from '@/components/typography';
-import GlyphCard from '@/components/glyphCard';
+import MissigGlyphCard from '@/components/missigGlyphCard';
 import { useRootStore } from '@/mobx/rootstore';
 import type { ColumnSummary } from '@/model/DashboardInfo';
 
@@ -19,7 +19,7 @@ const Dashboard = observer(() => {
         {dashboardStore.basicInfo &&
           dashboardStore.basicInfo.columns.map(
             (columnSummary: ColumnSummary, idx: number) => (
-              <GlyphCard
+              <MissigGlyphCard
                 key={columnSummary.column_name}
                 columnSummary={columnSummary}
                 onClick={OnClick}

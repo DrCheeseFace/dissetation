@@ -8,11 +8,11 @@ import { useMemo, type FC } from 'react';
 import * as d3 from 'd3';
 import { useRootStore } from '@/mobx/rootstore';
 
-interface GlyphProps {
+interface MissigGlyphProps {
   columnSummary: ColumnSummary;
 }
 
-export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
+export const MissigGlyph: FC<MissigGlyphProps> = observer(({ columnSummary }) => {
   const { dashboardStore } = useRootStore();
 
   const total =
@@ -245,4 +245,4 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
   );
 });
 
-export default Glyph;
+export default MissigGlyph;
