@@ -1,4 +1,8 @@
-.PHONY: lint format format-check check
+.PHONY: lint format format-check check quickup
+
+
+quickup:
+	docker compose up go-server frontend-dev web imputer-service -d
 
 lint:
 	docker compose run --rm lint
