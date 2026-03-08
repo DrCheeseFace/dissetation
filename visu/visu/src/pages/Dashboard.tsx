@@ -8,17 +8,14 @@ const Dashboard = observer(() => {
   const { dashboardStore } = useRootStore();
 
   const OnClick = (name: string): void => {
-    if (name != dashboardStore.selectedGlyphIdx) {
-      dashboardStore.setSelectedGlyph(name);
-    }
+    dashboardStore.setSelectedGlyph(name);
   };
 
   return (
     <>
       <TypographyH1>dis be dashboard af</TypographyH1>
 
-      {/* TODO ON CLICK IMPLEMENTEATIONS! */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 px-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-1 px-3">
         {dashboardStore.basicInfo &&
           dashboardStore.basicInfo.columns.map(
             (columnSummary: ColumnSummary, idx: number) => (

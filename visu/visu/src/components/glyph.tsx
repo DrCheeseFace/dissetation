@@ -18,7 +18,6 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
   const total =
     (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
   let missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
-  console.log(missingPct);
 
   const leftHistogramData = useMemo(() => {
     if (!columnSummary.histogram) return null;
@@ -75,6 +74,74 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
     return null;
   }, [columnSummary.histogram]);
 
+  const rightHistogramData = useMemo(() => {
+    if (dashboardStore.selectedGlyphIdx === -1) return null;
+    if (!columnSummary.joint_missingness_histograms) return null;
+
+    const histogram =
+      columnSummary.joint_missingness_histograms[
+        dashboardStore.selectedGlyphIdx
+      ];
+    if (!histogram) return null;
+
+    if (histogram.data_type === 'numeric') {
+      const { counts, bin_edges } = histogram as NumericHistogram;
+      const maxVal = d3.max(counts) || 0; // handle counts of 0
+      if (maxVal === 0) return [];
+
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(counts) || 0])
+        .range([0, 45]);
+      const yScale = d3
+        .scaleLinear()
+        .domain([d3.min(bin_edges) || 0, d3.max(bin_edges) || 0])
+        .range([100, 0]);
+
+      return counts.map((count, i) => {
+        const yTop = yScale(bin_edges[i + 1]);
+        const yBottom = yScale(bin_edges[i]);
+        const barWidth = xScale(count);
+        return {
+          x: 50,
+          y: yTop,
+          width: barWidth,
+          height: Math.abs(yBottom - yTop),
+        };
+      });
+    }
+
+    if (histogram.data_type === 'categorical') {
+      const { counts } = histogram as CategoricalHistogram;
+      const entries = Object.entries(counts);
+
+      const maxVal = d3.max(entries, (d) => d[1]) || 0; // handle counts of 0
+      if (maxVal === 0) return [];
+
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(entries, (d) => d[1]) || 0])
+        .range([0, 45]);
+
+      const yScale = d3
+        .scaleBand()
+        .domain(entries.map((d) => d[0]))
+        .range([0, 100]);
+
+      return entries.map(([key, count]) => {
+        const barWidth = xScale(count);
+        return {
+          x: 50,
+          y: yScale(key) || 0,
+          width: barWidth,
+          height: yScale.bandwidth(),
+        };
+      });
+    }
+
+    return null;
+  }, [dashboardStore.selectedGlyphIdx]);
+
   const jointBar = useMemo(() => {
     if (
       dashboardStore.selectedGlyphIdx === -1 ||
@@ -119,7 +186,22 @@ export const Glyph: FC<GlyphProps> = observer(({ columnSummary }) => {
             y={`${bar.y}%`}
             width={`${bar.width}%`}
             height={`${bar.height}%`}
-            fill="gray"
+            fill="blue"
+            fillOpacity="0.6"
+            stroke="white"
+            strokeWidth="0.5"
+          />
+        ))}
+
+        {/* right histogram */}
+        {rightHistogramData?.map((bar, i) => (
+          <rect
+            key={i}
+            x={`${bar.x}%`}
+            y={`${bar.y}%`}
+            width={`${bar.width}%`}
+            height={`${bar.height}%`}
+            fill="#AF302E"
             fillOpacity="0.6"
             stroke="white"
             strokeWidth="0.5"

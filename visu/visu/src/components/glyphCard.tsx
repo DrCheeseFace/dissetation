@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { TypographyP } from './typography';
+import { TypographyH2, TypographyP } from './typography';
 import Glyph from './glyph';
 import { useRootStore } from '@/mobx/rootstore';
 
@@ -20,13 +20,12 @@ interface GlyphCardProps {
 
 export const GlyphCard: FC<GlyphCardProps> = observer(
   ({ columnSummary, onClick, isSelected }) => {
-    onClick; // TODO IMPLEMENT AND REMOVE ME
+    onClick;
     const { dashboardStore } = useRootStore();
 
     const total =
       (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
     let missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
-    console.log(missingPct);
 
     return (
       <Card
@@ -37,9 +36,9 @@ export const GlyphCard: FC<GlyphCardProps> = observer(
             : 'hover:bg-slate-50 border-slate-200'
         }`}
       >
-        <CardHeader className="shrink-0">
-          <CardTitle className="truncate pb-1">
-            {columnSummary.column_name}
+        <CardHeader className="shrink-0 items-center">
+          <CardTitle className="truncate pb-1 text-center w-full">
+            <TypographyH2>{columnSummary.column_name}</TypographyH2>
           </CardTitle>
         </CardHeader>
 

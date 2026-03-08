@@ -33,8 +33,6 @@ def get_dataframe_info_json(df):
 
     for i, col in enumerate(column_names):
         total_col_nulls = int(null_counts.iloc[i])
-        col_null_mask = null_mask.iloc[:, i]
-
         if total_col_nulls > 0:
             joint_missingness_values = [
                 round(
@@ -47,70 +45,63 @@ def get_dataframe_info_json(df):
         else:
             joint_missingness_values = [0.0] * total_cols
 
-        jm_histograms = []
-        if total_col_nulls > 0:
-            for j, other_col in enumerate(column_names):
-                if i == j:
-                    continue
-
-                missing_subset = df.iloc[:, j][col_null_mask].dropna()
-                if missing_subset.empty:
-                    continue
-
-                if pd.api.types.is_numeric_dtype(df[other_col]):
-                    _, global_bin_edges = np.histogram(
-                        df[other_col].dropna(), bins=HISTOGRAM_BIN_COUNT)
-                    counts, _ = np.histogram(
-                        missing_subset, bins=global_bin_edges)
-
-                    jm_histograms.append({
-                        "target_column": other_col,
-                        "data_type": "numeric",
-                        "counts": counts.tolist(),
-                        "bin_edges": global_bin_edges.tolist()
-                    })
-                elif pd.api.types.is_object_dtype(df[other_col]) or \
-                        pd.api.types.is_bool_dtype(df[other_col]) or \
-                        isinstance(df[other_col].dtype, pd.CategoricalDtype):
-
-                    val_counts = missing_subset.value_counts()
-                    jm_histograms.append({
-                        "target_column": other_col,
-                        "data_type": "categorical",
-                        "counts": {
-                            str(k): int(v) for k, v in val_counts.items()
-                        }
-                    })
-
         col_info = {
             "column_name": col,
             "dtype": str(df[col].dtype),
             "non_null_count": int(df.iloc[:, i].count()),
             "null_count": total_col_nulls,
             "joint_missingness": joint_missingness_values,
-            "joint_missingness_histograms": jm_histograms,
+            "joint_missingness_histograms": [],
             "histogram": None
         }
 
         dropna_series = df.iloc[:, i].dropna()
-        if not dropna_series.empty:
-            if pd.api.types.is_numeric_dtype(df[col]):
-                counts, bin_edges = np.histogram(
-                    dropna_series, bins=HISTOGRAM_BIN_COUNT)
-                col_info["histogram"] = {
+        non_null_df = df[df[col].notnull()]
+
+        if pd.api.types.is_numeric_dtype(df[col]):
+            counts, bin_edges = np.histogram(
+                dropna_series, bins=HISTOGRAM_BIN_COUNT)
+
+            col_info["histogram"] = {
+                "data_type": "numeric",
+                "counts": counts.tolist(),
+                "bin_edges": bin_edges.tolist()
+            }
+
+            bins_series = pd.cut(
+                non_null_df[col], bins=bin_edges, include_lowest=True)
+
+            for target_col in column_names:
+                null_counts_per_bin = non_null_df[target_col].isnull().groupby(
+                    bins_series, observed=False).sum()
+
+                col_info["joint_missingness_histograms"].append({
+                    "target_column": target_col,
                     "data_type": "numeric",
-                    "counts": counts.tolist(),
+                    "counts": null_counts_per_bin.values.tolist(),
                     "bin_edges": bin_edges.tolist()
+                })
+
+        else:
+            val_counts = dropna_series.value_counts()
+            col_info["histogram"] = {
+                "data_type": "categorical",
+                "counts": {
+                    str(category): int(count)
+                    for category, count in val_counts.items()
                 }
-            else:
-                val_counts = dropna_series.value_counts()
-                col_info["histogram"] = {
+            }
+
+            for target_col in column_names:
+                null_counts_per_cat = non_null_df[target_col].isnull().groupby(
+                    non_null_df[col]).sum()
+
+                col_info["joint_missingness_histograms"].append({
+                    "target_column": target_col,
                     "data_type": "categorical",
-                    "counts": {
-                        str(category): int(count)
-                        for category, count in val_counts.items()
-                    }
-                }
+                    "counts": {str(k): int(v)
+                               for k, v in null_counts_per_cat.items()}
+                })
 
         columns_info.append(col_info)
 

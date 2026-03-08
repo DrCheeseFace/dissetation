@@ -34,7 +34,10 @@ for col in MCAR_dataframe.columns:
 MCAR_dataframe.to_csv(OUT_MCAR_DATASOURCE_PATH, index=False)
 
 # MAR
-# Age > 55 missing "Max HR" and "ST depression"
+# if Age > 55 missing
+#   "Max HR" missing at rate of 0.7
+#   "ST depression" missing at rate of 0.6
+#   "Heart Disease" missing at rate of 0.5
 MAR_dataframe = base_dataframe.copy().astype(object)
 
 age_condition = MAR_dataframe['Age'] > 55
