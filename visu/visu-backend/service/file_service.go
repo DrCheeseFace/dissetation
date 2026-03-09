@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"visu-backend/logger"
+	"visu-backend/model"
 )
 
 type (
@@ -19,40 +20,47 @@ type (
 		IsParentFileSet() bool
 
 		// returns file handler ref
-		GetParentFile() *os.File
+		GetParentFile() *model.FileNode
+
+		// returns child file arr
+		GetChildFiles() []model.FileNode
+
+		// creates child file and return pointer
+		CreateChildFile(path string, imputation model.Imputation) (*model.FileNode, error)
 
 		// closes parent and child file
 		CloseAllFiles() error
 	}
 
 	fileSvc struct {
-		parentFile *os.File
-		childFiles map[string]*os.File
+		parentFile *model.FileNode
+		childFiles []model.FileNode
 	}
 )
 
 func NewFileService() FileService {
 	return &fileSvc{
 		nil,
-		make(map[string]*os.File),
+		[]model.FileNode{},
 	}
 }
 
 func (fS *fileSvc) CloseAllFiles() (err error) {
 	if fS.parentFile != nil {
-		err = fS.parentFile.Close()
+		err = fS.parentFile.File.Close()
 		if err != nil {
-			err := fmt.Errorf("failed to close parent file %s, %v", fS.parentFile.Name(), err)
+			err := fmt.Errorf("failed to close parent file %s, %v", fS.parentFile.Path, err)
 			logger.Log.Error(err)
 			return err
 		}
+
 		fS.parentFile = nil
 	}
 
 	for _, v := range fS.childFiles {
-		err := v.Close()
+		err := v.File.Close()
 		if err != nil {
-			err := fmt.Errorf("failed to close child file %s, %v", v.Name(), err)
+			err := fmt.Errorf("failed to close child file %s, %v", v.Path, err)
 			logger.Log.Error(err)
 			return err
 		}
@@ -111,7 +119,7 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 			return err
 		}
 
-		fS.parentFile = dst
+		fS.parentFile = &model.FileNode{File: dst, Path: dst.Name()}
 		return nil
 	}
 
@@ -119,9 +127,25 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 }
 
 func (fS *fileSvc) IsParentFileSet() bool {
-	return fS.parentFile != nil
+	return fS.parentFile.File != nil
 }
 
-func (fS *fileSvc) GetParentFile() *os.File {
+func (fS *fileSvc) GetParentFile() *model.FileNode {
 	return fS.parentFile
+}
+
+func (fS *fileSvc) GetChildFiles() []model.FileNode {
+	return fS.childFiles
+}
+
+func (fS *fileSvc) CreateChildFile(path string, imputation model.Imputation) (childFile *model.FileNode, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		err = fmt.Errorf("failed to open child file, %v", err)
+		logger.Log.Error(err)
+		return nil, err
+	}
+
+	fS.childFiles = append(fS.childFiles, model.FileNode{File: f, Path: path, Imputation: imputation})
+	return &fS.childFiles[len(fS.childFiles)], nil
 }

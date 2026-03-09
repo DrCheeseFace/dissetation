@@ -35,6 +35,7 @@ func NewRoutes() chi.Router {
 	r.Route("/dataset", func(r chi.Router) {
 		r.Post("/", fileHandler.UploadParentFile)
 		r.Get("/missiG", imputerHandler.GetMissiGInfo)
+		r.Post("/simple_impute", imputerHandler.PostSimpleImpute)
 	})
 
 	return r

@@ -12,8 +12,7 @@ formatters:
 
   settings:
     golines:
-      # Default: 100
-      max-len: 120
+      max-len: 100 
 
 linters:
   enable:

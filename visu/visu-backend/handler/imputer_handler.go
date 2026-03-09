@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"visu-backend/logger"
+	"visu-backend/model"
 	"visu-backend/service"
 )
 
@@ -11,6 +13,9 @@ type (
 	ImputerHandler interface {
 		// return parent missiG info
 		GetMissiGInfo(w http.ResponseWriter, r *http.Request)
+
+		// creates simple impute child file
+		PostSimpleImpute(w http.ResponseWriter, r *http.Request)
 
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
@@ -44,6 +49,45 @@ func (i imputerHandler) GetMissiGInfo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(body))
 
+}
+
+func (i imputerHandler) PostSimpleImpute(w http.ResponseWriter, r *http.Request) {
+	parentFile := i.fileSvc.GetParentFile()
+	if parentFile == nil {
+		logger.Log.Warning("parent file was not set")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	type SimpleImputeRequest struct {
+		Name     string                         `json:"name"`
+		Strategy model.SimpleImputationStrategy `json:"strategy"`
+		Feature  string                         `json:"feature"`
+	}
+
+	req := SimpleImputeRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	dst := filepath.Join("./uploads", req.Name)
+
+	for _, c := range i.fileSvc.GetChildFiles() {
+		if c.Path == dst {
+			logger.Log.Warningf("child file of name %s already exists", req.Name)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	err := i.imputerSvc.CreateSimpleImpute(dst, req.Strategy, req.Feature)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (i imputerHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
