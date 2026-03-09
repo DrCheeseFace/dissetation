@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
+import utils
 
 
-def get_unimputed_dataset_info(filename):
+def get_missiG_info(filename):
     """
     :param str file_path: path to unimputed dataset
     :return: json string representation of info
@@ -10,11 +11,11 @@ def get_unimputed_dataset_info(filename):
     WARNING. ASSUMES filename exists
     """
 
-    df = pd.read_csv(filename)
-    return get_dataframe_info_json(df)
+    df = utils.get_df_from_filename(filename)
+    return get_missiG_info_json(df)
 
 
-def get_dataframe_info_json(df):
+def get_missiG_info_json(df):
     """
     DataFrameInfo -> json
     returns json formatted string containing column info, shape,

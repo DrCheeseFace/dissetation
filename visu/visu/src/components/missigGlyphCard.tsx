@@ -1,4 +1,4 @@
-import type { ColumnSummary } from '@/model/DashboardInfo';
+import type { ColumnSummary } from '@/model/MissiG';
 import { observer } from 'mobx-react-lite';
 import { type FC } from 'react';
 import {

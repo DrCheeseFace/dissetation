@@ -1,34 +1,31 @@
 import { makeAutoObservable } from 'mobx';
 
 import { RootStore } from '@/mobx/rootstore.ts';
-import type {
-  BasicInfoAPIResponse,
-  DatasetSummary,
-} from '@/model/DashboardInfo';
-import { getParentFileInfo } from '@/utils/routes';
+import type { BasicInfoAPIResponse, DatasetSummary } from '@/model/MissiG';
+import { getMissiGInfo } from '@/utils/routes';
 
 export class DashboardStore {
   root: RootStore;
-  basicInfo?: DatasetSummary; // TODO make persist
+  MissiGInfo?: DatasetSummary; // TODO make persist
 
   constructor(root: RootStore) {
     this.root = root;
     makeAutoObservable(this);
   }
 
-  setBasicInfo = (info: DatasetSummary) => {
-    this.basicInfo = info;
+  setMissiGInfo = (info: DatasetSummary) => {
+    this.MissiGInfo = info;
   };
 
-  fetchParentFileInfo = async () => {
+  fetchMissiGInfo = async () => {
     try {
-      const response = await fetch(getParentFileInfo, {
+      const response = await fetch(getMissiGInfo, {
         method: 'GET',
       });
 
       if (response.ok) {
         const rawResult: BasicInfoAPIResponse = await response.json();
-        this.root.dashboardStore.setBasicInfo(rawResult.info);
+        this.root.dashboardStore.setMissiGInfo(rawResult.info);
       }
     } catch (error) {
       console.error('an error occured when fetching parent file info: ', error);

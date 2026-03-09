@@ -2,7 +2,7 @@ import type {
   CategoricalHistogram,
   ColumnSummary,
   NumericHistogram,
-} from '@/model/DashboardInfo';
+} from '@/model/MissiG';
 import { observer } from 'mobx-react-lite';
 import { useMemo, type FC } from 'react';
 import * as d3 from 'd3';

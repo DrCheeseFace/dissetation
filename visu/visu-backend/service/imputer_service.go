@@ -15,7 +15,7 @@ import (
 type (
 	ImputerService interface {
 		// returns basic visualisation info json-string
-		GetParentFileInfo() (string, error)
+		GetMissiGInfo() (string, error)
 
 		// returns ok if imputer_service returns ok
 		GetHealth() error
@@ -56,7 +56,7 @@ func (i *imputerSvc) GetHealth() error {
 	return nil
 }
 
-func (i *imputerSvc) GetParentFileInfo() (string, error) {
+func (i *imputerSvc) GetMissiGInfo() (string, error) {
 	f := i.fileSvc.GetParentFile()
 	if f == nil {
 		err := fmt.Errorf("parent file was not set")
@@ -75,7 +75,7 @@ func (i *imputerSvc) GetParentFileInfo() (string, error) {
 		return "", fmt.Errorf("failed to marshal request: %v", err)
 	}
 
-	req, err := http.NewRequest("GET", i.createUrl("summary"), bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequest("GET", i.createUrl("get_missiG_info"), bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %v", err)
 	}

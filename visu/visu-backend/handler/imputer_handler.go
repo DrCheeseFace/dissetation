@@ -9,8 +9,8 @@ import (
 
 type (
 	ImputerHandler interface {
-		// return parent imputer info dump. cached if needed
-		GetParentFileInfo(w http.ResponseWriter, r *http.Request)
+		// return parent missiG info
+		GetMissiGInfo(w http.ResponseWriter, r *http.Request)
 
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
@@ -26,14 +26,14 @@ func NewImputerHandler(imputerSvc service.ImputerService, fileSvc service.FileSe
 	return imputerHandler{imputerSvc, fileSvc}
 }
 
-func (i imputerHandler) GetParentFileInfo(w http.ResponseWriter, r *http.Request) {
+func (i imputerHandler) GetMissiGInfo(w http.ResponseWriter, r *http.Request) {
 	if !i.fileSvc.IsParentFileSet() {
 		logger.Log.Warning("parent file was not set")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	body, err := i.imputerSvc.GetParentFileInfo()
+	body, err := i.imputerSvc.GetMissiGInfo()
 	if err != nil {
 		logger.Log.Errorf("failed to get parent file info")
 		w.WriteHeader(http.StatusInternalServerError)

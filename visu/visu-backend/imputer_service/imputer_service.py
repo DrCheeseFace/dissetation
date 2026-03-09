@@ -24,8 +24,8 @@ def ping():
     }), 200
 
 
-@app.route('/summary', methods=['GET'])
-def get_unimputed_data_summary():
+@app.route('/get_missiG_info', methods=['GET'])
+def get_missiG_info():
     """
     get statistics on a given unimputed dataset provided via JSON body.
 
@@ -50,7 +50,7 @@ def get_unimputed_data_summary():
 
     return jsonify({
         "status": "success",
-        "info": info.get_unimputed_dataset_info(file_path),
+        "info": info.get_missiG_info(file_path),
         "message": "success"
     }), HTTPStatus.OK
 
