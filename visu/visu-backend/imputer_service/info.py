@@ -46,6 +46,7 @@ def get_dataframe_info_json(df):
             joint_missingness_values = [0.0] * total_cols
 
         col_info = {
+            "index": i,
             "column_name": col,
             "dtype": str(df[col].dtype),
             "non_null_count": int(df.iloc[:, i].count()),
@@ -71,11 +72,12 @@ def get_dataframe_info_json(df):
             bins_series = pd.cut(
                 non_null_df[col], bins=bin_edges, include_lowest=True)
 
-            for target_col in column_names:
+            for target_col_idx, target_col in enumerate(column_names):
                 null_counts_per_bin = non_null_df[target_col].isnull().groupby(
                     bins_series, observed=False).sum()
 
                 col_info["joint_missingness_histograms"].append({
+                    "index": target_col_idx,
                     "target_column": target_col,
                     "data_type": "numeric",
                     "counts": null_counts_per_bin.values.tolist(),
@@ -92,11 +94,12 @@ def get_dataframe_info_json(df):
                 }
             }
 
-            for target_col in column_names:
+            for target_col_index, target_col in enumerate(column_names):
                 null_counts_per_cat = non_null_df[target_col].isnull().groupby(
                     non_null_df[col]).sum()
 
                 col_info["joint_missingness_histograms"].append({
+                    "index": target_col_index,
                     "target_column": target_col,
                     "data_type": "categorical",
                     "counts": {str(k): int(v)

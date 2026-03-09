@@ -10,6 +10,7 @@ export interface CategoricalHistogram {
 }
 
 export interface JointMissingnessHistogram {
+  index: number;
   target_column: string;
   data_type: 'numeric' | 'categorical';
   counts: number[] | Record<string, number>;
@@ -17,6 +18,7 @@ export interface JointMissingnessHistogram {
 }
 
 export interface ColumnSummary {
+  index: number;
   column_name: string;
   dtype: string;
   non_null_count: number;

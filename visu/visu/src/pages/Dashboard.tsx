@@ -3,12 +3,14 @@ import { TypographyH1 } from '@/components/typography';
 import MissigGlyphCard from '@/components/missigGlyphCard';
 import { useRootStore } from '@/mobx/rootstore';
 import type { ColumnSummary } from '@/model/DashboardInfo';
+import { useState } from 'react';
 
 const Dashboard = observer(() => {
   const { dashboardStore } = useRootStore();
+  const [selectedGlyphIndex, setSelectedGlyphIndex] = useState<number>();
 
-  const OnClick = (name: string): void => {
-    dashboardStore.setSelectedGlyph(name);
+  const setSelectedGlyphIdx = (index: number): void => {
+    setSelectedGlyphIndex(index);
   };
 
   return (
@@ -18,12 +20,12 @@ const Dashboard = observer(() => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-1 px-3">
         {dashboardStore.basicInfo &&
           dashboardStore.basicInfo.columns.map(
-            (columnSummary: ColumnSummary, idx: number) => (
+            (columnSummary: ColumnSummary) => (
               <MissigGlyphCard
-                key={columnSummary.column_name}
+                key={columnSummary.index}
                 columnSummary={columnSummary}
-                onClick={OnClick}
-                isSelected={dashboardStore.selectedGlyphIdx == idx}
+                setSelectedGlyphIdxOnClick={setSelectedGlyphIdx}
+                selectedGlyphIdx={selectedGlyphIndex}
               />
             ),
           )}

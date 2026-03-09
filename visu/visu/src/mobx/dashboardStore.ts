@@ -10,27 +10,14 @@ import { getParentFileInfo } from '@/utils/routes';
 export class DashboardStore {
   root: RootStore;
   basicInfo?: DatasetSummary; // TODO make persist
-  selectedGlyphIdx: number; // is -1 if not set
 
   constructor(root: RootStore) {
     this.root = root;
-    this.selectedGlyphIdx = -1;
     makeAutoObservable(this);
   }
 
   setBasicInfo = (info: DatasetSummary) => {
     this.basicInfo = info;
-  };
-
-  setSelectedGlyph = (featureName?: string) => {
-    if (!this.basicInfo || !featureName) {
-      this.selectedGlyphIdx = -1;
-      return;
-    }
-
-    this.selectedGlyphIdx = this.basicInfo.columns.findIndex(
-      (col) => col.column_name === featureName,
-    );
   };
 
   fetchParentFileInfo = async () => {
