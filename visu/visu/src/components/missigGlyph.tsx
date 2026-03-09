@@ -16,7 +16,7 @@ export const MissigGlyph: FC<MissigGlyphProps> = observer(
   ({ columnSummary, selectedGlyphIdx }) => {
     const total =
       (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
-    let missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
+    const missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
 
     const leftHistogramData = useMemo(() => {
       if (!columnSummary.histogram) return null; // TODO can i remove null here
@@ -138,7 +138,7 @@ export const MissigGlyph: FC<MissigGlyphProps> = observer(
       }
 
       return null;
-    }, [selectedGlyphIdx]);
+    }, [selectedGlyphIdx, columnSummary.joint_missingness_histograms]);
 
     const jointBar = useMemo(() => {
       if (!selectedGlyphIdx) return null;

@@ -21,7 +21,7 @@ export const MissigGlyphCard: FC<MissigGlyphCardProps> = observer(
   ({ columnSummary, setSelectedGlyphIdxOnClick, selectedGlyphIdx }) => {
     const total =
       (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
-    let missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
+    const missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
     const isSelected = selectedGlyphIdx == columnSummary.index;
 
     return (
