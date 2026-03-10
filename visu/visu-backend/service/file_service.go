@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"visu-backend/logger"
 	"visu-backend/model"
+
+	"github.com/google/uuid"
 )
 
 type (
@@ -119,7 +121,7 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 			return err
 		}
 
-		fS.parentFile = &model.FileNode{File: dst, Path: dst.Name()}
+		fS.parentFile = &model.FileNode{File: dst, Path: dst.Name(), UUID: uuid.New()}
 		return nil
 	}
 
@@ -146,6 +148,6 @@ func (fS *fileSvc) CreateChildFile(path string, imputation model.Imputation) (ch
 		return nil, err
 	}
 
-	fS.childFiles = append(fS.childFiles, model.FileNode{File: f, Path: path, Imputation: imputation})
+	fS.childFiles = append(fS.childFiles, model.FileNode{UUID: uuid.New(), File: f, Path: path, Imputation: imputation})
 	return &fS.childFiles[len(fS.childFiles)], nil
 }

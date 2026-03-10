@@ -8,7 +8,7 @@ import { TypographyH1 } from '@/components/typography';
 
 const LandingPage = observer(() => {
   const [file, setFile] = useState<File | null>(null);
-  const { globalStore } = useRootStore();
+  const { globalStore, dashboardStore } = useRootStore();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -20,6 +20,7 @@ const LandingPage = observer(() => {
     <>
       <TypographyH1>landing page todo title</TypographyH1>
       <Button onClick={() => globalStore.healthCheck()}>health check</Button>
+      <Button onClick={() => dashboardStore.fetchBasicInfo()}>fetch file info</Button>
 
       <Field>
         <FieldLabel htmlFor="file-test">Large File Upload</FieldLabel>

@@ -12,10 +12,13 @@ import (
 type (
 	ImputerHandler interface {
 		// return parent missiG info
-		GetMissiGInfo(w http.ResponseWriter, r *http.Request)
+		GetParentFileMissiGInfo(w http.ResponseWriter, r *http.Request)
 
 		// creates simple impute child file
 		PostSimpleImpute(w http.ResponseWriter, r *http.Request)
+
+		// get basic info on all file
+		GetFilesInfo(w http.ResponseWriter, r *http.Request)
 
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
@@ -31,16 +34,17 @@ func NewImputerHandler(imputerSvc service.ImputerService, fileSvc service.FileSe
 	return imputerHandler{imputerSvc, fileSvc}
 }
 
-func (i imputerHandler) GetMissiGInfo(w http.ResponseWriter, r *http.Request) {
-	if !i.fileSvc.IsParentFileSet() {
+func (i imputerHandler) GetParentFileMissiGInfo(w http.ResponseWriter, r *http.Request) {
+	f := i.fileSvc.GetParentFile()
+	if f == nil {
 		logger.Log.Warning("parent file was not set")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	body, err := i.imputerSvc.GetMissiGInfo()
+	body, err := i.imputerSvc.GetMissiGInfo(*f)
 	if err != nil {
-		logger.Log.Errorf("failed to get parent file info")
+		logger.Log.Errorf("failed to get parent file MissiG info")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -81,7 +85,7 @@ func (i imputerHandler) PostSimpleImpute(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	err := i.imputerSvc.CreateSimpleImpute(dst, req.Strategy, req.Feature)
+	err := i.imputerSvc.CreateSimpleImpute(*parentFile, dst, req.Strategy, req.Feature)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -103,5 +107,45 @@ func (i imputerHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(response)
+}
+
+func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
+	var response struct {
+		ParentFile model.BasicInfo   `json:"parent_file"`
+		ChildFiles []model.BasicInfo `json:"child_files"`
+	}
+
+	f := i.fileSvc.GetParentFile()
+	if f == nil {
+		logger.Log.Warning("parent file was not set")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	basicInfo, err := i.imputerSvc.GetBasicInfo(*f)
+	if err != nil {
+		logger.Log.Errorf("failed to get parent file basic info, %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	response.ParentFile = *basicInfo
+
+	childFiles := i.fileSvc.GetChildFiles()
+	for _, childFile := range childFiles {
+		basicInfo, err := i.imputerSvc.GetBasicInfo(childFile)
+		if err != nil {
+			logger.Log.Errorf("failed to get child file basic info")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		response.ChildFiles = append(response.ChildFiles, *basicInfo)
+
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
 	_ = json.NewEncoder(w).Encode(response)
 }

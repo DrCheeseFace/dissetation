@@ -25,23 +25,24 @@ def ping():
     }), 200
 
 
-@app.route('/get_missiG_info', methods=['GET'])
+@app.route('/missiG_info', methods=['GET'])
 def get_missiG_info():
     """
     get statistics on a given unimputed dataset provided via JSON body.
 
-    Input JSON: {"file_path": "path/to/data.csv"}
+    Input params: {"file_path": "path/to/data.csv"}
     :return: statistics on a given unimputed dataset
     """
-    data = request.get_json()
 
-    if not data or 'file_path' not in data:
+    file_path_param = request.args.get('file_path')
+
+    if not file_path_param:
         return jsonify({
             "status": "error",
-            "message": "No file_path provided in JSON body"
+            "message": "No file_path provided in URL parameters"
         }), HTTPStatus.BAD_REQUEST
 
-    file_path = "../" + data['file_path']
+    file_path = "../" + file_path_param
 
     if not os.path.exists(file_path):
         return jsonify({
@@ -54,6 +55,53 @@ def get_missiG_info():
         "info": info.get_missiG_info(file_path),
         "message": "success"
     }), HTTPStatus.OK
+
+
+@app.route('/basic_info', methods=['GET'])
+def get_basic_info():
+    """
+    get basic info
+
+    Input params: {"file_path": "path/to/data.csv"}
+    :return: statistics on a given unimputed dataset
+    """
+    file_path_param = request.args.get('file_path')
+
+    if not file_path_param:
+        return jsonify({
+            "status": "error",
+            "message": "No file_path provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    file_path = "../" + file_path_param
+
+    if not os.path.exists(file_path):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {file_path}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        basic_info = info.get_basic_info(file_path)
+        return jsonify(basic_info), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @app.route('/simple_impute', methods=['POST'])
@@ -76,7 +124,8 @@ def simple_impute():
     if not data or not all(key in data for key in required_keys):
         return jsonify({
             "status": "error",
-            "message": f"Missing required JSON fields. Expected: {required_keys}"
+            "message": f"Missing required JSON fields. Expected: {
+                required_keys}"
         }), HTTPStatus.BAD_REQUEST
 
     src = "../" + data['src']
@@ -115,10 +164,6 @@ def simple_impute():
             "status": "error",
             "message": f"An unexpected server error occurred.{e}"
         }), HTTPStatus.INTERNAL_SERVER_ERROR
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=DEBUG)
 
 
 if __name__ == '__main__':

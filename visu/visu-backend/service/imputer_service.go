@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"visu-backend/configuration"
@@ -15,15 +16,19 @@ import (
 
 type (
 	ImputerService interface {
-		// returns basic visualisation info json-string
-		GetMissiGInfo() (string, error)
+		// returns MissiG visualisation info json-string
+		GetMissiGInfo(model.FileNode) (string, error)
 
 		// creates simpleimputation of "src" with "strategy" on "feature" saved to "dst"
 		CreateSimpleImpute(
+			src model.FileNode,
 			dst string,
 			strategy model.SimpleImputationStrategy,
 			feature string,
 		) error
+
+		// returns basic info json-string
+		GetBasicInfo(model.FileNode) (*model.BasicInfo, error)
 
 		// returns ok if imputer_service returns ok
 		GetHealth() error
@@ -64,26 +69,12 @@ func (i *imputerSvc) GetHealth() error {
 	return nil
 }
 
-func (i *imputerSvc) GetMissiGInfo() (string, error) {
-	f := i.fileSvc.GetParentFile()
-	if f == nil {
-		err := fmt.Errorf("parent file was not set")
-		logger.Log.Warning(err)
-		return "", err
-	}
+func (i *imputerSvc) GetMissiGInfo(f model.FileNode) (string, error) {
+	params := url.Values{}
+	params.Add("file_path", f.Path)
+	fullUrl := fmt.Sprintf("%s?%s", i.createUrl("missiG_info"), params.Encode())
 
-	type request struct {
-		FilePath string `json:"file_path"`
-	}
-
-	r := request{FilePath: f.Path}
-
-	jsonBytes, err := json.Marshal(r)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal request: %v", err)
-	}
-
-	req, err := http.NewRequest("GET", i.createUrl("get_missiG_info"), bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequest("GET", fullUrl, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %v", err)
 	}
@@ -113,16 +104,10 @@ func (i *imputerSvc) GetMissiGInfo() (string, error) {
 }
 
 func (i *imputerSvc) CreateSimpleImpute(
+	src model.FileNode,
 	dst string,
 	strategy model.SimpleImputationStrategy,
 	feature string) error {
-
-	parentFile := i.fileSvc.GetParentFile()
-	if parentFile == nil {
-		err := fmt.Errorf("parent file was not set")
-		logger.Log.Warning(err)
-		return err
-	}
 
 	type request struct {
 		Src      string                         `json:"src"`
@@ -131,7 +116,7 @@ func (i *imputerSvc) CreateSimpleImpute(
 		Strategy model.SimpleImputationStrategy `json:"strategy"`
 	}
 
-	r := request{Src: parentFile.Path, Dst: dst, Feature: feature, Strategy: strategy}
+	r := request{Src: src.Path, Dst: dst, Feature: feature, Strategy: strategy}
 
 	jsonBytes, err := json.Marshal(r)
 	if err != nil {
@@ -168,4 +153,44 @@ func (i *imputerSvc) CreateSimpleImpute(
 	}
 
 	return nil
+}
+
+func (i imputerSvc) GetBasicInfo(f model.FileNode) (*model.BasicInfo, error) {
+	params := url.Values{}
+	params.Add("file_path", f.Path)
+	fullUrl := fmt.Sprintf("%s?%s", i.createUrl("basic_info"), params.Encode())
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	var basicInfo model.BasicInfo
+	err = json.Unmarshal(body, &basicInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal basic info: %v", err)
+	}
+
+	return &basicInfo, nil
 }

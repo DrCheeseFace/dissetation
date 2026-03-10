@@ -113,3 +113,49 @@ def get_missiG_info_json(df):
         "columns": columns_info,
         "shape": [total_rows, total_cols]
     }
+
+
+def get_basic_info(file_path):
+    """
+    :param str file_path: path to dataset
+    """
+
+    try:
+        df = utils.get_df_from_filename(file_path)
+        return get_basic_info_json(df)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{file_path}': {e}")
+
+
+def get_basic_info_json(df):
+    """
+    :param DataFrame df: pandas dataframe
+     {
+         name: string
+         dtype: type
+         non_null_count: int
+         null_count: int
+     }
+    """
+    null_mask = df.isnull()
+    null_counts = null_mask.sum()
+    total_rows, total_cols = df.shape
+
+    columns_info = []
+    column_names = df.columns.tolist()
+    for i, column in enumerate(column_names):
+        total_col_nulls = int(null_counts.iloc[i])
+        col_info = {
+            "index": i,
+            "name": column,
+            "dtype": str(df[column].dtype),
+            "non_null_count": int(df.iloc[:, i].count()),
+            "null_count": total_col_nulls,
+        }
+
+        columns_info.append(col_info)
+
+    return {
+        "columns": columns_info,
+        "shape": [total_rows, total_cols]
+    }

@@ -25,8 +25,8 @@ def simple_imputer_service(src, dst, feature, strategy):
         case "mode":
             df = simple_imputer_mode(df, feature)
         case _:
-            raise ValueError(f"Invalid strategy '{
-                             strategy}'. Supported strategies are 'mean', 'median', and 'mode'.")
+            raise ValueError(f"""Invalid strategy '{strategy}'.
+                Supported strategies are 'mean', 'median', and 'mode'.""")
 
     try:
         utils.save_to_csv(dst, df)

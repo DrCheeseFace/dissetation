@@ -18,8 +18,8 @@ const Dashboard = observer(() => {
       <TypographyH1>dis be dashboard af</TypographyH1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-1 px-3">
-        {dashboardStore.MissiGInfo &&
-          dashboardStore.MissiGInfo.columns.map(
+        {dashboardStore.ParentFileMissiGInfo &&
+          dashboardStore.ParentFileMissiGInfo.columns.map(
             (columnSummary: ColumnSummary) => (
               <MissigGlyphCard
                 key={columnSummary.index}

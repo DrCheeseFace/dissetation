@@ -1,11 +1,16 @@
 package model
 
-import "os"
+import (
+	"os"
+
+	"github.com/google/uuid"
+)
 
 type FileNode struct {
+	UUID       uuid.UUID
 	Path       string
 	File       *os.File
-	Imputation Imputation
+	Imputation Imputation // TODO make this an arr
 }
 
 type Imputation struct {
