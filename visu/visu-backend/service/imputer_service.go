@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 
 	"visu-backend/configuration"
@@ -191,6 +192,9 @@ func (i imputerSvc) GetBasicInfo(f model.FileNode) (*model.BasicInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal basic info: %v", err)
 	}
+
+	basicInfo.Filename = filepath.Base(f.Path)
+	basicInfo.UUID = f.UUID
 
 	return &basicInfo, nil
 }

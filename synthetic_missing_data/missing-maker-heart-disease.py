@@ -4,6 +4,7 @@ import numpy as np
 
 IN_DATASOURCE_PATH = "./datasets/heart-disease.csv"
 OUT_MCAR_DATASOURCE_PATH = "./out_datasets/MCAR-heart-disease.csv"
+OUT_MCAR_VARIED_DATASOURCE_PATH = "./out_datasets/MCAR-VARIED-heart-disease.csv"
 OUT_MAR_DATASOURCE_PATH = "./out_datasets/MAR-heart-disease.csv"
 OUT_MNAR_DATASOURCE_PATH = "./out_datasets/MNAR-heart-disease.csv"
 
@@ -32,6 +33,22 @@ for col in MCAR_dataframe.columns:
     MCAR_dataframe.loc[random_draw, col] = np.nan
 
 MCAR_dataframe.to_csv(OUT_MCAR_DATASOURCE_PATH, index=False)
+
+# MCAR varied
+MCAR_varied_df = base_dataframe.copy().astype(object)
+COL_WEIGHTS = {
+    "Age": 0.40,
+    "BP": 0.2,
+    "Cholesterol": 0.25,
+    "Max HR": 0.3
+}
+
+for col in MCAR_varied_df.columns:
+    rate = COL_WEIGHTS.get(col, np.random.uniform(0.05, 0.35))
+    random_draw = np.random.rand(len(MCAR_varied_df)) < rate
+    MCAR_varied_df.loc[random_draw, col] = np.nan
+
+MCAR_varied_df.to_csv(OUT_MCAR_VARIED_DATASOURCE_PATH, index=False)
 
 # MAR
 # if Age > 55 missing

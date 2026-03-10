@@ -6,7 +6,10 @@ export interface ColumnInfo {
   null_count: number;
 }
 
+export type UUID = string;
 export interface BasicInfo {
+  uuid: UUID;
+  filename: string;
   columns: ColumnInfo[];
   shape: [number, number];
 }

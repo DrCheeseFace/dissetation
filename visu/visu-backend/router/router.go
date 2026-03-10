@@ -33,6 +33,7 @@ func NewRoutes() chi.Router {
 	})
 
 	r.Route("/dataset", func(r chi.Router) {
+		r.Delete("/{uuid}", fileHandler.DeleteChildFile)
 		r.Get("/", imputerHandler.GetFilesInfo)
 		r.Post("/", fileHandler.UploadParentFile)
 		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)

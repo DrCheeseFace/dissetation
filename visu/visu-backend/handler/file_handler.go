@@ -4,12 +4,18 @@ import (
 	"net/http"
 	"visu-backend/logger"
 	"visu-backend/service"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type (
 	FileHandler interface {
 		// upload parent file
 		UploadParentFile(w http.ResponseWriter, r *http.Request)
+
+		// delete child file
+		DeleteChildFile(w http.ResponseWriter, r *http.Request)
 	}
 
 	fileHandler struct {
@@ -38,5 +44,30 @@ func (fH fileHandler) UploadParentFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (fH fileHandler) DeleteChildFile(w http.ResponseWriter, r *http.Request) {
+	uuidToDeleteStr := chi.URLParam(r, "uuid")
+
+	if uuidToDeleteStr == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuidToDelete, err := uuid.Parse(uuidToDeleteStr)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = fH.fileSvc.DeleteChildFile(uuidToDelete)
+	if err != nil {
+		logger.Log.Errorf("failed to delete child file of uuid %s, %v", uuidToDelete.String(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

@@ -2,7 +2,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import { RootStore } from '@/mobx/rootstore.ts';
 import type { BasicInfo, BasicInfoApiResponse } from '@/model/BasicInfo';
-import { getBasicInfo } from '@/utils/routes';
+import { deleteChildFile, getBasicInfo, simpleImpute } from '@/utils/routes';
 
 export class FileStore {
   root: RootStore;
@@ -55,6 +55,50 @@ export class FileStore {
       }
     } catch (error) {
       console.error('an error occured when fetching basic info: ', error);
+    }
+  };
+
+  // TODO VERIFY FILE NAME
+  // TODO ACTUALLY IMPLEMENT
+  testimpute = async () => {
+    try {
+      const response = await fetch(simpleImpute, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'cholesteral_mean_imputation.csv',
+          strategy: 'mean',
+          Feature: 'Cholesterol',
+        }),
+      });
+      if (response.ok) {
+        await this.fetchBasicInfo();
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('an error occured when fetching basic info: ', error);
+    }
+  };
+
+  // TODO ACTUALLY IMPLEMENT
+  testDeleteChildNode = async () => {
+    try {
+      const response = await fetch(deleteChildFile(this.childFiles[0].uuid), {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        await this.fetchBasicInfo();
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error(
+        'an error occured when trying to delete child node: ',
+        error,
+      );
     }
   };
 }

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"visu-backend/logger"
 	"visu-backend/model"
+	"visu-backend/utils"
 
 	"github.com/google/uuid"
 )
@@ -26,6 +27,9 @@ type (
 
 		// returns child file arr
 		GetChildFiles() []model.FileNode
+
+		// closes and deletes childnode
+		DeleteChildFile(uuid.UUID) (err error)
 
 		// creates child file and return pointer
 		CreateChildFile(path string, imputation model.Imputation) (*model.FileNode, error)
@@ -151,9 +155,36 @@ func (fS *fileSvc) CreateChildFile(
 		return nil, err
 	}
 
-	fS.childFiles = append(
-		fS.childFiles,
-		model.FileNode{UUID: uuid.New(), File: f, Path: path, Imputation: imputation},
-	)
-	return &fS.childFiles[len(fS.childFiles)], nil
+	newNode := model.FileNode{
+		UUID:       uuid.New(),
+		File:       f,
+		Path:       path,
+		Imputation: imputation,
+	}
+
+	fS.childFiles = append(fS.childFiles, newNode)
+
+	return &fS.childFiles[len(fS.childFiles)-1], nil
+}
+
+func (fS *fileSvc) DeleteChildFile(toDeleteUUID uuid.UUID) (err error) {
+	for k, node := range fS.childFiles {
+		if node.UUID == toDeleteUUID {
+
+			_ = node.File.Close()
+
+			err = os.Remove(node.Path)
+			if err != nil {
+				err = fmt.Errorf("failed to delete child file, %v", err)
+				logger.Log.Error(err)
+				return err
+			}
+
+			fS.childFiles = utils.Remove(fS.childFiles, k)
+			return nil
+		}
+	}
+
+	logger.Log.Warningf("file not found with uuid %s", toDeleteUUID.String())
+	return nil
 }
