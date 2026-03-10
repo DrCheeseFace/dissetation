@@ -140,7 +140,10 @@ func (fS *fileSvc) GetChildFiles() []model.FileNode {
 	return fS.childFiles
 }
 
-func (fS *fileSvc) CreateChildFile(path string, imputation model.Imputation) (childFile *model.FileNode, err error) {
+func (fS *fileSvc) CreateChildFile(
+	path string,
+	imputation model.Imputation,
+) (childFile *model.FileNode, err error) {
 	f, err := os.Open(path)
 	if err != nil {
 		err = fmt.Errorf("failed to open child file, %v", err)
@@ -148,6 +151,9 @@ func (fS *fileSvc) CreateChildFile(path string, imputation model.Imputation) (ch
 		return nil, err
 	}
 
-	fS.childFiles = append(fS.childFiles, model.FileNode{UUID: uuid.New(), File: f, Path: path, Imputation: imputation})
+	fS.childFiles = append(
+		fS.childFiles,
+		model.FileNode{UUID: uuid.New(), File: f, Path: path, Imputation: imputation},
+	)
 	return &fS.childFiles[len(fS.childFiles)], nil
 }

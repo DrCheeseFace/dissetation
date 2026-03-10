@@ -1,36 +1,34 @@
 import { observer } from 'mobx-react-lite';
-import { TypographyH1 } from '@/components/typography';
-import MissigGlyphCard from '@/components/missigGlyphCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MissiGVisualisationTab from './MissiGVisualisationTab';
+import FilesTab from './FilesTab';
+import ImputationTab from './ImputationTab';
+import { Button } from '@/components/ui/button';
 import { useRootStore } from '@/mobx/rootstore';
-import type { ColumnSummary } from '@/model/MissiG';
-import { useState } from 'react';
 
 const Dashboard = observer(() => {
-  const { dashboardStore } = useRootStore();
-  const [selectedGlyphIndex, setSelectedGlyphIndex] = useState<number>();
-
-  const setSelectedGlyphIdx = (index: number): void => {
-    setSelectedGlyphIndex(index);
-  };
-
+  const { globalStore } = useRootStore();
   return (
-    <>
-      <TypographyH1>dis be dashboard af</TypographyH1>
+    <div style={{ backgroundColor: '#454445' }}>
+      <Button onClick={globalStore.debugReset}>debug reset</Button>
+      <Tabs defaultValue="MissiG">
+        <TabsList>
+          <TabsTrigger value="MissiG">MissiG</TabsTrigger>
+          <TabsTrigger value="Imputation">Imputation</TabsTrigger>
+          <TabsTrigger value="Files">Files</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-1 px-3">
-        {dashboardStore.ParentFileMissiGInfo &&
-          dashboardStore.ParentFileMissiGInfo.columns.map(
-            (columnSummary: ColumnSummary) => (
-              <MissigGlyphCard
-                key={columnSummary.index}
-                columnSummary={columnSummary}
-                setSelectedGlyphIdxOnClick={setSelectedGlyphIdx}
-                selectedGlyphIdx={selectedGlyphIndex}
-              />
-            ),
-          )}
-      </div>
-    </>
+        <TabsContent value="MissiG">
+          <MissiGVisualisationTab />
+        </TabsContent>
+        <TabsContent value="Imputation">
+          <ImputationTab />
+        </TabsContent>
+        <TabsContent value="Files">
+          <FilesTab />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 });
 

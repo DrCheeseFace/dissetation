@@ -17,7 +17,8 @@ var jsonFormat = logging.MustStringFormatter(
 )
 
 func Init() error {
-	logFile, err := os.OpenFile("./logger/logs/go-server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0660)
+	logFile, err := os.OpenFile("./logger/logs/go-server.log",
+		os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
 		return err
 	}

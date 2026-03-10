@@ -1,13 +1,16 @@
 import { createContext, useContext } from 'react';
 import { GlobalStore } from './globalStore';
-import { DashboardStore } from './dashboardStore';
+import { MissiGStore } from './missiGStore';
+import { FileStore } from './fileStore';
 
 export class RootStore {
   globalStore: GlobalStore;
-  dashboardStore: DashboardStore;
+  missigStore: MissiGStore;
+  fileStore: FileStore;
 
   constructor() {
-    this.dashboardStore = new DashboardStore(this);
+    this.missigStore = new MissiGStore(this);
+    this.fileStore = new FileStore(this);
     this.globalStore = new GlobalStore(this);
   }
 }

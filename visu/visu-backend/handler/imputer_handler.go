@@ -30,7 +30,10 @@ type (
 	}
 )
 
-func NewImputerHandler(imputerSvc service.ImputerService, fileSvc service.FileService) ImputerHandler {
+func NewImputerHandler(
+	imputerSvc service.ImputerService,
+	fileSvc service.FileService,
+) ImputerHandler {
 	return imputerHandler{imputerSvc, fileSvc}
 }
 
