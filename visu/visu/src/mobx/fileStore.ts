@@ -3,15 +3,18 @@ import { autorun, makeAutoObservable } from 'mobx';
 import { RootStore } from '@/mobx/rootstore.ts';
 import type { BasicInfo, BasicInfoApiResponse } from '@/model/BasicInfo';
 import { deleteChildFile, getBasicInfo, simpleImpute } from '@/utils/routes';
+import type { SimpleImputationStrategy } from '@/model/SimpleImpute';
 
 export class FileStore {
   root: RootStore;
   parentFile?: BasicInfo;
   childFiles: BasicInfo[];
+  loading: boolean;
 
   constructor(root: RootStore) {
     this.root = root;
     this.childFiles = [];
+    this.loading = false;
     makeAutoObservable(this);
 
     const persistedData = localStorage.getItem('FileStore');
@@ -40,6 +43,10 @@ export class FileStore {
     this.childFiles = infos;
   };
 
+  setLoading = (loading: boolean) => {
+    this.loading = loading;
+  };
+
   fetchBasicInfo = async () => {
     try {
       const response = await fetch(getBasicInfo, {
@@ -60,17 +67,22 @@ export class FileStore {
 
   // TODO VERIFY FILE NAME
   // TODO ACTUALLY IMPLEMENT
-  testimpute = async () => {
+  simpleImpute = async (
+    filename: string,
+    feature: string,
+    strategy: SimpleImputationStrategy,
+  ) => {
     try {
+      this.setLoading(true);
       const response = await fetch(simpleImpute, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: 'cholesteral_mean_imputation.csv',
-          strategy: 'mean',
-          Feature: 'Cholesterol',
+          name: filename,
+          strategy: strategy,
+          Feature: feature,
         }),
       });
       if (response.ok) {
@@ -80,6 +92,8 @@ export class FileStore {
       }
     } catch (error) {
       console.error('an error occured when fetching basic info: ', error);
+    } finally {
+      this.setLoading(false);
     }
   };
 
