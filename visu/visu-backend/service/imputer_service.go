@@ -145,10 +145,10 @@ func (i *imputerSvc) CreateSimpleImpute(
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	_, err = i.fileSvc.CreateChildFile(
-		dst,
-		model.Imputation{Feature: feature, Method: r.Strategy.To_imputation_method()},
-	)
+	var imputations []model.Imputation
+	imputations = append(imputations, src.Imputations[:]...)
+	imputations = append(imputations, model.Imputation{Feature: feature, Method: r.Strategy.To_imputation_method()})
+	_, err = i.fileSvc.CreateChildFile(dst, imputations)
 	if err != nil {
 		return fmt.Errorf("failed to create child file, %v", err)
 	}

@@ -32,7 +32,7 @@ type (
 		DeleteChildFile(uuid.UUID) (err error)
 
 		// creates child file and return pointer
-		CreateChildFile(path string, imputation model.Imputation) (*model.FileNode, error)
+		CreateChildFile(path string, imputation []model.Imputation) (*model.FileNode, error)
 
 		// closes parent and child file
 		CloseAllFiles() error
@@ -146,7 +146,7 @@ func (fS *fileSvc) GetChildFiles() []model.FileNode {
 
 func (fS *fileSvc) CreateChildFile(
 	path string,
-	imputation model.Imputation,
+	imputation []model.Imputation,
 ) (childFile *model.FileNode, err error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -156,10 +156,10 @@ func (fS *fileSvc) CreateChildFile(
 	}
 
 	newNode := model.FileNode{
-		UUID:       uuid.New(),
-		File:       f,
-		Path:       path,
-		Imputation: imputation,
+		UUID:        uuid.New(),
+		File:        f,
+		Path:        path,
+		Imputations: imputation,
 	}
 
 	fS.childFiles = append(fS.childFiles, newNode)

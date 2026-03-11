@@ -13,7 +13,7 @@ const MissiGVisualisationTab = observer(() => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 px-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 px-3 bg-slate-50/50">
       {dashboardStore.ParentFileMissiGInfo &&
         dashboardStore.ParentFileMissiGInfo.columns.map(
           (columnSummary: ColumnSummary) => (

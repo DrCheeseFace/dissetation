@@ -7,15 +7,15 @@ import (
 )
 
 type FileNode struct {
-	UUID       uuid.UUID
-	Path       string
-	File       *os.File
-	Imputation Imputation // TODO make this an arr
+	UUID        uuid.UUID
+	Path        string
+	File        *os.File
+	Imputations []Imputation
 }
 
 type Imputation struct {
-	Feature string
-	Method  ImputationMethod
+	Feature string           `json:"feature"`
+	Method  ImputationMethod `json:"method"`
 }
 
 type ImputationMethod string

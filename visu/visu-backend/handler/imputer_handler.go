@@ -119,14 +119,14 @@ func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
 		ChildFiles []model.BasicInfo `json:"child_files"`
 	}
 
-	f := i.fileSvc.GetParentFile()
-	if f == nil {
+	parentFile := i.fileSvc.GetParentFile()
+	if parentFile == nil {
 		logger.Log.Warning("parent file was not set")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	basicInfo, err := i.imputerSvc.GetBasicInfo(*f)
+	basicInfo, err := i.imputerSvc.GetBasicInfo(*parentFile)
 	if err != nil {
 		logger.Log.Errorf("failed to get parent file basic info, %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -143,6 +143,7 @@ func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		basicInfo.Imputations = childFile.Imputations
 		response.ChildFiles = append(response.ChildFiles, *basicInfo)
 
 	}

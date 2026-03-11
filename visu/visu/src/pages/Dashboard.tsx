@@ -29,6 +29,7 @@ const Dashboard = observer(() => {
         </Button>
       </div>
 
+                        {/* TODO add animtation to change to files tab and highlight row */}
       <Tabs defaultValue="MissiG">
         <TabsList>
           <TabsTrigger value="MissiG">MissiG</TabsTrigger>

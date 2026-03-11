@@ -8,6 +8,7 @@ export interface ColumnInfo {
 
 export type UUID = string;
 export interface BasicInfo {
+  imputations: Imputation[];
   uuid: UUID;
   filename: string;
   columns: ColumnInfo[];
@@ -17,4 +18,9 @@ export interface BasicInfo {
 export interface BasicInfoApiResponse {
   parent_file: BasicInfo;
   child_files: BasicInfo[];
+}
+
+export interface Imputation {
+  feature: string;
+  method: string;
 }
