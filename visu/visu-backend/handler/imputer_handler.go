@@ -94,7 +94,7 @@ func (i imputerHandler) PostSimpleImpute(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (i imputerHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
@@ -127,6 +127,7 @@ func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	basicInfo, err := i.imputerSvc.GetBasicInfo(*parentFile)
+	basicInfo.Imputations = parentFile.Imputations
 	if err != nil {
 		logger.Log.Errorf("failed to get parent file basic info, %v", err)
 		w.WriteHeader(http.StatusInternalServerError)

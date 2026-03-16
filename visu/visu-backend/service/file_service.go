@@ -28,8 +28,14 @@ type (
 		// returns child file arr
 		GetChildFiles() []model.FileNode
 
+		// returns child file with uuid
+		GetChildFile(uuid.UUID) *model.FileNode
+
 		// closes and deletes childnode
 		DeleteChildFile(uuid.UUID) (err error)
+
+		// promote child to parent
+		PromoteChildFile(uuid.UUID) (err error)
 
 		// creates child file and return pointer
 		CreateChildFile(path string, imputation []model.Imputation) (*model.FileNode, error)
@@ -144,6 +150,15 @@ func (fS *fileSvc) GetChildFiles() []model.FileNode {
 	return fS.childFiles
 }
 
+func (fS *fileSvc) GetChildFile(uuid uuid.UUID) *model.FileNode {
+	for _, k := range fS.childFiles {
+		if k.UUID == uuid {
+			return &k
+		}
+	}
+	return nil
+}
+
 func (fS *fileSvc) CreateChildFile(
 	path string,
 	imputation []model.Imputation,
@@ -187,4 +202,49 @@ func (fS *fileSvc) DeleteChildFile(toDeleteUUID uuid.UUID) (err error) {
 
 	logger.Log.Warningf("file not found with uuid %s", toDeleteUUID.String())
 	return nil
+}
+
+func (fS *fileSvc) PromoteChildFile(uuidToPromote uuid.UUID) (err error) {
+	var childFile *model.FileNode
+	var childFileIdx int
+
+	for i, node := range fS.childFiles {
+		if node.UUID == uuidToPromote {
+			childFile = &node
+			childFileIdx = i
+			break
+		}
+	}
+
+	if childFile == nil {
+		err = fmt.Errorf("child file not found with uuid %s", uuidToPromote.String())
+		logger.Log.Warning(err)
+		return err
+	}
+
+	if fS.parentFile == nil {
+		logger.Log.Warning("parent file not set")
+		fS.parentFile = childFile
+		fS.childFiles = utils.Remove(fS.childFiles, childFileIdx)
+		return nil
+	}
+
+	err = fS.parentFile.File.Close()
+	if err != nil {
+		logger.Log.Errorf("failed to close parent file, %v", err)
+		return err
+	}
+
+	err = os.Remove(fS.parentFile.Path)
+	if err != nil {
+		logger.Log.Errorf("failed to delete parent file, %v", err)
+		return err
+	}
+
+	fS.parentFile = childFile
+
+	fS.childFiles = utils.Remove(fS.childFiles, childFileIdx)
+
+	return nil
+
 }

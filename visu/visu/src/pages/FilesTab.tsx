@@ -29,13 +29,73 @@ import {
   Trash2,
   Play,
   FileText,
+  Loader2,
 } from 'lucide-react';
-import type { BasicInfo } from '@/model/BasicInfo';
+import type { BasicInfo, UUID } from '@/model/BasicInfo';
 
 const FilesTab = observer(() => {
   const { fileStore } = useRootStore();
   const [expandedUuids, setExpandedUuids] = useState<Set<string>>(new Set());
   const [isParentExpanded, setIsParentExpanded] = useState(false);
+  const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set());
+
+  const startLoading = (key: string) => {
+    setLoadingActions((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
+  };
+
+  const stopLoading = (key: string) => {
+    setLoadingActions((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  };
+
+  const handleApply = async (uuid: string) => {
+    const actionKey = `apply-${uuid}`;
+    startLoading(actionKey);
+    try {
+      await fileStore.promoteChildNode(uuid);
+      setExpandedUuids((prev) => {
+        const next = new Set(prev);
+        next.delete(uuid);
+        return next;
+      });
+    } finally {
+      stopLoading(actionKey);
+    }
+  };
+
+  const handleDownload = async (filename: string) => {
+    const actionKey = `download-${filename}`;
+    startLoading(actionKey);
+    try {
+      // Logic for download
+    } finally {
+      stopLoading(actionKey);
+    }
+  };
+
+  const handleRemove = async (uuid: string) => {
+    const actionKey = `remove-${uuid}`;
+    startLoading(actionKey);
+    try {
+      await fileStore.deleteChildNode(uuid);
+      setExpandedUuids((prev) => {
+        const next = new Set(prev);
+        next.delete(uuid);
+        return next;
+      });
+    } catch (error) {
+      console.error('failed to delete node:', error);
+    } finally {
+      stopLoading(actionKey);
+    }
+  };
 
   const toggleRow = (uuid: string) => {
     setExpandedUuids((prev) => {
@@ -78,8 +138,18 @@ const FilesTab = observer(() => {
                     variant="secondary"
                     className="text-[10px] h-4 px-1 bg-blue-100 text-blue-700 border-none"
                   >
-                    ORIGINAL
+                    Root
                   </Badge>
+                  {fileStore.parentFile.imputations &&
+                    fileStore.parentFile.imputations.length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 px-1 border-slate-200 text-slate-500"
+                      >
+                        {fileStore.parentFile.imputations.length} Methods
+                        Applied
+                      </Badge>
+                    )}
                 </div>
                 <CardDescription className="text-xs">
                   {fileStore.parentFile.filename}
@@ -92,8 +162,8 @@ const FilesTab = observer(() => {
                     Dimensions
                   </span>
                   <span className="font-medium text-slate-700">
-                    {fileStore.parentFile.shape?.[0]?.toLocaleString()} ×{' '}
-                    {fileStore.parentFile.shape?.[1]}
+                    {fileStore.parentFile.shape?.[0]?.toLocaleString() ?? 0} ×{' '}
+                    {fileStore.parentFile.shape?.[1] ?? 0}
                   </span>
                 </div>
                 <div className="flex flex-col">
@@ -102,8 +172,8 @@ const FilesTab = observer(() => {
                   </span>
                   <span className="font-medium text-red-500 font-mono">
                     {fileStore.parentFile.columns
-                      .reduce((acc, col) => acc + (col.null_count || 0), 0)
-                      .toLocaleString()}
+                      ?.reduce((acc, col) => acc + (col.null_count || 0), 0)
+                      .toLocaleString() ?? 0}
                   </span>
                 </div>
               </div>
@@ -116,15 +186,43 @@ const FilesTab = observer(() => {
 
             {isParentExpanded && (
               <CardContent className="p-0 border-t border-slate-100 bg-slate-50/30">
+                {/* Imputation Logic Section for Root */}
+                {fileStore.parentFile.imputations &&
+                  fileStore.parentFile.imputations.length > 0 && (
+                    <div className="p-5 border-b border-slate-100 bg-white/50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Info className="w-4 h-4 text-blue-500" />
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                          Applied Imputation Logic
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {fileStore.parentFile.imputations.map((imp, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col gap-1"
+                          >
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">
+                              {imp.feature}
+                            </p>
+                            <code className="text-[11px] text-blue-700 font-semibold bg-blue-50 self-start px-1 rounded">
+                              {imp.method}
+                            </code>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <FileText className="w-4 h-4 text-slate-400" />
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                      Initial Column Health
+                      Column Health
                     </h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {fileStore.parentFile.columns.map((col, idx) => (
+                    {fileStore.parentFile.columns?.map((col, idx) => (
                       <div
                         key={idx}
                         className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"
@@ -139,7 +237,7 @@ const FilesTab = observer(() => {
                           <span
                             className={`text-xs font-bold ${col.null_count > 0 ? 'text-red-500' : 'text-slate-400'}`}
                           >
-                            {col.null_count.toLocaleString()} nulls
+                            {(col.null_count || 0).toLocaleString()} nulls
                           </span>
                         </div>
                       </div>
@@ -172,17 +270,25 @@ const FilesTab = observer(() => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fileStore.childFiles.map((info: BasicInfo) => (
-                  <MetadataRow
-                    key={info.uuid}
-                    parentInfo={fileStore.parentFile || undefined}
-                    info={info}
-                    isExpanded={expandedUuids.has(info.uuid)}
-                    onToggle={() => toggleRow(info.uuid)}
-                  />
-                ))}
-
-                {fileStore.childFiles.length === 0 && (
+                {fileStore.childFiles && fileStore.childFiles.length > 0 ? (
+                  fileStore.childFiles.map((info: BasicInfo) => (
+                    <MetadataRow
+                      key={info.uuid}
+                      parentInfo={fileStore.parentFile || undefined}
+                      info={info}
+                      isExpanded={expandedUuids.has(info.uuid)}
+                      onToggle={() => toggleRow(info.uuid)}
+                      handleApply={handleApply}
+                      handleRemove={handleRemove}
+                      handleDownload={handleDownload}
+                      isApplying={loadingActions.has(`apply-${info.uuid}`)}
+                      isDownloading={loadingActions.has(
+                        `download-${info.filename}`,
+                      )}
+                      isRemoving={loadingActions.has(`remove-${info.uuid}`)}
+                    />
+                  ))
+                ) : (
                   <TableRow>
                     <TableCell
                       colSpan={5}
@@ -206,6 +312,12 @@ interface MetadataRowProps {
   info: BasicInfo;
   isExpanded: boolean;
   onToggle: () => void;
+  handleRemove: (uuid: UUID) => void;
+  handleDownload: (filename: string) => void;
+  handleApply: (uuid: UUID) => void;
+  isApplying: boolean;
+  isDownloading: boolean;
+  isRemoving: boolean;
 }
 
 const MetadataRow = ({
@@ -213,20 +325,14 @@ const MetadataRow = ({
   info,
   isExpanded,
   onToggle,
+  handleRemove,
+  handleDownload,
+  handleApply,
+  isApplying,
+  isDownloading,
+  isRemoving,
 }: MetadataRowProps) => {
   const impCount = info.imputations?.length || 0;
-
-  const handleApply = (uuid: string) => {
-    console.log(`Action: Applying state with UUID: ${uuid}`);
-  };
-
-  const handleDownload = (filename: string) => {
-    console.log(`Action: Downloading ${filename}...`);
-  };
-
-  const handleRemove = (uuid: string) => {
-    console.log(`Action: Removing record with UUID: ${uuid}`);
-  };
 
   return (
     <Fragment>
@@ -255,14 +361,15 @@ const MetadataRow = ({
         <TableCell className="text-left font-semibold text-green-600">
           {(() => {
             const totalNullsParent =
-              parentInfo?.columns.reduce(
+              parentInfo?.columns?.reduce(
                 (acc, col) => acc + (col.null_count || 0),
                 0,
               ) || 0;
-            const totalNullsCurrent = info.columns.reduce(
-              (acc, col) => acc + (col.null_count || 0),
-              0,
-            );
+            const totalNullsCurrent =
+              info.columns?.reduce(
+                (acc, col) => acc + (col.null_count || 0),
+                0,
+              ) || 0;
             const totalFixed = Math.max(
               0,
               totalNullsParent - totalNullsCurrent,
@@ -278,29 +385,44 @@ const MetadataRow = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+              disabled={isApplying || isRemoving}
+              className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
               onClick={() => handleApply(info.uuid)}
               title="Apply This State"
             >
-              <Play className="w-3.5 h-3.5" />
+              {isApplying ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Play className="w-3.5 h-3.5" />
+              )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+              disabled={isDownloading || isRemoving}
+              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50"
               onClick={() => handleDownload(info.filename)}
               title="Download Snapshot"
             >
-              <Download className="w-3.5 h-3.5" />
+              {isDownloading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+              disabled={isRemoving}
+              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
               onClick={() => handleRemove(info.uuid)}
               title="Remove Record"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              {isRemoving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
             </Button>
           </div>
         </TableCell>
@@ -319,10 +441,10 @@ const MetadataRow = ({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {info.imputations && info.imputations.length > 0 ? (
                   info.imputations.map((imp, idx) => {
-                    const srcCol = parentInfo?.columns.find(
+                    const srcCol = parentInfo?.columns?.find(
                       (c) => c.name === imp.feature,
                     );
-                    const currentCol = info.columns.find(
+                    const currentCol = info.columns?.find(
                       (c) => c.name === imp.feature,
                     );
                     const diff =

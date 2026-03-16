@@ -16,6 +16,9 @@ type (
 
 		// delete child file
 		DeleteChildFile(w http.ResponseWriter, r *http.Request)
+
+		// promote child file to parent file
+		PromoteChild(w http.ResponseWriter, r *http.Request)
 	}
 
 	fileHandler struct {
@@ -44,7 +47,7 @@ func (fH fileHandler) UploadParentFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (fH fileHandler) DeleteChildFile(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +69,39 @@ func (fH fileHandler) DeleteChildFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Log.Errorf("failed to delete child file of uuid %s, %v", uuidToDelete.String(), err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// TODO IMPLEMENT
+func (fH fileHandler) PromoteChild(w http.ResponseWriter, r *http.Request) {
+	uuidToDeleteStr := chi.URLParam(r, "uuid")
+
+	if uuidToDeleteStr == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuidToPromote, err := uuid.Parse(uuidToDeleteStr)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	childFile := fH.fileSvc.GetChildFile(uuidToPromote)
+	if childFile == nil {
+		logger.Log.Warningf("no child file found with UUID %s", uuidToPromote)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = fH.fileSvc.PromoteChildFile(childFile.UUID)
+	if err != nil {
+		logger.Log.Warningf("failed to promote child file of UUID %s, %v", uuidToPromote, err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

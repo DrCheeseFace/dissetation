@@ -15,7 +15,7 @@ func NewRoutes() chi.Router {
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
@@ -34,6 +34,7 @@ func NewRoutes() chi.Router {
 
 	r.Route("/dataset", func(r chi.Router) {
 		r.Delete("/{uuid}", fileHandler.DeleteChildFile)
+		r.Patch("/{uuid}", fileHandler.PromoteChild)
 		r.Get("/", imputerHandler.GetFilesInfo)
 		r.Post("/", fileHandler.UploadParentFile)
 		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)
