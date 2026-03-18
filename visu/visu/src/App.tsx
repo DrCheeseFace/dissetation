@@ -1,7 +1,7 @@
 import { useRootStore } from './mobx/rootstore';
 import { observer } from 'mobx-react-lite';
 import { Page } from '@/model/Page';
-import { TypographyP } from '@/components/typography';
+import { TypographyP } from '@/components/Typography';
 import LandingPage from '@/pages/LandingPage';
 import Dashboard from '@/pages/Dashboard';
 

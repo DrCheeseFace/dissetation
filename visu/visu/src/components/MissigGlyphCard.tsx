@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { TypographyH2, TypographyP } from './typography';
-import MissigGlyph from './missigGlyph';
+import { TypographyH2, TypographyP } from './Typography';
+import MissigGlyph from './MissigGlyph';
 
 interface MissigGlyphCardProps {
   columnSummary: ColumnSummary;

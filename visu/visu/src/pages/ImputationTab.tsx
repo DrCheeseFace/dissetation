@@ -192,7 +192,7 @@ const ImputationTab = observer(() => {
                           onClick={() => {
                             setSelectedMethod(method);
                             setNewFilename(
-                              `${fileStore.parentFile?.filename?.split('.')[0]}_${method}`,
+                              `${fileStore.parentFile?.filename?.split('.')[0]}_${selectedColumn.name.replace(/\s+/g, '')}_${method}`,
                             );
                           }}
                         >

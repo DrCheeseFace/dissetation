@@ -32,12 +32,16 @@ func NewRoutes() chi.Router {
 		r.Get("/", imputerHandler.GetHealth)
 	})
 
+	r.Route("/info", func(r chi.Router) {
+		r.Get("/", imputerHandler.GetFilesInfo)
+		r.Get("/history", imputerHandler.GetParentHistory)
+		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)
+	})
+
 	r.Route("/dataset", func(r chi.Router) {
 		r.Delete("/{uuid}", fileHandler.DeleteChildFile)
-		r.Patch("/{uuid}", fileHandler.PromoteChild)
-		r.Get("/", imputerHandler.GetFilesInfo)
+		r.Patch("/{uuid}", fileHandler.CommitChild)
 		r.Post("/", fileHandler.UploadParentFile)
-		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)
 		r.Post("/simple_impute", imputerHandler.PostSimpleImpute)
 	})
 

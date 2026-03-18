@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import MissigGlyphCard from '@/components/missigGlyphCard';
+import MissigGlyphCard from '@/components/MissigGlyphCard';
 import { useRootStore } from '@/mobx/rootstore';
 import type { ColumnSummary } from '@/model/MissiG';
 import { useState } from 'react';

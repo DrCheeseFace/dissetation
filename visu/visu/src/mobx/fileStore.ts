@@ -3,22 +3,26 @@ import { autorun, makeAutoObservable } from 'mobx';
 import { RootStore } from '@/mobx/rootstore.ts';
 import type { BasicInfo, BasicInfoApiResponse, UUID } from '@/model/BasicInfo';
 import {
+  commitChildFile as commitChildFile,
   deleteChildFile,
   getBasicInfo,
-  promoteChildFile,
+  getHistory,
   simpleImpute,
 } from '@/utils/routes';
 import type { SimpleImputationStrategy } from '@/model/SimpleImpute';
+import type { ParentHistoryResponse } from '@/model/HistoryInfo';
 
 export class FileStore {
   root: RootStore;
   parentFile?: BasicInfo;
+  history: BasicInfo[];
   childFiles: BasicInfo[];
   loading: boolean;
 
   constructor(root: RootStore) {
     this.root = root;
     this.childFiles = [];
+    this.history = [];
     this.loading = false;
     makeAutoObservable(this);
 
@@ -26,6 +30,7 @@ export class FileStore {
     if (persistedData) {
       const parsed = JSON.parse(persistedData);
       this.parentFile = parsed.parentFile;
+      this.history = parsed.history;
       this.childFiles = parsed.childFiles || [];
     }
 
@@ -35,6 +40,7 @@ export class FileStore {
         JSON.stringify({
           parentFile: this.parentFile,
           childFiles: this.childFiles,
+          history: this.history,
         }),
       );
     });
@@ -100,21 +106,39 @@ export class FileStore {
     }
   };
 
-  promoteChildNode = async (uuid: UUID) => {
+  commitChildNode = async (uuid: UUID) => {
     try {
-      const response = await fetch(promoteChildFile(uuid), {
+      const response = await fetch(commitChildFile(uuid), {
         method: 'PATCH',
       });
       if (response.ok) {
-        await this.fetchBasicInfo();
+        await Promise.all([this.fetchBasicInfo(), this.fetchHistory()]);
       } else {
         console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error(
-        'an error occured when trying to promote child node: ',
+        'an error occured when trying to commit child node: ',
         error,
       );
+    }
+  };
+
+  fetchHistory = async () => {
+    try {
+      const response = await fetch(getHistory, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const rawResult: ParentHistoryResponse = await response.json();
+        this.history = rawResult.parent_history;
+        console.log(this.history);
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('an error occured when fetching history info: ', error);
     }
   };
 

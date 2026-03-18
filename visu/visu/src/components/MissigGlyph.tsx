@@ -9,19 +9,18 @@ import * as d3 from 'd3';
 
 interface MissigGlyphProps {
   columnSummary: ColumnSummary;
-  selectedGlyphIdx?: number; // undefined  if not set
+  selectedGlyphIdx?: number;
 }
 
-export const MissigGlyph: FC<MissigGlyphProps> = observer(
-  ({ columnSummary, selectedGlyphIdx }) => {
+export const MissigGlyph: FC<MissigGlyphProps> = observer( 
+        ({ columnSummary, selectedGlyphIdx }) => {
     const total =
       (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
     const missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
 
     const leftHistogramData = useMemo(() => {
-      if (!columnSummary.histogram) return null; // TODO can i remove null here
-
-      if (columnSummary.histogram.data_type === 'numeric') {
+      // TODO this null deref may be suspisous
+      if (columnSummary.histogram?.data_type === 'numeric') {
         const { counts, bin_edges } =
           columnSummary.histogram as NumericHistogram;
         const xScale = d3
@@ -46,7 +45,8 @@ export const MissigGlyph: FC<MissigGlyphProps> = observer(
         });
       }
 
-      if (columnSummary.histogram.data_type === 'categorical') {
+      // TODO this null deref may be suspisous
+      if (columnSummary.histogram?.data_type === 'categorical') {
         const { counts } = columnSummary.histogram as CategoricalHistogram;
         const entries = Object.entries(counts);
 

@@ -1,15 +1,12 @@
 package model
 
 import (
-	"os"
-
 	"github.com/google/uuid"
 )
 
 type FileNode struct {
 	UUID        uuid.UUID
 	Path        string
-	File        *os.File
 	Imputations []Imputation
 }
 

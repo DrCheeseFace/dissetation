@@ -25,6 +25,12 @@ type (
 		// returns file handler ref
 		GetParentFile() *model.FileNode
 
+		// returns parent file history
+		GetParentFileHistory() []model.FileNode
+
+		// reset parent history
+		ResetHistory()
+
 		// returns child file arr
 		GetChildFiles() []model.FileNode
 
@@ -35,18 +41,18 @@ type (
 		DeleteChildFile(uuid.UUID) (err error)
 
 		// promote child to parent
-		PromoteChildFile(uuid.UUID) (err error)
+		CommitChildFile(uuid.UUID) (err error)
+
+		// revert to file
+		RevertToFile(uuid.UUID) (err error)
 
 		// creates child file and return pointer
 		CreateChildFile(path string, imputation []model.Imputation) (*model.FileNode, error)
-
-		// closes parent and child file
-		CloseAllFiles() error
 	}
 
 	fileSvc struct {
-		parentFile *model.FileNode
-		childFiles []model.FileNode
+		childFiles        []model.FileNode
+		parentFileHistory []model.FileNode
 	}
 )
 
@@ -57,42 +63,10 @@ func NewFileService() FileService {
 	}
 }
 
-func (fS *fileSvc) CloseAllFiles() (err error) {
-	if fS.parentFile != nil {
-		err = fS.parentFile.File.Close()
-		if err != nil {
-			err := fmt.Errorf("failed to close parent file %s, %v", fS.parentFile.Path, err)
-			logger.Log.Error(err)
-			return err
-		}
-
-		fS.parentFile = nil
-	}
-
-	for _, v := range fS.childFiles {
-		err := v.File.Close()
-		if err != nil {
-			err := fmt.Errorf("failed to close child file %s, %v", v.Path, err)
-			logger.Log.Error(err)
-			return err
-		}
-	}
-
-	fS.childFiles = nil
-
-	return nil
-}
-
 func (fS *fileSvc) SetParentFile(r *http.Request) error {
 	reader, err := r.MultipartReader()
 	if err != nil {
 		logger.Log.Errorf("failed to open multipart reader, %v", err)
-		return err
-	}
-
-	err = fS.CloseAllFiles()
-	if err != nil {
-		logger.Log.Errorf("failed to clear root file, %v", err)
 		return err
 	}
 
@@ -126,12 +100,7 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 			return err
 		}
 
-		if _, err := dst.Seek(0, 0); err != nil {
-			_ = dst.Close()
-			return err
-		}
-
-		fS.parentFile = &model.FileNode{File: dst, Path: dst.Name(), UUID: uuid.New()}
+		fS.parentFileHistory = []model.FileNode{{Path: dst.Name(), UUID: uuid.New()}}
 		return nil
 	}
 
@@ -139,15 +108,23 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 }
 
 func (fS *fileSvc) IsParentFileSet() bool {
-	return fS.parentFile.File != nil
+	return len(fS.parentFileHistory) != 0
 }
 
 func (fS *fileSvc) GetParentFile() *model.FileNode {
-	return fS.parentFile
+	return &fS.parentFileHistory[len(fS.parentFileHistory)-1]
 }
 
 func (fS *fileSvc) GetChildFiles() []model.FileNode {
 	return fS.childFiles
+}
+
+func (fS *fileSvc) GetParentFileHistory() []model.FileNode {
+	return fS.parentFileHistory
+}
+
+func (fS *fileSvc) ResetHistory() {
+	fS.parentFileHistory = []model.FileNode{}
 }
 
 func (fS *fileSvc) GetChildFile(uuid uuid.UUID) *model.FileNode {
@@ -163,7 +140,7 @@ func (fS *fileSvc) CreateChildFile(
 	path string,
 	imputation []model.Imputation,
 ) (childFile *model.FileNode, err error) {
-	f, err := os.Open(path)
+	_, err = os.Open(path)
 	if err != nil {
 		err = fmt.Errorf("failed to open child file, %v", err)
 		logger.Log.Error(err)
@@ -172,7 +149,6 @@ func (fS *fileSvc) CreateChildFile(
 
 	newNode := model.FileNode{
 		UUID:        uuid.New(),
-		File:        f,
 		Path:        path,
 		Imputations: imputation,
 	}
@@ -185,9 +161,6 @@ func (fS *fileSvc) CreateChildFile(
 func (fS *fileSvc) DeleteChildFile(toDeleteUUID uuid.UUID) (err error) {
 	for k, node := range fS.childFiles {
 		if node.UUID == toDeleteUUID {
-
-			_ = node.File.Close()
-
 			err = os.Remove(node.Path)
 			if err != nil {
 				err = fmt.Errorf("failed to delete child file, %v", err)
@@ -204,14 +177,12 @@ func (fS *fileSvc) DeleteChildFile(toDeleteUUID uuid.UUID) (err error) {
 	return nil
 }
 
-func (fS *fileSvc) PromoteChildFile(uuidToPromote uuid.UUID) (err error) {
-	var childFile *model.FileNode
-	var childFileIdx int
+func (fS *fileSvc) CommitChildFile(uuidToPromote uuid.UUID) (err error) {
 
-	for i, node := range fS.childFiles {
+	var childFile *model.FileNode
+	for _, node := range fS.childFiles {
 		if node.UUID == uuidToPromote {
 			childFile = &node
-			childFileIdx = i
 			break
 		}
 	}
@@ -222,28 +193,33 @@ func (fS *fileSvc) PromoteChildFile(uuidToPromote uuid.UUID) (err error) {
 		return err
 	}
 
-	if fS.parentFile == nil {
-		logger.Log.Warning("parent file not set")
-		fS.parentFile = childFile
-		fS.childFiles = utils.Remove(fS.childFiles, childFileIdx)
-		return nil
+	fS.parentFileHistory = append(fS.parentFileHistory, *childFile)
+
+	fS.childFiles = []model.FileNode{}
+
+	return nil
+
+}
+
+func (fS *fileSvc) RevertToFile(uuidToPromote uuid.UUID) (err error) {
+	var targetFile *model.FileNode
+	var targetFileIdx int
+
+	for i, node := range fS.parentFileHistory {
+		if node.UUID == uuidToPromote {
+			targetFile = &node
+			targetFileIdx = i
+			break
+		}
 	}
 
-	err = fS.parentFile.File.Close()
-	if err != nil {
-		logger.Log.Errorf("failed to close parent file, %v", err)
+	if targetFile == nil {
+		err = fmt.Errorf("file not found with uuid %s", uuidToPromote.String())
+		logger.Log.Warning(err)
 		return err
 	}
 
-	err = os.Remove(fS.parentFile.Path)
-	if err != nil {
-		logger.Log.Errorf("failed to delete parent file, %v", err)
-		return err
-	}
-
-	fS.parentFile = childFile
-
-	fS.childFiles = utils.Remove(fS.childFiles, childFileIdx)
+	fS.parentFileHistory = fS.parentFileHistory[:targetFileIdx-1]
 
 	return nil
 

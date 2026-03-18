@@ -1,17 +1,19 @@
 import { observer } from 'mobx-react-lite';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import MissiGVisualisationTab from './MissiGVisualisationTab';
-import FilesTab from './FilesTab';
-import ImputationTab from './ImputationTab';
+import MissiGVisualisationTab from '@/pages/MissiGVisualisationTab';
+import FilesTab from '@/pages/FilesTab';
+import ImputationTab from '@/pages/ImputationTab';
 import { Button } from '@/components/ui/button';
 import { useRootStore } from '@/mobx/rootstore';
 
 const Dashboard = observer(() => {
-  const { globalStore } = useRootStore();
+  const { globalStore, fileStore } = useRootStore();
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: 'white' }}>
+      {/* TODO REMOVE ME DEBUG BUTTONS */}
       <div className="mb-5 space-x-2">
         <Button onClick={globalStore.debugReset}>DEBUG RESET</Button>
+        <Button onClick={fileStore.fetchHistory}>DEBUG fetch histiriy</Button>
       </div>
 
       {/* TODO add animtation to change to files tab and highlight row */}

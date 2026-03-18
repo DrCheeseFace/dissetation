@@ -11,14 +11,17 @@ import (
 
 type (
 	FileHandler interface {
-		// upload parent file
+		// upload parent file. resets file history 
 		UploadParentFile(w http.ResponseWriter, r *http.Request)
 
 		// delete child file
 		DeleteChildFile(w http.ResponseWriter, r *http.Request)
 
 		// promote child file to parent file
-		PromoteChild(w http.ResponseWriter, r *http.Request)
+		CommitChild(w http.ResponseWriter, r *http.Request)
+
+		// revert to old version of parent file
+		RevertToFile(w http.ResponseWriter, r *http.Request)
 	}
 
 	fileHandler struct {
@@ -31,15 +34,9 @@ func NewFileHandler(svc service.FileService) FileHandler {
 }
 
 func (fH fileHandler) UploadParentFile(w http.ResponseWriter, r *http.Request) {
+	fH.fileSvc.ResetHistory()
 
-	err := fH.fileSvc.CloseAllFiles()
-	if err != nil {
-		logger.Log.Errorf("failed to close all files, %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = fH.fileSvc.SetParentFile(r)
+	err := fH.fileSvc.SetParentFile(r)
 	if err != nil {
 		logger.Log.Errorf("failed to set parent file, %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -75,16 +72,15 @@ func (fH fileHandler) DeleteChildFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// TODO IMPLEMENT
-func (fH fileHandler) PromoteChild(w http.ResponseWriter, r *http.Request) {
-	uuidToDeleteStr := chi.URLParam(r, "uuid")
+func (fH fileHandler) CommitChild(w http.ResponseWriter, r *http.Request) {
+	uuidToPromoteStr := chi.URLParam(r, "uuid")
 
-	if uuidToDeleteStr == "" {
+	if uuidToPromoteStr == "" {
 		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
 		return
 	}
 
-	uuidToPromote, err := uuid.Parse(uuidToDeleteStr)
+	uuidToPromote, err := uuid.Parse(uuidToPromoteStr)
 	if err != nil {
 		logger.Log.Warningf("invalid uuid provided, %v", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -98,7 +94,7 @@ func (fH fileHandler) PromoteChild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = fH.fileSvc.PromoteChildFile(childFile.UUID)
+	err = fH.fileSvc.CommitChildFile(childFile.UUID)
 	if err != nil {
 		logger.Log.Warningf("failed to promote child file of UUID %s, %v", uuidToPromote, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -106,4 +102,28 @@ func (fH fileHandler) PromoteChild(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (fH fileHandler) RevertToFile(w http.ResponseWriter, r *http.Request) {
+	uuidToRevertToStr := chi.URLParam(r, "uuid")
+
+	if uuidToRevertToStr == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuidToRevertTo, err := uuid.Parse(uuidToRevertToStr)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = fH.fileSvc.RevertToFile(uuidToRevertTo)
+	if err != nil {
+		logger.Log.Warningf("failed to revert to file with uuid %s, %v", uuidToRevertToStr, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 }

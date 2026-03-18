@@ -20,6 +20,9 @@ type (
 		// get basic info on all file
 		GetFilesInfo(w http.ResponseWriter, r *http.Request)
 
+		// get basic info on old parent files
+		GetParentHistory(w http.ResponseWriter, r *http.Request)
+
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
 	}
@@ -139,13 +142,38 @@ func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
 	for _, childFile := range childFiles {
 		basicInfo, err := i.imputerSvc.GetBasicInfo(childFile)
 		if err != nil {
-			logger.Log.Errorf("failed to get child file basic info")
+			logger.Log.Errorf("failed to get file %s basic info, %v", childFile.UUID, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		basicInfo.Imputations = childFile.Imputations
 		response.ChildFiles = append(response.ChildFiles, *basicInfo)
+
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_ = json.NewEncoder(w).Encode(response)
+}
+
+func (i imputerHandler) GetParentHistory(w http.ResponseWriter, r *http.Request) {
+	var response struct {
+		ParentHistory []model.BasicInfo `json:"parent_history"`
+	}
+
+	history := i.fileSvc.GetParentFileHistory()
+	for _, file := range history {
+		basicInfo, err := i.imputerSvc.GetBasicInfo(file)
+		if err != nil {
+			logger.Log.Errorf("failed to get file %s basic info, %v", file.UUID, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		basicInfo.Imputations = file.Imputations
+		response.ParentHistory = append(response.ParentHistory, *basicInfo)
 
 	}
 

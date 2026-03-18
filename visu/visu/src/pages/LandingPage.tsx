@@ -4,7 +4,7 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { useState, type ChangeEvent } from 'react';
 import { useRootStore } from '@/mobx/rootstore';
 import { observer } from 'mobx-react-lite';
-import { TypographyH1 } from '@/components/typography';
+import { TypographyH1 } from '@/components/Typography';
 
 const LandingPage = observer(() => {
   const [file, setFile] = useState<File | null>(null);

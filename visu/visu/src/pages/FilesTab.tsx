@@ -1,4 +1,8 @@
-import { TypographyH2, TypographyP } from '@/components/typography';
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from '@/components/Typography';
 import {
   Card,
   CardContent,
@@ -30,8 +34,10 @@ import {
   Play,
   FileText,
   Loader2,
+  History,
 } from 'lucide-react';
 import type { BasicInfo, UUID } from '@/model/BasicInfo';
+import { FileHistoryTimeline } from '@/components/FileHistory';
 
 const FilesTab = observer(() => {
   const { fileStore } = useRootStore();
@@ -59,7 +65,7 @@ const FilesTab = observer(() => {
     const actionKey = `apply-${uuid}`;
     startLoading(actionKey);
     try {
-      await fileStore.promoteChildNode(uuid);
+      await fileStore.commitChildNode(uuid);
       setExpandedUuids((prev) => {
         const next = new Set(prev);
         next.delete(uuid);
@@ -111,8 +117,8 @@ const FilesTab = observer(() => {
 
   return (
     <div className="text-black p-6 min-h-screen bg-slate-50/50">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
+      <div className="max-w-400 mx-auto">
+        <div className="mb-8">
           <TypographyH2 className="text-2xl font-bold tracking-tight">
             Data Inventory
           </TypographyH2>
@@ -122,186 +128,213 @@ const FilesTab = observer(() => {
           </TypographyP>
         </div>
 
-        {fileStore.parentFile && (
-          <Card className="bg-white shadow-sm border-slate-200 overflow-hidden">
-            <CardHeader
-              className="flex flex-row items-center space-y-0 gap-4 p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
-              onClick={() => setIsParentExpanded(!isParentExpanded)}
-            >
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Database className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base">Source Metadata</CardTitle>
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] h-4 px-1 bg-blue-100 text-blue-700 border-none"
-                  >
-                    Root
-                  </Badge>
-                  {fileStore.parentFile.imputations &&
-                    fileStore.parentFile.imputations.length > 0 && (
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start">
+          <div className="xl:col-span-3 space-y-6">
+            {fileStore.parentFile && (
+              <Card className="bg-white shadow-sm border-slate-200 overflow-hidden">
+                <CardHeader
+                  className="flex flex-row items-center space-y-0 gap-4 p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+                  onClick={() => setIsParentExpanded(!isParentExpanded)}
+                >
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Database className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-base">
+                        Source Metadata
+                      </CardTitle>
                       <Badge
-                        variant="outline"
-                        className="text-[10px] h-4 px-1 border-slate-200 text-slate-500"
+                        variant="secondary"
+                        className="text-[10px] h-4 px-1 bg-blue-100 text-blue-700 border-none"
                       >
-                        {fileStore.parentFile.imputations.length} Methods
-                        Applied
+                        Root
                       </Badge>
-                    )}
-                </div>
-                <CardDescription className="text-xs">
-                  {fileStore.parentFile.filename}
-                </CardDescription>
-              </div>
+                      {fileStore.parentFile.imputations &&
+                        fileStore.parentFile.imputations.length > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-4 px-1 border-slate-200 text-slate-500"
+                          >
+                            {fileStore.parentFile.imputations.length} Methods
+                            Applied
+                          </Badge>
+                        )}
+                    </div>
+                    <CardDescription className="text-xs">
+                      {fileStore.parentFile.filename}
+                    </CardDescription>
+                  </div>
 
-              <div className="flex gap-8 text-sm mr-4">
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
-                    Dimensions
-                  </span>
-                  <span className="font-medium text-slate-700">
-                    {fileStore.parentFile.shape?.[0]?.toLocaleString() ?? 0} ×{' '}
-                    {fileStore.parentFile.shape?.[1] ?? 0}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
-                    Total Nulls
-                  </span>
-                  <span className="font-medium text-red-500 font-mono">
-                    {fileStore.parentFile.columns
-                      ?.reduce((acc, col) => acc + (col.null_count || 0), 0)
-                      .toLocaleString() ?? 0}
-                  </span>
-                </div>
-              </div>
-              {isParentExpanded ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
-            </CardHeader>
+                  <div className="flex gap-8 text-sm mr-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                        Dimensions
+                      </span>
+                      <span className="font-medium text-slate-700">
+                        {fileStore.parentFile.shape?.[0]?.toLocaleString() ?? 0}{' '}
+                        × {fileStore.parentFile.shape?.[1] ?? 0}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                        Total Nulls
+                      </span>
+                      <span className="font-medium text-red-500 font-mono">
+                        {fileStore.parentFile.columns
+                          ?.reduce((acc, col) => acc + (col.null_count || 0), 0)
+                          .toLocaleString() ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                  {isParentExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  )}
+                </CardHeader>
 
-            {isParentExpanded && (
-              <CardContent className="p-0 border-t border-slate-100 bg-slate-50/30">
-                {/* Imputation Logic Section for Root */}
-                {fileStore.parentFile.imputations &&
-                  fileStore.parentFile.imputations.length > 0 && (
-                    <div className="p-5 border-b border-slate-100 bg-white/50">
+                {isParentExpanded && (
+                  <CardContent className="p-0 border-t border-slate-100 bg-slate-50/30">
+                    {fileStore.parentFile.imputations &&
+                      fileStore.parentFile.imputations.length > 0 && (
+                        <div className="p-5 border-b border-slate-100 bg-white/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Info className="w-4 h-4 text-blue-500" />
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                              Applied Imputation Logic
+                            </h4>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {fileStore.parentFile.imputations.map(
+                              (imp, idx) => (
+                                <div
+                                  key={idx}
+                                  className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col gap-1"
+                                >
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase">
+                                    {imp.feature}
+                                  </p>
+                                  <code className="text-[11px] text-blue-700 font-semibold bg-blue-50 self-start px-1 rounded">
+                                    {imp.method}
+                                  </code>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    <div className="p-5">
                       <div className="flex items-center gap-2 mb-4">
-                        <Info className="w-4 h-4 text-blue-500" />
+                        <FileText className="w-4 h-4 text-slate-400" />
                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                          Applied Imputation Logic
+                          Column Health
                         </h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                        {fileStore.parentFile.imputations.map((imp, idx) => (
+                        {fileStore.parentFile.columns?.map((col, idx) => (
                           <div
                             key={idx}
-                            className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col gap-1"
+                            className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"
                           >
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">
-                              {imp.feature}
+                            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">
+                              {col.name}
                             </p>
-                            <code className="text-[11px] text-blue-700 font-semibold bg-blue-50 self-start px-1 rounded">
-                              {imp.method}
-                            </code>
+                            <div className="flex justify-between items-end mt-1">
+                              <span className="text-xs font-mono text-slate-500">
+                                {col.dtype}
+                              </span>
+                              <span
+                                className={`text-xs font-bold ${col.null_count > 0 ? 'text-red-500' : 'text-slate-400'}`}
+                              >
+                                {(col.null_count || 0).toLocaleString()} nulls
+                              </span>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
-
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText className="w-4 h-4 text-slate-400" />
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                      Column Health
-                    </h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {fileStore.parentFile.columns?.map((col, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"
-                      >
-                        <p className="text-[10px] font-bold text-slate-400 uppercase truncate">
-                          {col.name}
-                        </p>
-                        <div className="flex justify-between items-end mt-1">
-                          <span className="text-xs font-mono text-slate-500">
-                            {col.dtype}
-                          </span>
-                          <span
-                            className={`text-xs font-bold ${col.null_count > 0 ? 'text-red-500' : 'text-slate-400'}`}
-                          >
-                            {(col.null_count || 0).toLocaleString()} nulls
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        )}
-
-        <Card className="bg-white shadow-sm border-slate-200 overflow-hidden">
-          <CardHeader className="p-4 pb-3">
-            <CardTitle className="text-lg leading-none">
-              Imputation Records
-            </CardTitle>
-            <CardDescription className="mt-1">
-              Metadata snapshots of processed data states.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 border-t">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                  <TableHead className="w-10"></TableHead>
-                  <TableHead>Reference Name</TableHead>
-                  <TableHead>Applied Imputations</TableHead>
-                  <TableHead className="text-left">Null Value Diff</TableHead>
-                  <TableHead className="text-center w-40">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {fileStore.childFiles && fileStore.childFiles.length > 0 ? (
-                  fileStore.childFiles.map((info: BasicInfo) => (
-                    <MetadataRow
-                      key={info.uuid}
-                      parentInfo={fileStore.parentFile || undefined}
-                      info={info}
-                      isExpanded={expandedUuids.has(info.uuid)}
-                      onToggle={() => toggleRow(info.uuid)}
-                      handleApply={handleApply}
-                      handleRemove={handleRemove}
-                      handleDownload={handleDownload}
-                      isApplying={loadingActions.has(`apply-${info.uuid}`)}
-                      isDownloading={loadingActions.has(
-                        `download-${info.filename}`,
-                      )}
-                      isRemoving={loadingActions.has(`remove-${info.uuid}`)}
-                    />
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      No records found.
-                    </TableCell>
-                  </TableRow>
+                  </CardContent>
                 )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              </Card>
+            )}
+
+            <Card className="bg-white shadow-sm border-slate-200 overflow-hidden">
+              <CardHeader className="p-4 pb-3">
+                <CardTitle className="text-lg leading-none">
+                  Imputation Records
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Metadata snapshots of processed data states.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 border-t">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>Reference Name</TableHead>
+                      <TableHead>Applied Imputations</TableHead>
+                      <TableHead className="text-left">
+                        Null Value Diff
+                      </TableHead>
+                      <TableHead className="text-center w-40">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {fileStore.childFiles && fileStore.childFiles.length > 0 ? (
+                      fileStore.childFiles.map((info: BasicInfo) => (
+                        <MetadataRow
+                          key={info.uuid}
+                          parentInfo={fileStore.parentFile || undefined}
+                          info={info}
+                          isExpanded={expandedUuids.has(info.uuid)}
+                          onToggle={() => toggleRow(info.uuid)}
+                          handleApply={handleApply}
+                          handleRemove={handleRemove}
+                          handleDownload={handleDownload}
+                          isApplying={loadingActions.has(`apply-${info.uuid}`)}
+                          isDownloading={loadingActions.has(
+                            `download-${info.filename}`,
+                          )}
+                          isRemoving={loadingActions.has(`remove-${info.uuid}`)}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="h-24 text-center text-muted-foreground"
+                        >
+                          No records found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+
+          <aside className="xl:col-span-1">
+            <div className="sticky top-6 space-y-4">
+              <div className="flex items-center gap-2 px-1">
+                <History className="w-4 h-4 text-slate-500" />
+                <TypographyH3 className="text-sm font-bold text-slate-700 uppercase tracking-tight">
+                  commited nodes
+                </TypographyH3>
+              </div>
+              <Card className="bg-white shadow-sm border-slate-200">
+                <CardContent className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  <FileHistoryTimeline files={fileStore.history || []} />
+                </CardContent>
+              </Card>
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );
@@ -435,7 +468,7 @@ const MetadataRow = ({
               <div className="flex items-center gap-2 mb-4">
                 <Info className="w-4 h-4 text-blue-500" />
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Imputation Logic Summary
+                  Imputation
                 </h4>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
