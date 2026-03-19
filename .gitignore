@@ -22,3 +22,4 @@ build/
 
 !article/sources/
 !article/sources/*.pdf
+!POSTER.pdf
