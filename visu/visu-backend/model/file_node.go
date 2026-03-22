@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -11,11 +13,15 @@ type FileNode struct {
 }
 
 type Imputation struct {
-	Feature string           `json:"feature"`
+	Feature string           `json:"feature"` // TODO MAKE AN ARRAY FOR KNN
 	Method  ImputationMethod `json:"method"`
 }
 
 type ImputationMethod string
+
+func GetKNNImputationMethodTag(n_neighbors int) ImputationMethod {
+	return ImputationMethod(fmt.Sprintf("knn_%d", n_neighbors))
+}
 
 const (
 	ImputationMethodSimpleMean   ImputationMethod = "simple_mean"

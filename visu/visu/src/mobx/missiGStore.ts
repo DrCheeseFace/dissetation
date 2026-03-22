@@ -9,7 +9,7 @@ import { getMissiGInfo } from '@/utils/routes';
 
 export class MissiGStore {
   root: RootStore;
-  ParentFileMissiGInfo?: DatasetSummary; // TODO make persist
+  ParentFileMissiGInfo?: DatasetSummary;
 
   constructor(root: RootStore) {
     this.root = root;

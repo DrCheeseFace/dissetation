@@ -7,7 +7,9 @@ import {
   deleteChildFile,
   getBasicInfo,
   getHistory,
-  simpleImpute,
+  knnImputeURL,
+  revertToParentFile,
+  simpleImputeURL,
 } from '@/utils/routes';
 import type { SimpleImputationStrategy } from '@/model/SimpleImpute';
 import type { ParentHistoryResponse } from '@/model/HistoryInfo';
@@ -83,7 +85,7 @@ export class FileStore {
   ) => {
     try {
       this.setLoading(true);
-      const response = await fetch(simpleImpute, {
+      const response = await fetch(simpleImputeURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,6 +94,32 @@ export class FileStore {
           name: filename,
           strategy: strategy,
           Feature: feature,
+        }),
+      });
+      if (response.ok) {
+        await this.fetchBasicInfo();
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('an error occured when fetching basic info: ', error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // TODO TEST WITHOUT CATAGORICAL DATA
+  knnImpute = async (filename: string, n_neighbors: number) => {
+    try {
+      this.setLoading(true);
+      const response = await fetch(knnImputeURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: filename,
+          n_neighbors: n_neighbors,
         }),
       });
       if (response.ok) {
@@ -133,7 +161,6 @@ export class FileStore {
       if (response.ok) {
         const rawResult: ParentHistoryResponse = await response.json();
         this.history = rawResult.parent_history;
-        console.log(this.history);
       } else {
         console.error('HTTP Error:', response.status, response.statusText);
       }
@@ -149,6 +176,24 @@ export class FileStore {
       });
       if (response.ok) {
         await this.fetchBasicInfo();
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error(
+        'an error occured when trying to delete child node: ',
+        error,
+      );
+    }
+  };
+
+  revertToParentNode = async (uuid: UUID) => {
+    try {
+      const response = await fetch(revertToParentFile(uuid), {
+        method: 'PATCH',
+      });
+      if (response.ok) {
+        await Promise.all([this.fetchBasicInfo(), this.fetchHistory()]);
       } else {
         console.error('HTTP Error:', response.status, response.statusText);
       }

@@ -329,7 +329,10 @@ const FilesTab = observer(() => {
               </div>
               <Card className="bg-white shadow-sm border-slate-200">
                 <CardContent className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-                  <FileHistoryTimeline files={fileStore.history || []} />
+                  <FileHistoryTimeline
+                    files={fileStore.history || []}
+                    onClickRevertTo={fileStore.revertToParentNode}
+                  />
                 </CardContent>
               </Card>
             </div>

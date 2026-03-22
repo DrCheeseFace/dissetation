@@ -20,12 +20,19 @@ type (
 		// returns MissiG visualisation info json-string
 		GetMissiGInfo(model.FileNode) (string, error)
 
-		// creates simpleimputation of "src" with "strategy" on "feature" saved to "dst"
+		// creates simple imputation of "src" with "strategy" on "feature" saved to "dst"
 		CreateSimpleImpute(
 			src model.FileNode,
 			dst string,
 			strategy model.SimpleImputationStrategy,
 			feature string,
+		) error
+
+		// creates KNN imputation of "src" with  "n_neighbors" saved to "dst"
+		CreateKNNImpute(
+			src model.FileNode,
+			dst string,
+			n_neighbors int,
 		) error
 
 		// returns basic info json-string
@@ -104,65 +111,6 @@ func (i *imputerSvc) GetMissiGInfo(f model.FileNode) (string, error) {
 	return string(body), nil
 }
 
-func (i *imputerSvc) CreateSimpleImpute(
-	src model.FileNode,
-	dst string,
-	strategy model.SimpleImputationStrategy,
-	feature string) error {
-
-	type request struct {
-		Src      string                         `json:"src"`
-		Dst      string                         `json:"dst"`
-		Feature  string                         `json:"feature"`
-		Strategy model.SimpleImputationStrategy `json:"strategy"`
-	}
-
-	r := request{Src: src.Path, Dst: dst, Feature: feature, Strategy: strategy}
-
-	jsonBytes, err := json.Marshal(r)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", i.createUrl("simple_impute"), bytes.NewBuffer(jsonBytes))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("http request failed: %v", err)
-	}
-
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	var imputations []model.Imputation
-	imputations = append(imputations, src.Imputations[:]...)
-	imputations = append(
-		imputations,
-		model.Imputation{
-			Feature: feature,
-			Method:  r.Strategy.To_imputation_method(),
-		},
-	)
-
-	_, err = i.fileSvc.CreateChildFile(dst, imputations)
-	if err != nil {
-		return fmt.Errorf("failed to create child file, %v", err)
-	}
-
-	return nil
-}
-
 func (i imputerSvc) GetBasicInfo(f model.FileNode) (*model.BasicInfo, error) {
 	params := url.Values{}
 	params.Add("file_path", f.Path)
@@ -204,4 +152,117 @@ func (i imputerSvc) GetBasicInfo(f model.FileNode) (*model.BasicInfo, error) {
 	basicInfo.UUID = f.UUID
 
 	return &basicInfo, nil
+}
+
+func (i *imputerSvc) CreateSimpleImpute(
+	src model.FileNode,
+	dst string,
+	strategy model.SimpleImputationStrategy,
+	feature string) error {
+
+	type request struct {
+		Src      string                         `json:"src"`
+		Dst      string                         `json:"dst"`
+		Feature  string                         `json:"feature"`
+		Strategy model.SimpleImputationStrategy `json:"strategy"`
+	}
+
+	r := request{Src: src.Path, Dst: dst, Feature: feature, Strategy: strategy}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", i.createUrl("simple_impute"), bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var imputations = src.Imputations
+	imputations = append(
+		imputations,
+		model.Imputation{
+			Feature: feature,
+			Method:  r.Strategy.To_imputation_method(),
+		},
+	)
+
+	_, err = i.fileSvc.CreateChildFile(dst, imputations)
+	if err != nil {
+		return fmt.Errorf("failed to create child file, %v", err)
+	}
+
+	return nil
+}
+
+func (i *imputerSvc) CreateKNNImpute(src model.FileNode, dst string, n_neighbors int) error {
+	type request struct {
+		Src       string `json:"src"`
+		Dst       string `json:"dst"`
+		Neighbors int    `json:"n_neighbors"`
+	}
+
+	r := request{Src: src.Path, Dst: dst, Neighbors: n_neighbors}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", i.createUrl("knn_impute"), bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		bytes, _ := io.ReadAll(resp.Body)
+		logger.Log.Debugf("%v", string(bytes))
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var imputations = src.Imputations
+	imputations = append(
+		imputations,
+		// TODO CHANGE FEATURE TO ARRAY LATER FOR KNN IMPUTER
+		model.Imputation{
+			Feature: "ALL",
+			Method:  model.GetKNNImputationMethodTag(n_neighbors),
+		},
+	)
+
+	_, err = i.fileSvc.CreateChildFile(dst, imputations)
+	if err != nil {
+		return fmt.Errorf("failed to create child file, %v", err)
+	}
+
+	return nil
 }

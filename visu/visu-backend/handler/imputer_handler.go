@@ -17,6 +17,9 @@ type (
 		// creates simple impute child file
 		PostSimpleImpute(w http.ResponseWriter, r *http.Request)
 
+		// creates KNN impute child file
+		PostKNNImpute(w http.ResponseWriter, r *http.Request)
+
 		// get basic info on all file
 		GetFilesInfo(w http.ResponseWriter, r *http.Request)
 
@@ -93,6 +96,45 @@ func (i imputerHandler) PostSimpleImpute(w http.ResponseWriter, r *http.Request)
 
 	err := i.imputerSvc.CreateSimpleImpute(*parentFile, dst, req.Strategy, req.Feature)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (i imputerHandler) PostKNNImpute(w http.ResponseWriter, r *http.Request) {
+	parentFile := i.fileSvc.GetParentFile()
+	if parentFile == nil {
+		logger.Log.Warning("parent file was not set")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	type KNNImputeRequest struct {
+		Name      string `json:"name"`
+		Neighbors int    `json:"n_neighbors"`
+	}
+
+	req := KNNImputeRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	dst := filepath.Join("./uploads", req.Name)
+
+	for _, c := range i.fileSvc.GetChildFiles() {
+		if c.Path == dst {
+			logger.Log.Warningf("child file of name %s already exists", req.Name)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	err := i.imputerSvc.CreateKNNImpute(*parentFile, dst, req.Neighbors)
+	if err != nil {
+		logger.Log.Errorf("failed to create knn imputed file, %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

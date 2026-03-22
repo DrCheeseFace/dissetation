@@ -42,7 +42,13 @@ func NewRoutes() chi.Router {
 		r.Delete("/{uuid}", fileHandler.DeleteChildFile)
 		r.Patch("/{uuid}", fileHandler.CommitChild)
 		r.Post("/", fileHandler.UploadParentFile)
-		r.Post("/simple_impute", imputerHandler.PostSimpleImpute)
+		r.Patch("/revert/{uuid}", fileHandler.RevertToFile)
+	})
+
+	r.Route("/impute", func(r chi.Router) {
+		r.Post("/simple", imputerHandler.PostSimpleImpute)
+		// TODO test without catagorical data
+		r.Post("/knn", imputerHandler.PostKNNImpute)
 	})
 
 	return r

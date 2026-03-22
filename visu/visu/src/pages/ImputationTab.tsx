@@ -28,8 +28,9 @@ const ImputationTab = observer(() => {
   const [selectedColumn, setSelectedColumn] = useState<ColumnInfo | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [newFilename, setNewFilename] = useState('');
+  const [n_neighbors, setN_neighbors] = useState(5);
 
-  const handleApplyImputation = async () => {
+  const handleApplySimpleImputation = async () => {
     if (!selectedColumn || !selectedMethod || !newFilename || fileStore.loading)
       return;
 
@@ -39,6 +40,13 @@ const ImputationTab = observer(() => {
       selectedMethod as SimpleImputationStrategy,
     );
 
+    resetSelection();
+  };
+
+  const handleKnnImputation = async () => {
+    if (!newFilename || fileStore.loading) return;
+
+    await fileStore.knnImpute(newFilename, n_neighbors);
     resetSelection();
   };
 
@@ -57,7 +65,7 @@ const ImputationTab = observer(() => {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Data Imputation</h2>
           <p className="text-muted-foreground">
-            Handle missing values in your dataset by applying simple imputation
+            Handle missing values in your dataset by applying imputation
             strategies.
           </p>
         </div>
@@ -69,8 +77,8 @@ const ImputationTab = observer(() => {
                 Dataset Features
               </CardTitle>
               <CardDescription className="mt-1">
-                Select a column to apply imputation. Features from{' '}
-                {fileStore.parentFile?.filename}
+                Select a column to apply column specific imputation. Features
+                from {fileStore.parentFile?.filename}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 border-t">
@@ -150,95 +158,164 @@ const ImputationTab = observer(() => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm border-slate-200 sticky top-6">
-            <CardHeader className="pb-4 border-b">
-              <CardTitle className="text-lg">Configuration</CardTitle>
-            </CardHeader>
+          <div className="space-y-6 flex flex-col h-full sticky top-6">
+            <Card className="bg-white shadow-sm border-slate-200">
+              <CardHeader className="pb-4 border-b">
+                <CardTitle className="text-lg">Simple Imputation</CardTitle>
+                <CardDescription className="mt-1">
+                  Impute missing values for a specific selected column.
+                </CardDescription>
+              </CardHeader>
 
-            <CardContent className="pt-6 space-y-6">
-              {!selectedColumn ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
-                  <div className="justify-center">
-                    <p className="text-sm text-slate-500">
-                      Select a column from the table to configure imputation
-                      settings.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Target Column
-                    </label>
-                    <div className="p-3 bg-slate-50 border rounded-md text-sm font-medium text-slate-800 break-all">
-                      {selectedColumn.name}
+              <CardContent className="pt-6 space-y-6">
+                {!selectedColumn ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+                    <div className="justify-center">
+                      <p className="text-sm text-slate-500">
+                        Select a column from the table to configure imputation
+                        settings.
+                      </p>
                     </div>
                   </div>
-
-                  <div className="space-y-3">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Imputation Strategy
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {simpleImputationMethods.map((method) => (
-                        <Button
-                          key={method}
-                          variant={
-                            selectedMethod === method ? 'default' : 'outline'
-                          }
-                          disabled={fileStore.loading}
-                          className={`justify-start capitalize ${selectedMethod === method ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                          onClick={() => {
-                            setSelectedMethod(method);
-                            setNewFilename(
-                              `${fileStore.parentFile?.filename?.split('.')[0]}_${selectedColumn.name.replace(/\s+/g, '')}_${method}`,
-                            );
-                          }}
-                        >
-                          {method}
-                        </Button>
-                      ))}
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Target Column
+                      </label>
+                      <div className="p-3 bg-slate-50 border rounded-md text-sm font-medium text-slate-800 break-all">
+                        {selectedColumn.name}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Save As (New Filename)
-                    </label>
-                    <Input
-                      value={newFilename}
-                      disabled={fileStore.loading || !selectedMethod}
-                      onChange={(e) => setNewFilename(e.target.value)}
-                      placeholder={
-                        selectedMethod
-                          ? 'Enter filename...'
-                          : 'Select a strategy first'
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Imputation Strategy
+                      </label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {simpleImputationMethods.map((method) => (
+                          <Button
+                            key={method}
+                            variant={
+                              selectedMethod === method ? 'default' : 'outline'
+                            }
+                            disabled={fileStore.loading}
+                            className={`justify-start capitalize ${selectedMethod === method ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                            onClick={() => {
+                              setSelectedMethod(method);
+                              setNewFilename(
+                                `${fileStore.parentFile?.filename?.split('.')[0]}_${selectedColumn.name.replace(/\s+/g, '')}_${method}`,
+                              );
+                            }}
+                          >
+                            {method}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Save As (New Filename)
+                      </label>
+                      <Input
+                        value={newFilename}
+                        disabled={fileStore.loading || !selectedMethod}
+                        onChange={(e) => setNewFilename(e.target.value)}
+                        placeholder={
+                          selectedMethod
+                            ? 'Enter filename...'
+                            : 'Select a strategy first'
+                        }
+                        className="bg-white"
+                      />
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <Button
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={!newFilename || fileStore.loading}
+                        onClick={handleApplySimpleImputation}
+                      >
+                        {fileStore.loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Imputing...
+                          </>
+                        ) : (
+                          'Apply Imputation'
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white shadow-sm border-slate-200">
+              <CardHeader className="pb-4 border-b">
+                <CardTitle className="text-lg">KNN Imputation</CardTitle>
+                <CardDescription className="mt-1">
+                  Impute missing values across the dataset using k-Nearest
+                  Neighbors.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Number of Neighbors (k)
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={n_neighbors}
+                    disabled={fileStore.loading}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setN_neighbors(val);
+                      if (fileStore.parentFile?.filename) {
+                        setNewFilename(
+                          `${fileStore.parentFile.filename.split('.')[0]}_knn_${val}`,
+                        );
                       }
-                      className="bg-white"
-                    />
-                  </div>
+                    }}
+                    className="bg-white"
+                  />
+                </div>
 
-                  <div className="pt-4 border-t">
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      disabled={!newFilename || fileStore.loading}
-                      onClick={handleApplyImputation}
-                    >
-                      {fileStore.loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Imputing...
-                        </>
-                      ) : (
-                        'Apply Imputation'
-                      )}
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Save As (New Filename)
+                  </label>
+                  <Input
+                    value={newFilename}
+                    disabled={fileStore.loading}
+                    onChange={(e) => setNewFilename(e.target.value)}
+                    placeholder="Enter filename..."
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled={!newFilename || fileStore.loading}
+                    onClick={handleKnnImputation}
+                  >
+                    {fileStore.loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Imputing...
+                      </>
+                    ) : (
+                      'Apply KNN Imputation'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ import (
 
 type (
 	FileHandler interface {
-		// upload parent file. resets file history 
+		// upload parent file. resets file history
 		UploadParentFile(w http.ResponseWriter, r *http.Request)
 
 		// delete child file
@@ -126,4 +126,5 @@ func (fH fileHandler) RevertToFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 }

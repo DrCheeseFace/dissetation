@@ -1,15 +1,23 @@
-import type { BasicInfo } from '@/model/BasicInfo';
+import type { BasicInfo, UUID } from '@/model/BasicInfo';
 import { observer } from 'mobx-react-lite';
 import { useState, type FC } from 'react';
-import { ChevronDown, ChevronRight, Info, ArrowDown } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Info,
+  ArrowDown,
+  RotateCcw,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface BasicTimelineProps {
   files: BasicInfo[];
+  onClickRevertTo: (uuid: UUID) => void;
 }
 
 export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
-  ({ files }) => {
+  ({ files, onClickRevertTo }) => {
     return (
       <div className="space-y-6">
         <h2 className="text-foreground text-xl font-semibold">Basic</h2>
@@ -21,6 +29,7 @@ export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
               <TimelineNode
                 key={file.uuid}
                 file={file}
+                onClickRevertTo={onClickRevertTo}
                 parentFile={index > 0 ? files[index - 1] : undefined}
               />
             ))}
@@ -31,9 +40,16 @@ export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
   },
 );
 
-const TimelineNode: FC<{ file: BasicInfo; parentFile?: BasicInfo }> = ({
+interface TimelineNodeProps {
+  file: BasicInfo;
+  parentFile?: BasicInfo;
+  onClickRevertTo: (uuid: UUID) => void;
+}
+
+const TimelineNode: FC<TimelineNodeProps> = ({
   file,
   parentFile,
+  onClickRevertTo,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasImputations = file.imputations && file.imputations.length > 0;
@@ -52,16 +68,17 @@ const TimelineNode: FC<{ file: BasicInfo; parentFile?: BasicInfo }> = ({
           <div className="bg-muted-foreground h-3 w-3 rounded-full" />
         </div>
 
-        <div className="min-w-0 flex-1 flex items-center justify-between truncate">
-          <div>
-            <div className="text-foreground text-sm font-medium">
+        <div className="min-w-0 flex-1 flex items-center justify-between pr-2">
+          <div className="truncate pr-4">
+            <div className="text-foreground text-sm font-medium truncate">
               {file.filename}
             </div>
+
             {hasImputations && (
-              <div className="text-muted-foreground text-xs mt-1 flex items-center gap-2">
+              <div className="text-muted-foreground mt-1 flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="text-[10px] h-4 px-1 border-slate-200 text-slate-500"
+                  className="text-[10px] h-4 px-1.5 border-slate-200 text-slate-500 font-medium"
                 >
                   {file.imputations.length}{' '}
                   {file.imputations.length === 1 ? 'Method' : 'Methods'} Applied
@@ -69,15 +86,30 @@ const TimelineNode: FC<{ file: BasicInfo; parentFile?: BasicInfo }> = ({
               </div>
             )}
           </div>
-          {hasImputations && (
-            <div className="text-slate-400 pr-2">
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </div>
-          )}
+
+          <div className="flex items-center gap-3 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onClickRevertTo(file.uuid);
+              }}
+              className="h-7 text-xs px-3 rounded-full text-slate-600 border-slate-200 hover:bg-slate-100 transition-colors shadow-sm"
+            >
+              <RotateCcw className="w-3 h-3 mr-1.5" />
+              Revert
+            </Button>
+
+            {hasImputations && (
+              <div className="text-slate-400 w-4 flex justify-center">
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -135,4 +167,3 @@ const TimelineNode: FC<{ file: BasicInfo; parentFile?: BasicInfo }> = ({
     </div>
   );
 };
-

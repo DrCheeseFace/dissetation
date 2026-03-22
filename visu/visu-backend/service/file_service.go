@@ -112,6 +112,9 @@ func (fS *fileSvc) IsParentFileSet() bool {
 }
 
 func (fS *fileSvc) GetParentFile() *model.FileNode {
+	if !fS.IsParentFileSet() {
+		return nil
+	}
 	return &fS.parentFileHistory[len(fS.parentFileHistory)-1]
 }
 
@@ -140,12 +143,13 @@ func (fS *fileSvc) CreateChildFile(
 	path string,
 	imputation []model.Imputation,
 ) (childFile *model.FileNode, err error) {
-	_, err = os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
 		err = fmt.Errorf("failed to open child file, %v", err)
 		logger.Log.Error(err)
 		return nil, err
 	}
+	_ = f.Close()
 
 	newNode := model.FileNode{
 		UUID:        uuid.New(),
@@ -219,8 +223,6 @@ func (fS *fileSvc) RevertToFile(uuidToPromote uuid.UUID) (err error) {
 		return err
 	}
 
-	fS.parentFileHistory = fS.parentFileHistory[:targetFileIdx-1]
-
+	fS.parentFileHistory = fS.parentFileHistory[:targetFileIdx+1]
 	return nil
-
 }
