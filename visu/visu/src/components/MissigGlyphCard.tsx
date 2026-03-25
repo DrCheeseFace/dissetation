@@ -27,7 +27,7 @@ export const MissigGlyphCard: FC<MissigGlyphCardProps> = observer(
     return (
       <Card
         onClick={() => setSelectedGlyphIdxOnClick(columnSummary.index)}
-        className={`relative flex flex-col w-full aspect-[3/5] pt-3 overflow-hidden cursor-pointer transition-all ${
+        className={`relative flex flex-col w-full aspect-3/5 pt-3 overflow-hidden cursor-pointer transition-all ${
           isSelected
             ? 'ring-4 ring-red-500 ring-inset'
             : 'hover:bg-slate-50 border-slate-200'
@@ -39,7 +39,7 @@ export const MissigGlyphCard: FC<MissigGlyphCardProps> = observer(
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-grow flex items-center justify-center min-h-0 p-1 px-[5px] ">
+        <CardContent className="grow flex items-center justify-center min-h-0 p-1 px-1.25 ">
           <MissigGlyph
             columnSummary={columnSummary}
             selectedGlyphIdx={selectedGlyphIdx}

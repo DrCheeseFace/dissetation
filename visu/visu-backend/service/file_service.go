@@ -37,6 +37,9 @@ type (
 		// returns child file with uuid
 		GetChildFile(uuid.UUID) *model.FileNode
 
+		// returns file with uuid
+		GetFile(uuid uuid.UUID) *model.FileNode
+
 		// closes and deletes childnode
 		DeleteChildFile(uuid.UUID) (err error)
 
@@ -100,7 +103,12 @@ func (fS *fileSvc) SetParentFile(r *http.Request) error {
 			return err
 		}
 
-		fS.parentFileHistory = []model.FileNode{{Path: dst.Name(), UUID: uuid.New()}}
+		fS.parentFileHistory = []model.FileNode{{
+			Path:        dst.Name(),
+			UUID:        uuid.New(),
+			Imputations: []model.Imputation{}, //  TODO REMOV ETHIS OCMMENT fuck you
+		}}
+
 		return nil
 	}
 
@@ -136,6 +144,22 @@ func (fS *fileSvc) GetChildFile(uuid uuid.UUID) *model.FileNode {
 			return &k
 		}
 	}
+
+	return nil
+}
+
+func (fS *fileSvc) GetFile(uuid uuid.UUID) *model.FileNode {
+	childFile := fS.GetChildFile(uuid)
+	if childFile != nil {
+		return childFile
+	}
+
+	for _, k := range fS.parentFileHistory {
+		if k.UUID == uuid {
+			return &k
+		}
+	}
+
 	return nil
 }
 

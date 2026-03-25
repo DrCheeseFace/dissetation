@@ -36,6 +36,7 @@ func NewRoutes() chi.Router {
 		r.Get("/", imputerHandler.GetFilesInfo)
 		r.Get("/history", imputerHandler.GetParentHistory)
 		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)
+		r.Get("/{uuid}/sample/{n}", imputerHandler.GetSample)
 	})
 
 	r.Route("/dataset", func(r chi.Router) {

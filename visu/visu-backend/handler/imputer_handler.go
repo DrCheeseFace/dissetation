@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"visu-backend/logger"
 	"visu-backend/model"
 	"visu-backend/service"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type (
@@ -25,6 +29,9 @@ type (
 
 		// get basic info on old parent files
 		GetParentHistory(w http.ResponseWriter, r *http.Request)
+
+		// returns random sample of data of size n
+		GetSample(w http.ResponseWriter, r *http.Request)
 
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
@@ -151,7 +158,6 @@ func (i imputerHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = map[string]string{"status": "unhealthy"}
 		w.WriteHeader(http.StatusInternalServerError)
-
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -172,12 +178,13 @@ func (i imputerHandler) GetFilesInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	basicInfo, err := i.imputerSvc.GetBasicInfo(*parentFile)
-	basicInfo.Imputations = parentFile.Imputations
 	if err != nil {
 		logger.Log.Errorf("failed to get parent file basic info, %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	basicInfo.Imputations = parentFile.Imputations
+
 	response.ParentFile = *basicInfo
 
 	childFiles := i.fileSvc.GetChildFiles()
@@ -223,4 +230,55 @@ func (i imputerHandler) GetParentHistory(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 
 	_ = json.NewEncoder(w).Encode(response)
+}
+
+func (i imputerHandler) GetSample(w http.ResponseWriter, r *http.Request) {
+
+	sampleSizeParam := chi.URLParam(r, "n")
+	if sampleSizeParam == "" {
+		http.Error(w, "param 'n' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuidToSampleParam := chi.URLParam(r, "uuid")
+	if uuidToSampleParam == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	sampleSize, err := strconv.Atoi(sampleSizeParam)
+	if err != nil {
+		logger.Log.Errorf("invalid parameter n=%s given, %v", sampleSizeParam, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	uuidToSample, err := uuid.Parse(uuidToSampleParam)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f := i.fileSvc.GetFile(uuidToSample)
+	if f == nil {
+		logger.Log.Warningf("file with uuid %s not found", uuidToSample.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sampleJSON, err := i.imputerSvc.GetSample(*f, sampleSize)
+	if err != nil {
+		logger.Log.Warningf(
+			"failed to retrieve sample of size %d from file %s, %v",
+			sampleSize,
+			uuidToSample.String(),
+			err,
+		)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(sampleJSON))
 }

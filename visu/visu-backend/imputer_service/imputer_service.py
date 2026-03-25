@@ -227,5 +227,61 @@ def knn_impute():
         }), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@app.route('/sample', methods=['GET'])
+def get_sample():
+    """
+    get sample
+
+    Input params: {
+        "src": "path/to/data.csv",
+        "n": sampleSize,
+    }
+    :return: random sample of size n from src
+    """
+    file_path_param = request.args.get('src')
+    if not file_path_param:
+        return jsonify({
+            "status": "error",
+            "message": "No src provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    n = request.args.get('n')
+    if not n:
+        return jsonify({
+            "status": "error",
+            "message": "No n provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    file_path = "../" + file_path_param
+
+    if not os.path.exists(file_path):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {file_path}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        basic_info = info.get_sample(file_path, int(n))
+        return jsonify(basic_info), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=DEBUG)

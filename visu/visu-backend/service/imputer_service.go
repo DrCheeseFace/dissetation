@@ -38,6 +38,9 @@ type (
 		// returns basic info json-string
 		GetBasicInfo(model.FileNode) (*model.BasicInfo, error)
 
+		// returns basic info json-string
+		GetSample(src model.FileNode, sampleSize int) (string, error)
+
 		// returns ok if imputer_service returns ok
 		GetHealth() error
 	}
@@ -265,4 +268,37 @@ func (i *imputerSvc) CreateKNNImpute(src model.FileNode, dst string, n_neighbors
 	}
 
 	return nil
+}
+
+func (i *imputerSvc) GetSample(src model.FileNode, sampleSize int) (string, error) {
+	params := url.Values{}
+	params.Add("src", src.Path)
+	params.Add("n", fmt.Sprint(sampleSize))
+	fullUrl := fmt.Sprintf("%s?%s", i.createUrl("sample"), params.Encode())
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		bytes, _ := io.ReadAll(resp.Body)
+		logger.Log.Debugf("%v", string(bytes))
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	bytes, err := io.ReadAll(resp.Body)
+	return string(bytes), err
 }

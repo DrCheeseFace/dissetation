@@ -14,7 +14,7 @@ services:
         condition: service_started
 
   frontend-dev:
-    container_name: frontend_dev
+    container_name: frontend-dev
     build:
       context: ./visu
       dockerfile: dev.Dockerfile
@@ -27,7 +27,7 @@ services:
       CHOKIDAR_USEPOLLING: true
 
   go-server:
-    container_name: go_server 
+    container_name: go-server
     build:
       context: ./visu-backend
       dockerfile: dev.Dockerfile
@@ -41,16 +41,15 @@ services:
 
   lint:
     image: golangci/golangci-lint:latest
-    container_name: golangci_lint
+    container_name: golangci-lint
     volumes:
       - ./visu-backend:/app
     working_dir: /app
     command: golangci-lint run -v
     restart: "no"
 
-
   imputer-service:
-    container_name: imputer_service
+    container_name: imputer-service
     build:
       context: ./visu-backend/imputer_service
       dockerfile: dev.Dockerfile

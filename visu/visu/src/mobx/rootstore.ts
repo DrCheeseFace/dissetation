@@ -1,14 +1,18 @@
-import { createContext, useContext } from 'react';
-import { GlobalStore } from './globalStore';
-import { MissiGStore } from './missiGStore';
-import { FileStore } from './fileStore';
+import { createContext, useContext } from "react";
+
+import { GlobalStore } from "@/mobx/globalStore";
+import { MissiGStore } from "@/mobx/missiGStore";
+import { FileStore } from "@/mobx/fileStore";
+import { ComparisonStore } from "@/mobx/comparisonStore";
 
 export class RootStore {
   globalStore: GlobalStore;
   missigStore: MissiGStore;
   fileStore: FileStore;
+  comparisonStore: ComparisonStore;
 
   constructor() {
+    this.comparisonStore = new ComparisonStore(this);
     this.missigStore = new MissiGStore(this);
     this.fileStore = new FileStore(this);
     this.globalStore = new GlobalStore(this);

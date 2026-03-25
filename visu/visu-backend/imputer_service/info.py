@@ -159,3 +159,21 @@ def get_basic_info_json(df):
         "columns": columns_info,
         "shape": [total_rows, total_cols]
     }
+
+
+def get_sample(file_path, n):
+    """
+    :param str file_path: path to unimputed dataset
+    :param int n: sample size
+    :return: json string representation of info
+    :rtype: str
+    """
+
+    try:
+        df = utils.get_df_from_filename(file_path)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{file_path}': {e}")
+
+    df = df.sample(n).replace({np.nan: None})
+
+    return df.sample(n).to_dict()
