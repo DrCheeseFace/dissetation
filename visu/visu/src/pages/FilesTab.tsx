@@ -38,9 +38,10 @@ import {
 } from 'lucide-react';
 import type { BasicInfo, UUID } from '@/model/BasicInfo';
 import { FileHistoryTimeline } from '@/components/FileHistory';
+import { ComparisonDialog } from '@/components/ComparisonDialog';
 
 const FilesTab = observer(() => {
-  const { fileStore } = useRootStore();
+  const { fileStore, comparisonStore } = useRootStore();
   const [expandedUuids, setExpandedUuids] = useState<Set<string>>(new Set());
   const [isParentExpanded, setIsParentExpanded] = useState(false);
   const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set());
@@ -117,6 +118,14 @@ const FilesTab = observer(() => {
 
   return (
     <div className="text-black p-6 min-h-screen bg-slate-50/50">
+      {fileStore.parentFile && fileStore.childFiles[0] && (
+        <ComparisonDialog
+          node1={fileStore.parentFile}
+          node2={fileStore.childFiles[0]}
+          fetchSample={comparisonStore.fetchSample}
+        />
+      )}
+
       <div className="max-w-400 mx-auto">
         <div className="mb-8">
           <TypographyH2 className="text-2xl font-bold tracking-tight">

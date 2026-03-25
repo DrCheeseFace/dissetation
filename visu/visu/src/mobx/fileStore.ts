@@ -1,7 +1,7 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from 'mobx';
 
-import { RootStore } from "@/mobx/rootstore.ts";
-import type { BasicInfo, BasicInfoApiResponse, UUID } from "@/model/BasicInfo";
+import { RootStore } from '@/mobx/rootstore.ts';
+import type { BasicInfo, BasicInfoApiResponse, UUID } from '@/model/BasicInfo';
 import {
   commitChildFile as commitChildFile,
   deleteChildFile,
@@ -10,9 +10,9 @@ import {
   knnImputeURL,
   revertToParentFile,
   simpleImputeURL,
-} from "@/utils/routes";
-import type { SimpleImputationStrategy } from "@/model/SimpleImpute";
-import type { ParentHistoryResponse } from "@/model/HistoryInfo";
+} from '@/utils/routes';
+import type { SimpleImputationStrategy } from '@/model/SimpleImpute';
+import type { ParentHistoryResponse } from '@/model/HistoryInfo';
 
 export class FileStore {
   root: RootStore;
@@ -28,7 +28,7 @@ export class FileStore {
     this.loading = false;
     makeAutoObservable(this);
 
-    const persistedData = localStorage.getItem("FileStore");
+    const persistedData = localStorage.getItem('FileStore');
     if (persistedData) {
       const parsed = JSON.parse(persistedData);
       this.parentFile = parsed.parentFile;
@@ -38,7 +38,7 @@ export class FileStore {
 
     autorun(() => {
       localStorage.setItem(
-        "FileStore",
+        'FileStore',
         JSON.stringify({
           parentFile: this.parentFile,
           childFiles: this.childFiles,
@@ -63,7 +63,7 @@ export class FileStore {
   fetchBasicInfo = async () => {
     try {
       const response = await fetch(getBasicInfo, {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -71,10 +71,10 @@ export class FileStore {
         this.setChildFiles(rawResult.child_files);
         this.setParentFile(rawResult.parent_file);
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error("an error occured when fetching basic info: ", error);
+      console.error('an error occured when fetching basic info: ', error);
     }
   };
 
@@ -86,9 +86,9 @@ export class FileStore {
     try {
       this.setLoading(true);
       const response = await fetch(simpleImputeURL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name: filename,
@@ -99,10 +99,10 @@ export class FileStore {
       if (response.ok) {
         await this.fetchBasicInfo();
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error("an error occured when fetching basic info: ", error);
+      console.error('an error occured when fetching basic info: ', error);
     } finally {
       this.setLoading(false);
     }
@@ -113,9 +113,9 @@ export class FileStore {
     try {
       this.setLoading(true);
       const response = await fetch(knnImputeURL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name: filename,
@@ -125,10 +125,10 @@ export class FileStore {
       if (response.ok) {
         await this.fetchBasicInfo();
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error("an error occured when fetching basic info: ", error);
+      console.error('an error occured when fetching basic info: ', error);
     } finally {
       this.setLoading(false);
     }
@@ -137,16 +137,16 @@ export class FileStore {
   commitChildNode = async (uuid: UUID) => {
     try {
       const response = await fetch(commitChildFile(uuid), {
-        method: "PATCH",
+        method: 'PATCH',
       });
       if (response.ok) {
         await Promise.all([this.fetchBasicInfo(), this.fetchHistory()]);
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error(
-        "an error occured when trying to commit child node: ",
+        'an error occured when trying to commit child node: ',
         error,
       );
     }
@@ -155,33 +155,33 @@ export class FileStore {
   fetchHistory = async () => {
     try {
       const response = await fetch(getHistory, {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
         const rawResult: ParentHistoryResponse = await response.json();
         this.history = rawResult.parent_history;
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error("an error occured when fetching history info: ", error);
+      console.error('an error occured when fetching history info: ', error);
     }
   };
 
   deleteChildNode = async (uuid: UUID) => {
     try {
       const response = await fetch(deleteChildFile(uuid), {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (response.ok) {
         await this.fetchBasicInfo();
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error(
-        "an error occured when trying to delete child node: ",
+        'an error occured when trying to delete child node: ',
         error,
       );
     }
@@ -190,19 +190,18 @@ export class FileStore {
   revertToParentNode = async (uuid: UUID) => {
     try {
       const response = await fetch(revertToParentFile(uuid), {
-        method: "PATCH",
+        method: 'PATCH',
       });
       if (response.ok) {
         await Promise.all([this.fetchBasicInfo(), this.fetchHistory()]);
       } else {
-        console.error("HTTP Error:", response.status, response.statusText);
+        console.error('HTTP Error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error(
-        "an error occured when trying to delete child node: ",
+        'an error occured when trying to delete child node: ',
         error,
       );
     }
   };
-
 }

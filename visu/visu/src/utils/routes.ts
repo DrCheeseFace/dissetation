@@ -12,10 +12,9 @@ export const knnImputeURL = baseurl + '/impute/knn';
 export const revertToParentFile = (uuid: UUID) =>
   `${baseurl}/dataset/revert/${uuid}`;
 
-
 // info sub directory
 export const getBasicInfo = baseurl + '/info';
 export const getMissiGInfo = baseurl + '/info/missiG';
 export const getHistory = baseurl + '/info/history';
 export const getSample = (uuid: UUID, sampleSize: number) =>
-        `${baseurl}/info/${uuid}/sample/${sampleSize}`;
+  `${baseurl}/info/${uuid}/sample/${sampleSize}`;

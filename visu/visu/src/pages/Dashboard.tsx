@@ -5,31 +5,20 @@ import FilesTab from '@/pages/FilesTab';
 import ImputationTab from '@/pages/ImputationTab';
 import { Button } from '@/components/ui/button';
 import { useRootStore } from '@/mobx/rootstore';
-import { ParallelCoordinates } from '@/components/ParrallelCoordinatePlot';
-import { useState } from 'react';
 
 const Dashboard = observer(() => {
-  const { globalStore, fileStore, comparisonStore } = useRootStore();
-  const [bruh, setBruh] =
-    useState<Record<string, Record<string, string | number>>>();
-
-  const onClickFetchSample = async () => {
-    if (!fileStore.parentFile) return;
-    setBruh(await comparisonStore.fetchSample(fileStore.parentFile.uuid, 256));
-  };
+  const { globalStore, fileStore } = useRootStore();
 
   return (
-    <div className="min-h-screen w-full" style={{ backgroundColor: 'white' }}>
+    <div
+      className="min-h-screen min-w-screen"
+      style={{ backgroundColor: 'white' }}
+    >
       {/* TODO REMOVE ME DEBUG BUTTONS */}
       <div className="mb-5 space-x-2">
         <Button onClick={globalStore.debugReset}>DEBUG RESET</Button>
-        <Button onClick={onClickFetchSample}>DEBUG SAMPLE</Button>
         <Button onClick={fileStore.fetchHistory}>DEBUG fetch histiriy</Button>
       </div>
-      {/* TODO REMOVE ME */}
-      {fileStore.parentFile && bruh && (
-        <ParallelCoordinates data={bruh} basicInfo={fileStore.parentFile} />
-      )}
 
       {/* TODO add animtation to change to files tab and highlight row */}
       <Tabs defaultValue="MissiG">

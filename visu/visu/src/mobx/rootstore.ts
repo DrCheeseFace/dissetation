@@ -1,9 +1,9 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react';
 
-import { GlobalStore } from "@/mobx/globalStore";
-import { MissiGStore } from "@/mobx/missiGStore";
-import { FileStore } from "@/mobx/fileStore";
-import { ComparisonStore } from "@/mobx/comparisonStore";
+import { GlobalStore } from '@/mobx/globalStore';
+import { MissiGStore } from '@/mobx/missiGStore';
+import { FileStore } from '@/mobx/fileStore';
+import { ComparisonStore } from '@/mobx/comparisonStore';
 
 export class RootStore {
   globalStore: GlobalStore;

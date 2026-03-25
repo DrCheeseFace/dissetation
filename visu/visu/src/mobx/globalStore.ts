@@ -1,11 +1,11 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from 'mobx';
 
-import { RootStore } from "@/mobx/rootstore.ts";
-import { Page } from "@/model/Page";
+import { RootStore } from '@/mobx/rootstore.ts';
+import { Page } from '@/model/Page';
 import {
   healthCheck as healthCheckurl,
   uploadParentFile,
-} from "@/utils/routes.ts";
+} from '@/utils/routes.ts';
 
 export class GlobalStore {
   root: RootStore;
@@ -17,7 +17,7 @@ export class GlobalStore {
     this.root = root;
     makeAutoObservable(this);
 
-    const persistedData = localStorage.getItem("GlobalStore");
+    const persistedData = localStorage.getItem('GlobalStore');
     if (persistedData) {
       const parsed = JSON.parse(persistedData);
       this.currentPage = parsed.currentPage;
@@ -25,7 +25,7 @@ export class GlobalStore {
 
     autorun(() => {
       localStorage.setItem(
-        "GlobalStore",
+        'GlobalStore',
         JSON.stringify({
           currentPage: this.currentPage,
         }),
@@ -34,7 +34,7 @@ export class GlobalStore {
   }
 
   debugReset = () => {
-    console.debug("debug resetting");
+    console.debug('debug resetting');
     this.currentPage = Page.LandingPage;
   };
 
@@ -51,11 +51,11 @@ export class GlobalStore {
     this.setUploading(true);
 
     const formData = new FormData();
-    formData.append("myFile", file);
+    formData.append('myFile', file);
 
     try {
       const response = await fetch(uploadParentFile, {
-        method: "POST",
+        method: 'POST',
         body: formData,
       });
 
@@ -66,7 +66,7 @@ export class GlobalStore {
         ]);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     } finally {
       this.setUploading(false);
       this.setPage(Page.Dashboard);
@@ -76,14 +76,14 @@ export class GlobalStore {
   healthCheck = async (): Promise<void> => {
     try {
       const response = await fetch(healthCheckurl, {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
         alert(JSON.stringify(response.statusText));
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     }
   };
 }
