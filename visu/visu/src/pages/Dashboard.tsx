@@ -5,9 +5,14 @@ import FilesTab from '@/pages/FilesTab';
 import ImputationTab from '@/pages/ImputationTab';
 import { Button } from '@/components/ui/button';
 import { useRootStore } from '@/mobx/rootstore';
+import { useEffect } from 'react';
 
 const Dashboard = observer(() => {
   const { globalStore, fileStore } = useRootStore();
+
+        useEffect(() => {
+fileStore.fetchHistory()
+        }, [])
 
   return (
     <div

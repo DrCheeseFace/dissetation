@@ -7,6 +7,7 @@ import {
   Info,
   ArrowDown,
   RotateCcw,
+  GitCompareArrows,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,10 +15,12 @@ import { Button } from '@/components/ui/button';
 interface BasicTimelineProps {
   files: BasicInfo[];
   onClickRevertTo: (uuid: UUID) => void;
+  onSelectFile: (info: BasicInfo) => void;
+  isSelected: (info: BasicInfo) => boolean;
 }
 
 export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
-  ({ files, onClickRevertTo }) => {
+  ({ files, onClickRevertTo, onSelectFile, isSelected }) => {
     return (
       <div className="space-y-6">
         <h2 className="text-foreground text-xl font-semibold">Basic</h2>
@@ -27,6 +30,8 @@ export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
           <div className="space-y-2">
             {files.map((file, index) => (
               <TimelineNode
+                onSelectFile={onSelectFile}
+                isSelected={isSelected}
                 key={file.uuid}
                 file={file}
                 onClickRevertTo={onClickRevertTo}
@@ -44,12 +49,16 @@ interface TimelineNodeProps {
   file: BasicInfo;
   parentFile?: BasicInfo;
   onClickRevertTo: (uuid: UUID) => void;
+  onSelectFile: (info: BasicInfo) => void;
+  isSelected: (info: BasicInfo) => boolean;
 }
 
 const TimelineNode: FC<TimelineNodeProps> = ({
   file,
   parentFile,
   onClickRevertTo,
+  onSelectFile,
+  isSelected,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasImputations = file.imputations && file.imputations.length > 0;
@@ -98,6 +107,19 @@ const TimelineNode: FC<TimelineNodeProps> = ({
             >
               <RotateCcw className="w-3 h-3 mr-1.5" />
               Revert
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 ${isSelected(file) && 'bg-green-100'}`}
+              onClick={(e) => {
+                onSelectFile(file);
+                e.stopPropagation();
+              }}
+              title="Select File"
+            >
+              <GitCompareArrows className="w-3.5 h-3.5" />
             </Button>
 
             {hasImputations && (

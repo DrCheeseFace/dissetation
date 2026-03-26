@@ -31,6 +31,7 @@ import {
   ArrowDown,
   Download,
   Trash2,
+  GitCompareArrows,
   Play,
   FileText,
   Loader2,
@@ -45,6 +46,35 @@ const FilesTab = observer(() => {
   const [expandedUuids, setExpandedUuids] = useState<Set<string>>(new Set());
   const [isParentExpanded, setIsParentExpanded] = useState(false);
   const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set());
+  const [selectedFile1, setSelectedFile1] = useState<BasicInfo | null>(null);
+  const [selectedFile2, setSelectedFile2] = useState<BasicInfo | null>(null);
+
+  const isSelected = (fileInfo: BasicInfo): boolean => {
+    return fileInfo == selectedFile1 || fileInfo == selectedFile2;
+  };
+  const onSelectFile = (fileInfo: BasicInfo) => {
+    // handle unselect
+    if (selectedFile1 == fileInfo) {
+      setSelectedFile1(null);
+      return;
+    }
+    if (selectedFile2 == fileInfo) {
+      setSelectedFile2(null);
+      return;
+    }
+
+    //handle select
+    if (selectedFile1 == null) {
+      setSelectedFile1(fileInfo);
+      return;
+    }
+    if (selectedFile2 == null) {
+      setSelectedFile2(fileInfo);
+      return;
+    }
+    setSelectedFile1(selectedFile2);
+    setSelectedFile2(fileInfo);
+  };
 
   const startLoading = (key: string) => {
     setLoadingActions((prev) => {
@@ -81,7 +111,7 @@ const FilesTab = observer(() => {
     const actionKey = `download-${filename}`;
     startLoading(actionKey);
     try {
-      // Logic for download
+      // logic for download
     } finally {
       stopLoading(actionKey);
     }
@@ -118,14 +148,6 @@ const FilesTab = observer(() => {
 
   return (
     <div className="text-black p-6 min-h-screen bg-slate-50/50">
-      {fileStore.parentFile && fileStore.childFiles[0] && (
-        <ComparisonDialog
-          node1={fileStore.parentFile}
-          node2={fileStore.childFiles[0]}
-          fetchSample={comparisonStore.fetchSample}
-        />
-      )}
-
       <div className="max-w-400 mx-auto">
         <div className="mb-8">
           <TypographyH2 className="text-2xl font-bold tracking-tight">
@@ -136,6 +158,13 @@ const FilesTab = observer(() => {
             datasets.
           </TypographyP>
         </div>
+
+        {/* TODO MOVE ME? */}
+        <ComparisonDialog
+          node1={selectedFile1}
+          node2={selectedFile2}
+          fetchSample={comparisonStore.fetchSample}
+        />
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start">
           <div className="xl:col-span-3 space-y-6">
@@ -304,6 +333,8 @@ const FilesTab = observer(() => {
                           onToggle={() => toggleRow(info.uuid)}
                           handleApply={handleApply}
                           handleRemove={handleRemove}
+                          handleSelect={onSelectFile}
+                          isSelected={isSelected}
                           handleDownload={handleDownload}
                           isApplying={loadingActions.has(`apply-${info.uuid}`)}
                           isDownloading={loadingActions.has(
@@ -339,8 +370,10 @@ const FilesTab = observer(() => {
               <Card className="bg-white shadow-sm border-slate-200">
                 <CardContent className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
                   <FileHistoryTimeline
+                    isSelected={isSelected}
                     files={fileStore.history || []}
                     onClickRevertTo={fileStore.revertToParentNode}
+                    onSelectFile={onSelectFile}
                   />
                 </CardContent>
               </Card>
@@ -358,6 +391,8 @@ interface MetadataRowProps {
   isExpanded: boolean;
   onToggle: () => void;
   handleRemove: (uuid: UUID) => void;
+  handleSelect: (info: BasicInfo) => void;
+  isSelected: (info: BasicInfo) => boolean;
   handleDownload: (filename: string) => void;
   handleApply: (uuid: UUID) => void;
   isApplying: boolean;
@@ -372,7 +407,9 @@ const MetadataRow = ({
   onToggle,
   handleRemove,
   handleDownload,
+  handleSelect,
   handleApply,
+  isSelected,
   isApplying,
   isDownloading,
   isRemoving,
@@ -381,10 +418,7 @@ const MetadataRow = ({
 
   return (
     <Fragment>
-      <TableRow
-        className="cursor-pointer hover:bg-slate-50 transition-colors group"
-        onClick={onToggle}
-      >
+      <TableRow className={`cursor-pointer`} onClick={onToggle}>
         <TableCell>
           {isExpanded ? (
             <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -468,6 +502,15 @@ const MetadataRow = ({
               ) : (
                 <Trash2 className="w-3.5 h-3.5" />
               )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 ${isSelected(info) && 'bg-green-100'}`}
+              onClick={() => handleSelect(info)}
+              title="Select File"
+            >
+              <GitCompareArrows className="w-3.5 h-3.5" />
             </Button>
           </div>
         </TableCell>

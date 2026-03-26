@@ -35,6 +35,7 @@ func NewFileHandler(svc service.FileService) FileHandler {
 
 func (fH fileHandler) UploadParentFile(w http.ResponseWriter, r *http.Request) {
 	fH.fileSvc.ResetHistory()
+	fH.fileSvc.ResetChildFiles()
 
 	err := fH.fileSvc.SetParentFile(r)
 	if err != nil {

@@ -31,6 +31,9 @@ type (
 		// reset parent history
 		ResetHistory()
 
+		// nukes child files
+		ResetChildFiles()
+
 		// returns child file arr
 		GetChildFiles() []model.FileNode
 
@@ -136,6 +139,12 @@ func (fS *fileSvc) GetParentFileHistory() []model.FileNode {
 
 func (fS *fileSvc) ResetHistory() {
 	fS.parentFileHistory = []model.FileNode{}
+}
+
+func (fS *fileSvc) ResetChildFiles() {
+	for _, f := range fS.GetChildFiles() {
+		fS.DeleteChildFile(f.UUID)
+	}
 }
 
 func (fS *fileSvc) GetChildFile(uuid uuid.UUID) *model.FileNode {

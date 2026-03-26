@@ -32,7 +32,6 @@ export class FileStore {
     if (persistedData) {
       const parsed = JSON.parse(persistedData);
       this.parentFile = parsed.parentFile;
-      this.history = parsed.history;
       this.childFiles = parsed.childFiles || [];
     }
 
@@ -42,7 +41,6 @@ export class FileStore {
         JSON.stringify({
           parentFile: this.parentFile,
           childFiles: this.childFiles,
-          history: this.history,
         }),
       );
     });
