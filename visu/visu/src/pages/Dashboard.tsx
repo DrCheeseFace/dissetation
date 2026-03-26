@@ -8,11 +8,19 @@ import { useRootStore } from '@/mobx/rootstore';
 import { useEffect } from 'react';
 
 const Dashboard = observer(() => {
-  const { globalStore, fileStore } = useRootStore();
+  const { globalStore, fileStore, comparisonStore } = useRootStore();
 
-        useEffect(() => {
-fileStore.fetchHistory()
-        }, [])
+  useEffect(() => {
+    fileStore.fetchHistory();
+  }, []);
+
+  const DEBUGME = () => {
+    if (!fileStore.childFiles[0] || !fileStore.parentFile) return;
+    comparisonStore.fetchComparison(
+      fileStore.parentFile?.uuid,
+      fileStore.childFiles[0].uuid,
+    );
+  };
 
   return (
     <div
@@ -23,6 +31,7 @@ fileStore.fetchHistory()
       <div className="mb-5 space-x-2">
         <Button onClick={globalStore.debugReset}>DEBUG RESET</Button>
         <Button onClick={fileStore.fetchHistory}>DEBUG fetch histiriy</Button>
+        <Button onClick={DEBUGME}>DEBUG compare</Button>
       </div>
 
       {/* TODO add animtation to change to files tab and highlight row */}

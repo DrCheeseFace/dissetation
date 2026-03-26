@@ -41,6 +41,12 @@ type (
 		// returns basic info json-string
 		GetSample(src model.FileNode, sampleSize int) (string, error)
 
+		// return values of given row indexes
+		GetRows(src model.FileNode, rowIndexes []int) (string, error)
+
+		// returns ok if imputer_service returns ok
+		GetCompareInfo(base model.FileNode, child model.FileNode) (*model.ComparisonInfo, error)
+
 		// returns ok if imputer_service returns ok
 		GetHealth() error
 	}
@@ -301,4 +307,89 @@ func (i *imputerSvc) GetSample(src model.FileNode, sampleSize int) (string, erro
 
 	bytes, err := io.ReadAll(resp.Body)
 	return string(bytes), err
+}
+
+func (i *imputerSvc) GetRows(src model.FileNode, rowIndexes []int) (string, error) {
+	type request struct {
+		Src  string `json:"src"`
+		Rows []int  `json:"row_indexes"`
+	}
+
+	r := request{Src: src.Path, Rows: rowIndexes}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", i.createUrl("rows"), bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		bytes, _ := io.ReadAll(resp.Body)
+		logger.Log.Debugf("%v", string(bytes))
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	return string(body), nil
+}
+
+// TODO
+func (i *imputerSvc) GetCompareInfo(base model.FileNode, child model.FileNode) (*model.ComparisonInfo, error) {
+	params := url.Values{}
+	params.Add("base", base.Path)
+	params.Add("child", child.Path)
+	fullUrl := fmt.Sprintf("%s?%s", i.createUrl("compare"), params.Encode())
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		bytes, _ := io.ReadAll(resp.Body)
+		logger.Log.Debugf("%v", string(bytes))
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var response model.ComparisonInfo
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	err = json.Unmarshal(bytes, &response)
+
+	return &response, err
 }

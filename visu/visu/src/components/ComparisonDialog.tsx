@@ -16,10 +16,11 @@ interface ComparisonDialogProps {
   node1: BasicInfo | null;
   node2: BasicInfo | null;
   fetchSample: (uuid: string, count: number) => Promise<SampleData>;
+  fetchRows: (uuid: string, row_indexes: number[]) => Promise<SampleData>;
 }
 
 export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
-  ({ node1, node2, fetchSample }) => {
+  ({ node1, node2, fetchSample, fetchRows }) => {
     const [data1, setData1] = useState<SampleData>();
     const [data2, setData2] = useState<SampleData>();
     const [hoveredDataset, setHoveredDataset] = useState<
@@ -27,13 +28,16 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
     >();
 
     useEffect(() => {
-      async function fetch() {
+      async function fetchS() {
         if (node1 == null || node2 == null) return;
-        setData1(await fetchSample(node1.uuid, 256));
-        setData2(await fetchSample(node2.uuid, 256));
+        const sample = await fetchSample(node1.uuid, 256);
+        setData1(sample);
+        const firstColumn = node1.columns[0].name;
+        const indexes: number[] = Object.keys(sample[firstColumn]).map(Number);
+        setData2(await fetchRows(node2.uuid, indexes));
       }
 
-      fetch();
+      fetchS();
     }, [node1, node2]);
 
     return (

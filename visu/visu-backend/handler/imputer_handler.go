@@ -33,6 +33,12 @@ type (
 		// returns random sample of data of size n
 		GetSample(w http.ResponseWriter, r *http.Request)
 
+		// returns compare info
+		GetCompareInfo(w http.ResponseWriter, r *http.Request)
+
+		// returns values of rows
+		GetRows(w http.ResponseWriter, r *http.Request)
+
 		// return healthy if impute service is healthy
 		GetHealth(w http.ResponseWriter, r *http.Request)
 	}
@@ -281,4 +287,108 @@ func (i imputerHandler) GetSample(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(sampleJSON))
+}
+
+// TODO IMPLEMENTATION
+func (i imputerHandler) GetCompareInfo(w http.ResponseWriter, r *http.Request) {
+	uuid1Param := chi.URLParam(r, "uuid1")
+	if uuid1Param == "" {
+		http.Error(w, "param 'uuid1' is required", http.StatusBadRequest)
+		return
+	}
+	uuid2Param := chi.URLParam(r, "uuid2")
+	if uuid1Param == "" {
+		http.Error(w, "param 'uuid2' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuid1, err := uuid.Parse(uuid1Param)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	uuid2, err := uuid.Parse(uuid2Param)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	parentFile := i.fileSvc.GetParentFile()
+	if parentFile == nil {
+		logger.Log.Warning("parent file was not set")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f1 := i.fileSvc.GetFile(uuid1)
+	if f1 == nil {
+		logger.Log.Warning("file of uuid %s does not exist", uuid1.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f2 := i.fileSvc.GetFile(uuid2)
+	if f2 == nil {
+		logger.Log.Warning("file of uuid %s does not exist", uuid2.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// TODO TODO
+	// compare parent to each child
+	// compare child1 to child2
+
+	temp, err := i.imputerSvc.GetCompareInfo(*f1, *f2)
+	if err != nil {
+		logger.Log.Errorf("failed to retrieve compare info between %s and %s, %v", f1.UUID.String(), f1.UUID.String(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (i imputerHandler) GetRows(w http.ResponseWriter, r *http.Request) {
+	type RowRequest struct {
+		Rows []int `json:"row_indexes"`
+	}
+
+	req := RowRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	uuidParam := chi.URLParam(r, "uuid")
+	if uuidParam == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuid, err := uuid.Parse(uuidParam)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f := i.fileSvc.GetFile(uuid)
+	if f == nil {
+		logger.Log.Warning("file of uuid %s does not exist", uuid.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	body, err := i.imputerSvc.GetRows(*f, req.Rows)
+	if err != nil {
+		logger.Log.Errorf("failed to retrieve rows for file %s, %v", uuid.String(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(body))
+
 }

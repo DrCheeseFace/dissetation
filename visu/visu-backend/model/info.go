@@ -17,3 +17,10 @@ type ColumnInfo struct {
 	NonNullCount int    `json:"non_null_count"`
 	NullCount    int    `json:"null_count"`
 }
+
+type ComparisonInfo []ColumnComparisonMetrics
+type ColumnComparisonMetrics map[string]ComparisonMetrics
+type ComparisonMetrics struct {
+	WD  float64 `json:"WD"` // wasserstein distance
+	MAD float64 `json:"MAD"` // mean absolute difference
+}

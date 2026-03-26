@@ -283,5 +283,122 @@ def get_sample():
         }), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@app.route('/compare', methods=['GET'])
+def get_comparison():
+    """
+    get comparision info 
+
+    Input params: {
+        "base": "path/to/data.csv",
+        "child": sampleSize,
+    }
+    :return: Wasserstein distances and MAD
+    """
+
+    file_path_param = request.args.get('base')
+    if not file_path_param:
+        return jsonify({
+            "status": "error",
+            "message": "No 'base' provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    file_path_child = request.args.get('child')
+    if not file_path_child:
+        return jsonify({
+            "status": "error",
+            "message": "No 'child' provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    file_path_base = "../" + file_path_param
+    file_path_child = "../" + file_path_child
+
+    if not os.path.exists(file_path_base):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {file_path_base}"
+        }), HTTPStatus.NOT_FOUND
+
+    if not os.path.exists(file_path_child):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {file_path_child}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        comparison_info = info.get_comparison(file_path_base, file_path_child)
+        return jsonify(comparison_info), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@app.route('/rows', methods=['POST'])
+def get_rows():
+    """
+    get row values
+
+    Input params: {
+        "src": "path/to/data.csv",
+        "row_indexes": [int],
+    }
+    :return: row value dict
+    """
+
+    data = request.get_json()
+
+    required_keys = ['src', 'row_indexes']
+    if not data or not all(key in data for key in required_keys):
+        return jsonify({
+            "status": "error",
+            "message": f"Missing required JSON fields. Expected: {
+                required_keys}"
+        }), HTTPStatus.BAD_REQUEST
+
+    src = "../" + data['src']
+    row_indexes = data['row_indexes']
+    if not os.path.exists(src):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {src}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        row_info = info.get_rows(src, row_indexes)
+        return jsonify(row_info), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=DEBUG)

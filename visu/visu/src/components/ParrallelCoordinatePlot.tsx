@@ -158,7 +158,7 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
           // if nothing hovered, opacity = 0.4
           if (!hoveredDataset) return 0.4;
           // if something hovered, set opacity based on if this is selected
-          return d._source === hoveredDataset ? 0.7 : 0.3;
+          return d._source === hoveredDataset ? 0.7 : 0.1;
         })
         .each(function (d) {
           // if this is selected, draw ontop of everything else

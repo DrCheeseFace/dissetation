@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 import utils
+from scipy.stats import wasserstein_distance
+from sklearn.metrics import mean_absolute_error
+from sklearn.preprocessing import LabelEncoder
 
 
 def get_missiG_info(filename):
@@ -177,3 +180,85 @@ def get_sample(file_path, n):
     df = df.sample(n).replace({np.nan: None})
 
     return df.sample(n).to_dict()
+
+
+def get_comparison(file_path_base, file_path_child):
+    """
+    :param str file_path_base: path to base dataset
+    :param str file_path_child: path to child dataset
+
+    :return: json string representation of comparison info
+    :rtype: str
+    """
+
+    try:
+        df_base = utils.get_df_from_filename(file_path_base)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{
+                           file_path_base}': {e}")
+    try:
+        df_child = utils.get_df_from_filename(file_path_child)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{
+                           file_path_child}': {e}")
+
+    column_names = df_base.columns.tolist()
+    col_info = []
+
+    for i, column in enumerate(column_names):
+        if column not in df_base.columns or column not in df_child.columns:
+            continue
+
+        base_clean = df_base[column].dropna()
+        child_clean = df_child[column].dropna()
+
+        # if after droping, everything is empty
+        if base_clean.empty or child_clean.empty:
+            col_info.append({
+                column: {
+                    "WD": None,
+                    "MAD": None,
+                }
+            })
+            continue
+
+        # if catagorical, encode
+        if not pd.api.types.is_numeric_dtype(base_clean) or not pd.api.types.is_numeric_dtype(child_clean):
+            le = LabelEncoder()
+
+            combined_data = pd.concat([base_clean, child_clean]).astype(str)
+            le.fit(combined_data)
+
+            base_clean = pd.Series(le.transform(
+                base_clean.astype(str)), index=base_clean.index)
+            child_clean = pd.Series(le.transform(
+                child_clean.astype(str)), index=child_clean.index)
+
+        aligned_df = pd.concat([base_clean, child_clean], axis=1).dropna()
+
+        if aligned_df.empty:
+            wd_val = wasserstein_distance(base_clean, child_clean)
+            mae_val = None
+        else:
+            wd_val = wasserstein_distance(base_clean, child_clean)
+            mae_val = mean_absolute_error(
+                aligned_df.iloc[:, 0], aligned_df.iloc[:, 1])
+
+        col_info.append({
+            column: {
+                "WD": wd_val,
+                "MAD": mae_val,
+            }
+        })
+
+    return col_info
+
+
+def get_rows(file_path, row_index):
+    try:
+        df = utils.get_df_from_filename(file_path)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{
+                           file_path}': {e}")
+
+    return df.loc[row_index].rename(index=str).replace({np.nan: None}).to_dict()
