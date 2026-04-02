@@ -12,8 +12,8 @@ interface MissigGlyphProps {
   selectedGlyphIdx?: number;
 }
 
-export const MissigGlyph: FC<MissigGlyphProps> = observer( 
-        ({ columnSummary, selectedGlyphIdx }) => {
+export const MissigGlyph: FC<MissigGlyphProps> = observer(
+  ({ columnSummary, selectedGlyphIdx }) => {
     const total =
       (columnSummary.non_null_count || 0) + (columnSummary.null_count || 0);
     const missingPct = total > 0 ? (columnSummary.null_count / total) * 100 : 0;
@@ -75,7 +75,7 @@ export const MissigGlyph: FC<MissigGlyphProps> = observer(
     }, [columnSummary.histogram]);
 
     const rightHistogramData = useMemo(() => {
-      if (!selectedGlyphIdx) return null;
+      if (selectedGlyphIdx == undefined) return null;
       if (!columnSummary.joint_missingness_histograms) return null;
 
       const histogram =
@@ -141,7 +141,7 @@ export const MissigGlyph: FC<MissigGlyphProps> = observer(
     }, [selectedGlyphIdx, columnSummary.joint_missingness_histograms]);
 
     const jointBar = useMemo(() => {
-      if (!selectedGlyphIdx) return null;
+      if (selectedGlyphIdx == undefined) return null;
 
       const jointPercentageOfMissing =
         columnSummary.joint_missingness[selectedGlyphIdx] || 0;
