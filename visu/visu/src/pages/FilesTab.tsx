@@ -152,22 +152,22 @@ const FilesTab = observer(() => {
       <div className="max-w-400 mx-auto">
         <div className="mb-8">
           <TypographyH2 className="text-2xl font-bold tracking-tight">
-            Data files 
+            Data files
           </TypographyH2>
           <TypographyP className="text-muted-foreground">
-            Reviewing structural metadata and imputation history for current
-            datasets.
+            Compare versions of imputed datasets
           </TypographyP>
         </div>
 
         {/* TODO MOVE ME? */}
         <ComparisonDialog
-                  node1={selectedFile1}
-                  node2={selectedFile2}
-                  fetchSample={comparisonStore.fetchSample}
-                  fetchRows={comparisonStore.fetchRows}
-                  fetchComparison={comparisonStore.fetchComparison} 
-                                        fetchMissingMatrix={comparisonStore.fetchMissingMatrix}        />
+          node1={selectedFile1}
+          node2={selectedFile2}
+          fetchSample={comparisonStore.fetchSample}
+          fetchRows={comparisonStore.fetchRows}
+          fetchComparison={comparisonStore.fetchComparison}
+          fetchMissingMatrix={comparisonStore.fetchMissingMatrix}
+        />
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start">
           <div className="xl:col-span-3 space-y-6">

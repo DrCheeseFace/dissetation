@@ -130,15 +130,17 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
         const rectNode = event.currentTarget as SVGRectElement;
         const rowNode = rectNode.parentNode as SVGGElement;
         const rowData = d3.select(rowNode).datum() as (number | null)[];
-        
+
         const rowIndex = data.indexOf(rowData);
         const colIndex = Array.from(rowNode.children).indexOf(rectNode);
-        
+
         const actualRow = rowIndex * rowStep;
         const colName = columns[colIndex];
 
         tooltip
-          .html(`<strong>Feature:</strong> ${colName}<br/><strong>Row:</strong> ${actualRow}`)
+          .html(
+            `<strong>Feature:</strong> ${colName}<br/><strong>Row:</strong> ${actualRow}`,
+          )
           .style('top', `${event.clientY - 45}px`)
           .style('left', `${event.clientX + 15}px`);
       })
