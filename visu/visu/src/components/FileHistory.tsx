@@ -23,7 +23,7 @@ export const FileHistoryTimeline: FC<BasicTimelineProps> = observer(
   ({ files, onClickRevertTo, onSelectFile, isSelected }) => {
     return (
       <div className="space-y-6">
-        <h2 className="text-foreground text-xl font-semibold">Basic</h2>
+        <h2 className="text-foreground text-xl font-semibold">Commit history</h2>
         <div className="relative">
           <div className="bg-border absolute top-0 bottom-0 left-3 w-px" />
 

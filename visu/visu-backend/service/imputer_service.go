@@ -20,6 +20,9 @@ type (
 		// returns MissiG visualisation info json-string
 		GetMissiGInfo(model.FileNode) (string, error)
 
+		// returns visualisation info json-string
+		GetMissingMatrixInfo(model.FileNode) (string, error)
+
 		// creates simple imputation of "src" with "strategy" on "feature" saved to "dst"
 		CreateSimpleImpute(
 			src model.FileNode,
@@ -394,4 +397,39 @@ func (i *imputerSvc) GetCompareInfo(
 	err = json.Unmarshal(bytes, &response)
 
 	return &response, err
+}
+
+func (i *imputerSvc) GetMissingMatrixInfo(f model.FileNode) (string, error) {
+	params := url.Values{}
+	params.Add("file_path", f.Path)
+	fullUrl := fmt.Sprintf("%s?%s", i.createUrl("missing_matrix"), params.Encode())
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("unexpected status code: %d, %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	return string(body), nil
 }

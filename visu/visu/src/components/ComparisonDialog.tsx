@@ -15,6 +15,9 @@ import type {
   ComparisonResponse,
   ComparisonInfo,
 } from '@/model/ComparisonInfo';
+import type MatrixInfo from '@/model/MissingMatrix';
+import MissingMatrix from '@/components/MissingMatrix';
+import type { MatrixInfoAPIResponse } from '@/model/MissingMatrix';
 
 interface ComparisonDialogProps {
   node1: BasicInfo | null;
@@ -25,12 +28,22 @@ interface ComparisonDialogProps {
     baseuuid: UUID,
     childuuid: UUID,
   ) => Promise<ComparisonResponse>;
+  fetchMissingMatrix: (uuid: UUID) => Promise<MatrixInfoAPIResponse>;
 }
 
 export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
-  ({ node1, node2, fetchSample, fetchRows, fetchComparison }) => {
+  ({
+    node1,
+    node2,
+    fetchSample,
+    fetchRows,
+    fetchComparison,
+    fetchMissingMatrix,
+  }) => {
     const [data1, setData1] = useState<SampleData>();
     const [data2, setData2] = useState<SampleData>();
+    const [matrix1, setMatrix1] = useState<MatrixInfo>();
+    const [matrix2, setMatrix2] = useState<MatrixInfo>();
     const [comparisonData, setComparisonData] = useState<ComparisonResponse>();
     const [hoveredDataset, setHoveredDataset] = useState<
       'data1' | 'data2' | null
@@ -40,19 +53,36 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
       async function asyncFetch() {
         if (node1 == null || node2 == null) return;
 
+        // fetch samples adn rows
         const sample = await fetchSample(node1.uuid, 256);
         setData1(sample);
 
         const firstColumn = node1.columns[0].name;
         const indexes: number[] = Object.keys(sample[firstColumn]).map(Number);
-        setData2(await fetchRows(node2.uuid, indexes));
+        const matchingData = await fetchRows(node2.uuid, indexes);
+        setData2(matchingData);
 
+        // fetch missing matrix Data for both
+        const m1 = await fetchMissingMatrix(node1.uuid);
+        setMatrix1(m1.info);
+
+        const m2 = await fetchMissingMatrix(node2.uuid);
+        setMatrix2(m2.info);
+
+        // fetch comparison metrics
         const comparison = await fetchComparison(node1.uuid, node2.uuid);
         setComparisonData(comparison);
       }
 
       asyncFetch();
-    }, [node1, node2, fetchSample, fetchRows, fetchComparison]);
+    }, [
+      node1,
+      node2,
+      fetchSample,
+      fetchRows,
+      fetchComparison,
+      fetchMissingMatrix,
+    ]);
 
     const MetricTable = (title: string, info: ComparisonInfo) => (
       <div className="flex flex-col gap-2 mb-6">
@@ -91,7 +121,6 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
       </div>
     );
 
-    // TODO move to seperate component
     const ImputationList = ({ node }: { node: BasicInfo }) => (
       <div className="flex flex-col gap-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -181,7 +210,54 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
                 </div>
               )}
 
+              {/* matrix comparison */}
+              <div className="p-6 border rounded-lg bg-white shadow-sm">
+                <h3 className="font-semibold text-lg mb-6">
+                  Matrix Comparison
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                      {node1.filename}
+                    </h4>
+                    <div className="p-2 border rounded bg-slate-50/50">
+                      {matrix1 ? (
+                        <MissingMatrix matrixInfo={matrix1} />
+                      ) : (
+                        <p className="text-xs text-slate-400 p-4">
+                          Loading matrix...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                      {node2.filename}
+                    </h4>
+                    <div className="p-2 border rounded bg-slate-50/50">
+                      {matrix2 ? (
+                        <MissingMatrix matrixInfo={matrix2} />
+                      ) : (
+                        <p className="text-xs text-slate-400 p-4">
+                          Loading matrix...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-6">
+                {/* imputations info */}
+                <div className="p-6 border rounded-lg shadow-sm bg-slate-50/50">
+                  <h3 className="font-semibold text-lg mb-6">Imputations</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <ImputationList node={node1} />
+                    <ImputationList node={node2} />
+                  </div>
+                </div>
+
+                {/* comparison stats info */}
                 <div className="p-6 border rounded-lg shadow-sm bg-white">
                   <h3 className="font-semibold text-lg mb-6">
                     Distribution Metrics
@@ -215,14 +291,6 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
                     </div>
                   )}
                 </div>
-
-                <div className="p-6 border rounded-lg shadow-sm bg-slate-50/50">
-                  <h3 className="font-semibold text-lg mb-6">Imputations</h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <ImputationList node={node1} />
-                    <ImputationList node={node2} />
-                  </div>
-                </div>
               </div>
             </div>
           </DialogContent>
@@ -231,3 +299,5 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
     );
   },
 );
+
+export default ComparisonDialog;

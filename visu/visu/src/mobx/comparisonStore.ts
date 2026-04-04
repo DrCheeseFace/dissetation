@@ -2,9 +2,15 @@ import { makeAutoObservable } from 'mobx';
 
 import { RootStore } from '@/mobx/rootstore.ts';
 import type { BasicInfo, UUID } from '@/model/BasicInfo';
-import { getComparison, getRows, getSample } from '@/utils/routes';
+import {
+  getComparison,
+  getMissingMatrixInfo,
+  getRows,
+  getSample,
+} from '@/utils/routes';
 import type { SampleData } from '@/model/Sample';
 import type { ComparisonResponse } from '@/model/ComparisonInfo';
+import type { MatrixInfoAPIResponse } from '@/model/MissingMatrix';
 
 export class ComparisonStore {
   root: RootStore;
@@ -39,6 +45,13 @@ export class ComparisonStore {
     childuuid: UUID,
   ): Promise<ComparisonResponse> => {
     const response = await fetch(getComparison(baseuuid, childuuid), {
+      method: 'GET',
+    });
+    return response.json();
+  };
+
+  fetchMissingMatrix = async (uuid: UUID): Promise<MatrixInfoAPIResponse> => {
+    const response = await fetch(getMissingMatrixInfo(uuid), {
       method: 'GET',
     });
     return response.json();

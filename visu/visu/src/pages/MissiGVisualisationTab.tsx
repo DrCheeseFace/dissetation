@@ -3,16 +3,10 @@ import MissigGlyphCard from '@/components/MissigGlyphCard';
 import { useRootStore } from '@/mobx/rootstore';
 import type { ColumnSummary } from '@/model/MissiG';
 import { useEffect, useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import type { BasicInfo, UUID } from '@/model/BasicInfo';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const MissiGVisualisationTab = observer(() => {
   const { missigStore, fileStore } = useRootStore();
@@ -25,15 +19,16 @@ const MissiGVisualisationTab = observer(() => {
 
   useEffect(() => {
     const files: BasicInfo[] = [];
-    if (fileStore.parentFile) {
-      files.push(fileStore.parentFile);
+    if (fileStore.history) {
+      files.push(...fileStore.history);
     }
 
     if (fileStore.childFiles) {
       files.push(...fileStore.childFiles);
     }
+
     setFiles(files);
-  }, [fileStore.parentFile, fileStore.childFiles]);
+  }, [fileStore.parentFile, fileStore.childFiles, fileStore.history]);
 
   const onSelect = (uuid: UUID): void => {
     missigStore.fetchMissiGInfo(uuid);
@@ -41,21 +36,27 @@ const MissiGVisualisationTab = observer(() => {
 
   return (
     <div className="flex flex-col gap-4 px-3 py-3 bg-slate-50/50">
-      <div className="w-full md:w-72">
-        <Select onValueChange={onSelect} value={missigStore.currentMissiGUuid}>
-          <SelectTrigger>
-            <SelectValue placeholder="SELECT FILE" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {files.map((file: BasicInfo) => (
-                <SelectItem key={file.uuid} value={file.uuid}>
-                  {file.filename}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap gap-2">
+        {files.map((file: BasicInfo) => (
+          <Button
+            key={file.uuid}
+            variant={
+              missigStore.currentMissiGUuid === file.uuid
+                ? 'default'
+                : 'outline'
+            }
+            size="sm"
+            onClick={() => onSelect(file.uuid)}
+            className={cn(
+              'flex items-center gap-2 transition-all',
+              missigStore.currentMissiGUuid === file.uuid &&
+                'ring-2 ring-primary ring-offset-1',
+            )}
+          >
+            <FileText className="h-4 w-4" />
+            {file.filename}
+          </Button>
+        ))}
       </div>
 
       {missigStore.loading ? (
@@ -65,14 +66,16 @@ const MissiGVisualisationTab = observer(() => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           {missigStore.currentMissiGInfo &&
-            missigStore.currentMissiGInfo.columns.map((columnSummary: ColumnSummary) => (
-              <MissigGlyphCard
-                key={columnSummary.index}
-                columnSummary={columnSummary}
-                setSelectedGlyphIdxOnClick={setSelectedGlyphIdx}
-                selectedGlyphIdx={selectedGlyphIndex}
-              />
-            ))}
+            missigStore.currentMissiGInfo.columns.map(
+              (columnSummary: ColumnSummary) => (
+                <MissigGlyphCard
+                  key={columnSummary.index}
+                  columnSummary={columnSummary}
+                  setSelectedGlyphIdxOnClick={setSelectedGlyphIdx}
+                  selectedGlyphIdx={selectedGlyphIndex}
+                />
+              ),
+            )}
         </div>
       )}
     </div>

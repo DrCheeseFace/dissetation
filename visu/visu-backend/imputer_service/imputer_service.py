@@ -105,6 +105,58 @@ def get_basic_info():
         }), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@app.route('/missing_matrix', methods=['GET'])
+def get_missing_matrix():
+    """
+    get missing matrix info
+
+    Input params: {"file_path": "path/to/data.csv"}
+    :return: missing matrix info
+    """
+    file_path_param = request.args.get('file_path')
+
+    if not file_path_param:
+        return jsonify({
+            "status": "error",
+            "message": "No file_path provided in URL parameters"
+        }), HTTPStatus.BAD_REQUEST
+
+    file_path = "../" + file_path_param
+
+    if not os.path.exists(file_path):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {file_path}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        matrix_info = info.get_missing_matrix_info(
+            file_path=file_path, max_rows=500, max_cols=100)
+        return jsonify({
+            "status": "success",
+            "info": matrix_info,
+            "message": "matrix data retrieved successfully"
+        }), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 @app.route('/simple_impute', methods=['POST'])
 def simple_impute():
     """
@@ -286,7 +338,7 @@ def get_sample():
 @app.route('/compare', methods=['GET'])
 def get_comparison():
     """
-    get comparision info 
+    get comparision info
 
     Input params: {
         "base": "path/to/data.csv",

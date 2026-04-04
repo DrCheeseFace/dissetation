@@ -262,3 +262,41 @@ def get_rows(file_path, row_index):
                            file_path}': {e}")
 
     return df.loc[row_index].rename(index=str).replace({np.nan: None}).to_dict()
+
+
+def get_missing_matrix_info(file_path, max_rows=500, max_cols=100):
+    """
+    loads and downsamples the dataset
+    """
+    try:
+        df = utils.get_df_from_filename(file_path)
+
+        original_shape = df.shape
+
+        if len(df) > max_rows:
+            row_step = len(df) // max_rows
+            df = df.iloc[::row_step]
+
+        if len(df.columns) > max_cols:
+            col_step = len(df.columns) // max_cols
+            df = df.iloc[:, ::col_step]
+
+        return get_missing_matrix_info_json(df, original_shape)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset from '{file_path}': {e}")
+
+
+def get_missing_matrix_info_json(df: pd.DataFrame, original_shape: tuple):
+    matrix_data = df.replace({np.nan: None}).values.tolist()
+    columns = df.columns.tolist()
+
+    return {
+        "columns": columns,
+        "data": matrix_data,
+        "metadata": {
+            "original_rows": original_shape[0],
+            "original_cols": original_shape[1],
+            "sampled_rows": len(df),
+            "sampled_cols": len(df.columns)
+        }
+    }

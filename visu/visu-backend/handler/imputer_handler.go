@@ -15,8 +15,11 @@ import (
 
 type (
 	ImputerHandler interface {
-		// return parent missiG info
+		// return missiG info
 		GetMissiGInfo(w http.ResponseWriter, r *http.Request)
+
+		// return missing matrix info
+		GetMissingMatrixInfo(w http.ResponseWriter, r *http.Request)
 
 		// creates simple impute child file
 		PostSimpleImpute(w http.ResponseWriter, r *http.Request)
@@ -442,6 +445,40 @@ func (i imputerHandler) GetRows(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(body))
+
+}
+
+func (i imputerHandler) GetMissingMatrixInfo(w http.ResponseWriter, r *http.Request) {
+	uuidParam := chi.URLParam(r, "uuid")
+	if uuidParam == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuid, err := uuid.Parse(uuidParam)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f := i.fileSvc.GetFile(uuid)
+	if f == nil {
+		logger.Log.Warning("file of uuid %s does not exist", uuid.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	body, err := i.imputerSvc.GetMissingMatrixInfo(*f)
+	if err != nil {
+		logger.Log.Errorf("failed to get file missing matrix info, %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(body))
 

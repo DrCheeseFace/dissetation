@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 import { RootStore } from '@/mobx/rootstore.ts';
 import type { BasicInfo, BasicInfoApiResponse, UUID } from '@/model/BasicInfo';
 import {
-  commitChildFile as commitChildFile,
+  commitChildFile,
   deleteChildFile,
   getBasicInfo,
   getHistory,

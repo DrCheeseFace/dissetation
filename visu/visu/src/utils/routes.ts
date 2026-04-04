@@ -15,6 +15,8 @@ export const revertToParentFile = (uuid: UUID) =>
 // info sub directory
 export const getBasicInfo = baseurl + '/info';
 export const getMissiGInfo = (uuid: UUID) => `${baseurl}/info/${uuid}/missiG`;
+export const getMissingMatrixInfo = (uuid: UUID) =>
+  `${baseurl}/info/${uuid}/missing_matrix`;
 
 export const getHistory = baseurl + '/info/history';
 export const getSample = (uuid: UUID, sampleSize: number) =>
