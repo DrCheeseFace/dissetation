@@ -107,6 +107,7 @@ const FilesTab = observer(() => {
     }
   };
 
+  // TODO download on click
   const handleDownload = async (filename: string) => {
     const actionKey = `download-${filename}`;
     startLoading(actionKey);
@@ -165,6 +166,7 @@ const FilesTab = observer(() => {
           node2={selectedFile2}
           fetchSample={comparisonStore.fetchSample}
           fetchRows={comparisonStore.fetchRows}
+          fetchComparison={comparisonStore.fetchComparison}
         />
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start">

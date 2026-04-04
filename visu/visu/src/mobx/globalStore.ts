@@ -60,10 +60,14 @@ export class GlobalStore {
       });
 
       if (response.ok) {
-        await Promise.all([
-          this.root.missigStore.fetchParentFileMissiGInfo(),
-          this.root.fileStore.fetchBasicInfo(),
-        ]);
+        await this.root.fileStore.fetchBasicInfo();
+        if (this.root.fileStore.parentFile?.uuid) {
+          this.root.missigStore.fetchMissiGInfo(
+            this.root.fileStore.parentFile?.uuid,
+          );
+        } else {
+          throw new Error('failed to get parent file info');
+        }
       }
     } catch (error) {
       console.error('Error:', error);

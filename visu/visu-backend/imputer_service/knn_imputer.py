@@ -1,6 +1,5 @@
 import utils
 from sklearn.impute import KNNImputer
-# import pandas as pd
 
 
 # TODO DEBUG func knn_imputer_service

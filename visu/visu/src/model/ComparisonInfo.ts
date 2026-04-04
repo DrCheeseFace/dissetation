@@ -8,3 +8,10 @@ export interface ColumnComparisonMetrics {
 }
 
 export type ComparisonInfo = ColumnComparisonMetrics[];
+
+export interface ComparisonResponse {
+  root: {
+    [uuid: string]: ComparisonInfo;
+  };
+  childtochild: ComparisonInfo;
+}

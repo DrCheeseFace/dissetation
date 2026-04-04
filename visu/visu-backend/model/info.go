@@ -21,6 +21,6 @@ type ColumnInfo struct {
 type ComparisonInfo []ColumnComparisonMetrics
 type ColumnComparisonMetrics map[string]ComparisonMetrics
 type ComparisonMetrics struct {
-	WD  float64 `json:"WD"` // wasserstein distance
+	WD  float64 `json:"WD"`  // wasserstein distance
 	MAD float64 `json:"MAD"` // mean absolute difference
 }

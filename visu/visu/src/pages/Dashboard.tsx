@@ -10,16 +10,19 @@ import { useEffect } from 'react';
 const Dashboard = observer(() => {
   const { globalStore, fileStore, comparisonStore } = useRootStore();
 
+  // TODO better way to make sure the history tab is clean?
   useEffect(() => {
     fileStore.fetchHistory();
-  }, []);
+  }, [fileStore]);
 
-  const DEBUGME = () => {
+  const DEBUG_logFetchComparison = async () => {
     if (!fileStore.childFiles[0] || !fileStore.parentFile) return;
-    comparisonStore.fetchComparison(
-      fileStore.parentFile?.uuid,
+    const out = await comparisonStore.fetchComparison(
       fileStore.childFiles[0].uuid,
+      fileStore.childFiles[1]?.uuid,
     );
+
+    console.log(out);
   };
 
   return (
@@ -31,7 +34,7 @@ const Dashboard = observer(() => {
       <div className="mb-5 space-x-2">
         <Button onClick={globalStore.debugReset}>DEBUG RESET</Button>
         <Button onClick={fileStore.fetchHistory}>DEBUG fetch histiriy</Button>
-        <Button onClick={DEBUGME}>DEBUG compare</Button>
+        <Button onClick={DEBUG_logFetchComparison}>DEBUG compare</Button>
       </div>
 
       {/* TODO add animtation to change to files tab and highlight row */}

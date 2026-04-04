@@ -353,8 +353,10 @@ func (i *imputerSvc) GetRows(src model.FileNode, rowIndexes []int) (string, erro
 	return string(body), nil
 }
 
-// TODO
-func (i *imputerSvc) GetCompareInfo(base model.FileNode, child model.FileNode) (*model.ComparisonInfo, error) {
+func (i *imputerSvc) GetCompareInfo(
+	base model.FileNode,
+	child model.FileNode,
+) (*model.ComparisonInfo, error) {
 	params := url.Values{}
 	params.Add("base", base.Path)
 	params.Add("child", child.Path)

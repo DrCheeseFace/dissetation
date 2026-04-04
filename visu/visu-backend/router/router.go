@@ -35,7 +35,7 @@ func NewRoutes() chi.Router {
 	r.Route("/info", func(r chi.Router) {
 		r.Get("/", imputerHandler.GetFilesInfo)
 		r.Get("/history", imputerHandler.GetParentHistory)
-		r.Get("/missiG", imputerHandler.GetParentFileMissiGInfo)
+		r.Get("/{uuid}/missiG", imputerHandler.GetMissiGInfo)
 		r.Get("/{uuid}/sample/{n}", imputerHandler.GetSample)
 		r.Get("/compare/{uuid1}/{uuid2}", imputerHandler.GetCompareInfo)
 		r.Post("/{uuid}/rows", imputerHandler.GetRows)

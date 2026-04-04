@@ -143,7 +143,7 @@ func (fS *fileSvc) ResetHistory() {
 
 func (fS *fileSvc) ResetChildFiles() {
 	for _, f := range fS.GetChildFiles() {
-		fS.DeleteChildFile(f.UUID)
+		_ = fS.DeleteChildFile(f.UUID) // i only need to log it. already handled within this func
 	}
 }
 

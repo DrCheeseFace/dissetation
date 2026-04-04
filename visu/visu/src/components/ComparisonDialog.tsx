@@ -7,38 +7,133 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ParallelCoordinates } from './ParrallelCoordinatePlot';
-import type { BasicInfo } from '@/model/BasicInfo';
+import type { BasicInfo, UUID } from '@/model/BasicInfo';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type FC } from 'react';
 import type { SampleData } from '@/model/Sample';
+import type {
+  ComparisonResponse,
+  ComparisonInfo,
+} from '@/model/ComparisonInfo';
 
 interface ComparisonDialogProps {
   node1: BasicInfo | null;
   node2: BasicInfo | null;
   fetchSample: (uuid: string, count: number) => Promise<SampleData>;
   fetchRows: (uuid: string, row_indexes: number[]) => Promise<SampleData>;
+  fetchComparison: (
+    baseuuid: UUID,
+    childuuid: UUID,
+  ) => Promise<ComparisonResponse>;
 }
 
 export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
-  ({ node1, node2, fetchSample, fetchRows }) => {
+  ({ node1, node2, fetchSample, fetchRows, fetchComparison }) => {
     const [data1, setData1] = useState<SampleData>();
     const [data2, setData2] = useState<SampleData>();
+    const [comparisonData, setComparisonData] = useState<ComparisonResponse>();
     const [hoveredDataset, setHoveredDataset] = useState<
       'data1' | 'data2' | null
     >();
 
     useEffect(() => {
-      async function fetchS() {
+      async function asyncFetch() {
         if (node1 == null || node2 == null) return;
+
         const sample = await fetchSample(node1.uuid, 256);
         setData1(sample);
+
         const firstColumn = node1.columns[0].name;
         const indexes: number[] = Object.keys(sample[firstColumn]).map(Number);
         setData2(await fetchRows(node2.uuid, indexes));
+
+        const comparison = await fetchComparison(node1.uuid, node2.uuid);
+        setComparisonData(comparison);
       }
 
-      fetchS();
-    }, [node1, node2]);
+      asyncFetch();
+    }, [node1, node2, fetchSample, fetchRows, fetchComparison]);
+
+    const MetricTable = (title: string, info: ComparisonInfo) => (
+      <div className="flex flex-col gap-2 mb-6">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+          {title}
+        </h4>
+        <div className="grid grid-cols-3 gap-4 font-medium text-sm mb-2 border-b pb-2">
+          <div>Column</div>
+          <div>WD</div>
+          <div>MAD</div>
+        </div>
+        {node1?.columns
+          .filter((col) => {
+            const colMetricObj = info.find((m) => col.name in m);
+            const metrics = colMetricObj ? colMetricObj[col.name] : null;
+            return (
+              metrics &&
+              (Math.abs(metrics.WD) > 1e-9 || Math.abs(metrics.MAD) > 1e-9)
+            );
+          })
+          .map((col) => {
+            const colMetricObj = info.find((m) => col.name in m);
+            const metrics = colMetricObj ? colMetricObj[col.name] : null;
+
+            return (
+              <div
+                key={col.name}
+                className="grid grid-cols-3 gap-4 text-sm border-b border-slate-100 pb-2 last:border-0"
+              >
+                <div className="font-medium">{col.name}</div>
+                <div>{metrics?.WD != null ? metrics.WD.toFixed(4) : '—'}</div>
+                <div>{metrics?.MAD != null ? metrics.MAD.toFixed(4) : '—'}</div>
+              </div>
+            );
+          })}
+      </div>
+    );
+
+    // TODO move to seperate component
+    const ImputationList = ({ node }: { node: BasicInfo }) => (
+      <div className="flex flex-col gap-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          {node.filename}
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {node.imputations && node.imputations.length > 0 ? (
+            node.imputations.map((imp, idx) => {
+              return (
+                <div
+                  key={idx}
+                  className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col gap-2"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="max-w-37.5">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                        Feature
+                      </p>
+                      <p className="text-sm font-semibold text-slate-800 truncate">
+                        {imp.feature}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-50 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      Method
+                    </span>
+                    <code className="text-[11px] px-1.5 py-0.5 bg-slate-100 rounded text-blue-700 font-semibold">
+                      {imp.method}
+                    </code>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              No methods recorded for this state.
+            </p>
+          )}
+        </div>
+      </div>
+    );
 
     return (
       <Dialog>
@@ -55,17 +150,15 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto flex flex-col gap-8 py-6">
-              {/* parralel plot  */}
               {data1 && data2 && (
                 <div className="h-112.5 w-full shrink-0 bg-slate-50 rounded-lg p-4 border">
                   <ParallelCoordinates
                     data1={data1}
                     data2={data2}
                     basicInfo1={node1}
-                    hoveredDataset={hoveredDataset} // TODO HOVERED THING
+                    hoveredDataset={hoveredDataset}
                   />
-
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 mt-4">
                     <Button
                       onClick={() => setHoveredDataset('data1')}
                       className="bg-gray-500 hover:bg-red-500 text-white"
@@ -88,32 +181,47 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
                 </div>
               )}
 
-              {/* TODO CHANGE ME */}
-              <div className="flex flex-col gap-4">
-                <div className="p-4 border rounded-lg shadow-sm">
-                  <h3 className="font-medium text-sm text-muted-foreground mb-2">
-                    Metrics comparison
+              <div className="flex flex-col gap-6">
+                <div className="p-6 border rounded-lg shadow-sm bg-white">
+                  <h3 className="font-semibold text-lg mb-6">
+                    Distribution Metrics
                   </h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-3 bg-slate-100 rounded">
-                      Metric A: 12%
+
+                  {!comparisonData ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading metrics...
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                      <div>
+                        {Object.entries(comparisonData.root).map(
+                          ([uuid, info]) => (
+                            <div key={uuid}>
+                              {MetricTable(
+                                `Parent to ${uuid === node1.uuid ? node1.filename : node2.filename}`,
+                                info,
+                              )}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                      <div>
+                        {comparisonData.childtochild &&
+                          MetricTable(
+                            'Child to Child',
+                            comparisonData.childtochild,
+                          )}
+                      </div>
                     </div>
-                    <div className="p-3 bg-slate-100 rounded">
-                      Metric B: 55%
-                    </div>
-                    <div className="p-3 bg-slate-100 rounded">
-                      Metric C: 32%
-                    </div>
-                  </div>
+                  )}
                 </div>
 
-                <div className="p-4 border rounded-lg shadow-sm">
-                  <h3 className="font-medium text-sm text-muted-foreground mb-2">
-                    Change Logs
-                  </h3>
-                  <p className="text-sm">
-                    No significant anomalies detected between datasets.
-                  </p>
+                <div className="p-6 border rounded-lg shadow-sm bg-slate-50/50">
+                  <h3 className="font-semibold text-lg mb-6">Imputations</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <ImputationList node={node1} />
+                    <ImputationList node={node2} />
+                  </div>
                 </div>
               </div>
             </div>

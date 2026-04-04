@@ -16,7 +16,7 @@ import (
 type (
 	ImputerHandler interface {
 		// return parent missiG info
-		GetParentFileMissiGInfo(w http.ResponseWriter, r *http.Request)
+		GetMissiGInfo(w http.ResponseWriter, r *http.Request)
 
 		// creates simple impute child file
 		PostSimpleImpute(w http.ResponseWriter, r *http.Request)
@@ -56,17 +56,30 @@ func NewImputerHandler(
 	return imputerHandler{imputerSvc, fileSvc}
 }
 
-func (i imputerHandler) GetParentFileMissiGInfo(w http.ResponseWriter, r *http.Request) {
-	f := i.fileSvc.GetParentFile()
+func (i imputerHandler) GetMissiGInfo(w http.ResponseWriter, r *http.Request) {
+	uuidParam := chi.URLParam(r, "uuid")
+	if uuidParam == "" {
+		http.Error(w, "param 'uuid' is required", http.StatusBadRequest)
+		return
+	}
+
+	uuid, err := uuid.Parse(uuidParam)
+	if err != nil {
+		logger.Log.Warningf("invalid uuid provided, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	f := i.fileSvc.GetFile(uuid)
 	if f == nil {
-		logger.Log.Warning("parent file was not set")
+		logger.Log.Warning("file of uuid %s does not exist", uuid.String())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := i.imputerSvc.GetMissiGInfo(*f)
 	if err != nil {
-		logger.Log.Errorf("failed to get parent file MissiG info")
+		logger.Log.Errorf("failed to get file MissiG info")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -289,8 +302,12 @@ func (i imputerHandler) GetSample(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(sampleJSON))
 }
 
-// TODO IMPLEMENTATION
 func (i imputerHandler) GetCompareInfo(w http.ResponseWriter, r *http.Request) {
+	type ComparisonResponse struct {
+		Root         map[string]model.ComparisonInfo `json:"root"`
+		ChildToChild model.ComparisonInfo            `json:"childtochild"`
+	}
+
 	uuid1Param := chi.URLParam(r, "uuid1")
 	if uuid1Param == "" {
 		http.Error(w, "param 'uuid1' is required", http.StatusBadRequest)
@@ -322,32 +339,69 @@ func (i imputerHandler) GetCompareInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	f1 := i.fileSvc.GetFile(uuid1)
-	if f1 == nil {
+	child1 := i.fileSvc.GetFile(uuid1)
+	if child1 == nil {
 		logger.Log.Warning("file of uuid %s does not exist", uuid1.String())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	f2 := i.fileSvc.GetFile(uuid2)
-	if f2 == nil {
+	child2 := i.fileSvc.GetFile(uuid2)
+	if child2 == nil {
 		logger.Log.Warning("file of uuid %s does not exist", uuid2.String())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// TODO TODO
-	// compare parent to each child
-	// compare child1 to child2
-
-	temp, err := i.imputerSvc.GetCompareInfo(*f1, *f2)
+	// CHILD1 TO CHILD2
+	compareInfoC1C2, err := i.imputerSvc.GetCompareInfo(*child1, *child2)
 	if err != nil {
-		logger.Log.Errorf("failed to retrieve compare info between %s and %s, %v", f1.UUID.String(), f1.UUID.String(), err)
+		logger.Log.Errorf(
+			"failed to retrieve compare info between %s and %s, %v",
+			child1.UUID.String(),
+			child2.UUID.String(),
+			err,
+		)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	// PARENT TO CHILD1
+	compareInfoPC1, err := i.imputerSvc.GetCompareInfo(*parentFile, *child1)
+	if err != nil {
+		logger.Log.Errorf(
+			"failed to retrieve compare info between %s and %s, %v",
+			parentFile.UUID.String(),
+			child1.UUID.String(),
+			err,
+		)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// PARENT TO CHILD2
+	compareInfoPC2, err := i.imputerSvc.GetCompareInfo(*parentFile, *child2)
+	if err != nil {
+		logger.Log.Errorf(
+			"failed to retrieve compare info between %s and %s, %v",
+			parentFile.UUID.String(),
+			child2.UUID.String(),
+			err,
+		)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response := ComparisonResponse{
+		Root: map[string]model.ComparisonInfo{
+			child1.UUID.String(): *compareInfoPC1,
+			child2.UUID.String(): *compareInfoPC2,
+		},
+		ChildToChild: *compareInfoC1C2,
+	}
+
 	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (i imputerHandler) GetRows(w http.ResponseWriter, r *http.Request) {
