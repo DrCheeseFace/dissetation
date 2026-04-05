@@ -51,8 +51,8 @@ func NewRoutes() chi.Router {
 
 	r.Route("/impute", func(r chi.Router) {
 		r.Post("/simple", imputerHandler.PostSimpleImpute)
-		// TODO test without catagorical data
 		r.Post("/knn", imputerHandler.PostKNNImpute)
+		r.Post("/mice", imputerHandler.PostMICEImpute)
 	})
 
 	return r

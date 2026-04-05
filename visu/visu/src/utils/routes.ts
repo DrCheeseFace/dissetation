@@ -9,6 +9,7 @@ export const deleteChildFile = (uuid: UUID) => `${baseurl}/dataset/${uuid}`;
 export const commitChildFile = (uuid: UUID) => `${baseurl}/dataset/${uuid}`;
 export const simpleImputeURL = baseurl + '/impute/simple';
 export const knnImputeURL = baseurl + '/impute/knn';
+export const miceImputeURL = baseurl + '/impute/mice';
 export const revertToParentFile = (uuid: UUID) =>
   `${baseurl}/dataset/revert/${uuid}`;
 

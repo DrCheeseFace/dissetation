@@ -38,6 +38,12 @@ type (
 			n_neighbors int,
 		) error
 
+		// creates MICE imputation of "src" saved to "dst"
+		CreateMICEImpute(
+			src model.FileNode,
+			dst string,
+		) error
+
 		// returns basic info json-string
 		GetBasicInfo(model.FileNode) (*model.BasicInfo, error)
 
@@ -268,6 +274,59 @@ func (i *imputerSvc) CreateKNNImpute(src model.FileNode, dst string, n_neighbors
 		model.Imputation{
 			Feature: "ALL",
 			Method:  model.GetKNNImputationMethodTag(n_neighbors),
+		},
+	)
+
+	_, err = i.fileSvc.CreateChildFile(dst, imputations)
+	if err != nil {
+		return fmt.Errorf("failed to create child file, %v", err)
+	}
+
+	return nil
+}
+
+func (i *imputerSvc) CreateMICEImpute(src model.FileNode, dst string) error {
+	type request struct {
+		Src string `json:"src"`
+		Dst string `json:"dst"`
+	}
+
+	r := request{Src: src.Path, Dst: dst}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", i.createUrl("mice_impute"), bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("http request failed: %v", err)
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		bytes, _ := io.ReadAll(resp.Body)
+		logger.Log.Debugf("%v", string(bytes))
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var imputations = src.Imputations
+	imputations = append(
+		imputations,
+		model.Imputation{
+			Feature: "ALL",
+			Method:  model.ImputationMethodMICE,
 		},
 	)
 

@@ -13,7 +13,7 @@ type FileNode struct {
 }
 
 type Imputation struct {
-	Feature string           `json:"feature"` // TODO MAKE AN ARRAY FOR KNN
+	Feature string           `json:"feature"`
 	Method  ImputationMethod `json:"method"`
 }
 
@@ -27,4 +27,5 @@ const (
 	ImputationMethodSimpleMean   ImputationMethod = "simple_mean"
 	ImputationMethodSimpleMedian ImputationMethod = "simple_median"
 	ImputationMethodSimpleMode   ImputationMethod = "simple_mode"
+	ImputationMethodMICE         ImputationMethod = "mice"
 )

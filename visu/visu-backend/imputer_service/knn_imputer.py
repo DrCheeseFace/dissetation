@@ -2,8 +2,7 @@ import utils
 from sklearn.impute import KNNImputer
 
 
-# TODO DEBUG func knn_imputer_service
-def knn_imputer_service(src, dst, n_neighbors):
+def knn_imputer_service(app, src, dst, n_neighbors):
     """
     :param str src: path to dataset
     :param str dst: path to save dataset
@@ -15,16 +14,17 @@ def knn_imputer_service(src, dst, n_neighbors):
     except Exception as e:
         raise RuntimeError(f"Failed to load dataset from '{src}': {e}")
 
-    df.columns = df.iloc[0]
-    df = df.iloc[1:].reset_index(drop=True)
-    # df = df.apply(pd.to_numeric, errors='coerce') # todo handle catagorical later
-    df.columns = df.columns.astype(str)
+    imputer = KNNImputer(
+        n_neighbors=n_neighbors,
+        weights="uniform"
+    ).set_output(transform="pandas")
 
-    imputer = KNNImputer(n_neighbors=n_neighbors).set_output(
-        transform="pandas")
+    app.logger.info("started knn imputing")
     df = imputer.fit_transform(df)
+    app.logger.info("done knn imputing")
 
     try:
         utils.save_to_csv(dst, df)
     except Exception as e:
+        # TODO DEBUG func knn_imputer_service
         raise RuntimeError(f"Failed to save dataset to '{dst}': {e}")

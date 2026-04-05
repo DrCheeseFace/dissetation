@@ -31,15 +31,15 @@ const Dashboard = observer(() => {
   };
 
   const DEBUG_fetchMissingMatrixInfo = async () => {
-      console.log('DEBUG_fetchMissingMatrixInfo: on click');
+    console.log('DEBUG_fetchMissingMatrixInfo: on click');
     if (!fileStore.parentFile) return;
 
     const out = await comparisonStore.fetchMissingMatrix(
       fileStore.parentFile?.uuid,
     );
 
-                console.log(out)
-      setDEBUG_matrixinfo(out.info);
+    console.log(out);
+    setDEBUG_matrixinfo(out.info);
   };
 
   return (
@@ -60,7 +60,10 @@ const Dashboard = observer(() => {
 
       {/* TODO add animtation to change to files tab and highlight row */}
       <Tabs defaultValue="MissiG">
-        <TabsList>
+        <TabsList
+          className="sticky top-0 z-20 bg-slate-50 w-full"
+          variant="line"
+        >
           <TabsTrigger value="MissiG">MissiG</TabsTrigger>
           <TabsTrigger value="Imputation">Imputation</TabsTrigger>
           <TabsTrigger value="Files">Files</TabsTrigger>

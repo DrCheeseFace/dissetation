@@ -36,7 +36,7 @@ const MissiGVisualisationTab = observer(() => {
 
   return (
     <div className="flex flex-col gap-4 px-3 py-3 bg-slate-50/50">
-      <div className="flex flex-wrap gap-2">
+      <div className="sticky top-10 z-10 flex flex-wrap gap-2">
         {files.map((file: BasicInfo) => (
           <Button
             key={file.uuid}

@@ -110,12 +110,12 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
           // if catagorical, get unique values
           const uniqueValues = Array.from(
             new Set(combinedData.map((d) => String(d[dimName]))),
-          );
+          ).filter((v) => v !== 'null');
+
+
           yScales[dimName] = d3
             .scalePoint()
-            .domain(
-              uniqueValues.filter((v) => v !== 'null' && v !== 'undefined'),
-            )
+            .domain(uniqueValues)
             .range([innerHeight, 0])
             .padding(0.5);
         }

@@ -8,6 +8,7 @@ import {
   getBasicInfo,
   getHistory,
   knnImputeURL,
+  miceImputeURL,
   revertToParentFile,
   simpleImputeURL,
 } from '@/utils/routes';
@@ -106,7 +107,6 @@ export class FileStore {
     }
   };
 
-  // TODO TEST WITHOUT CATAGORICAL DATA
   knnImpute = async (filename: string, n_neighbors: number) => {
     try {
       this.setLoading(true);
@@ -118,6 +118,30 @@ export class FileStore {
         body: JSON.stringify({
           name: filename,
           n_neighbors: n_neighbors,
+        }),
+      });
+      if (response.ok) {
+        await this.fetchBasicInfo();
+      } else {
+        console.error('HTTP Error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('an error occured when fetching basic info: ', error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  miceImpute = async (filename: string) => {
+    try {
+      this.setLoading(true);
+      const response = await fetch(miceImputeURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: filename,
         }),
       });
       if (response.ok) {

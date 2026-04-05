@@ -1,4 +1,5 @@
 # Profiler: integrated statistical analysis and visualization for data quality assessment
+
 1. is processed using javascript. This is SLOW when done at scale; 
     POSSIBLY FOR MY PROJECT I CAN MAKE AN OPTIMIZED VERSION OF THIS?
 2. has relatively slow rendering times with large amounts of data and rows. 

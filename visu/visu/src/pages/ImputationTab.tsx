@@ -20,7 +20,7 @@ import { useRootStore } from '@/mobx/rootstore';
 import type { ColumnInfo } from '@/model/BasicInfo';
 import { observer } from 'mobx-react-lite';
 import type { SimpleImputationStrategy } from '@/model/SimpleImpute';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 const ImputationTab = observer(() => {
   const { fileStore } = useRootStore();
@@ -29,6 +29,11 @@ const ImputationTab = observer(() => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [newFilename, setNewFilename] = useState('');
   const [n_neighbors, setN_neighbors] = useState(5);
+
+  const hasCategoricalData = fileStore.parentFile?.columns.some((col) => {
+    const type = col.dtype.toLowerCase();
+    return type.includes('str') || type.includes('bool');
+  });
 
   const handleApplySimpleImputation = async () => {
     if (!selectedColumn || !selectedMethod || !newFilename || fileStore.loading)
@@ -44,9 +49,16 @@ const ImputationTab = observer(() => {
   };
 
   const handleKnnImputation = async () => {
-    if (!newFilename || fileStore.loading) return;
+    if (!newFilename || fileStore.loading || hasCategoricalData) return;
 
     await fileStore.knnImpute(newFilename, n_neighbors);
+    resetSelection();
+  };
+
+  const handleMiceImputation = async () => {
+    if (!newFilename || fileStore.loading) return;
+
+    await fileStore.miceImpute(newFilename);
     resetSelection();
   };
 
@@ -262,45 +274,58 @@ const ImputationTab = observer(() => {
               </CardHeader>
 
               <CardContent className="pt-6 space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Number of Neighbors (k)
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={n_neighbors}
-                    disabled={fileStore.loading}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setN_neighbors(val);
-                      if (fileStore.parentFile?.filename) {
-                        setNewFilename(
-                          `${fileStore.parentFile.filename.split('.')[0]}_knn_${val}`,
-                        );
-                      }
-                    }}
-                    className="bg-white"
-                  />
-                </div>
+                {hasCategoricalData ? (
+                  <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 flex gap-3 items-start">
+                    <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-amber-800">
+                      KNN Imputation requires all columns to be numerical.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Number of Neighbors (k)
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={n_neighbors}
+                        disabled={fileStore.loading}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setN_neighbors(val);
+                          if (fileStore.parentFile?.filename) {
+                            setNewFilename(
+                              `${fileStore.parentFile.filename.split('.')[0]}_knn_${val}`,
+                            );
+                          }
+                        }}
+                        className="bg-white"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Save As (New Filename)
-                  </label>
-                  <Input
-                    value={newFilename}
-                    disabled={fileStore.loading}
-                    onChange={(e) => setNewFilename(e.target.value)}
-                    placeholder="Enter filename..."
-                    className="bg-white"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Save As (New Filename)
+                      </label>
+                      <Input
+                        value={newFilename}
+                        disabled={fileStore.loading}
+                        onChange={(e) => setNewFilename(e.target.value)}
+                        placeholder="Enter filename..."
+                        className="bg-white"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className="pt-4 border-t">
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    disabled={!newFilename || fileStore.loading}
+                    disabled={
+                      !newFilename || fileStore.loading || hasCategoricalData
+                    }
                     onClick={handleKnnImputation}
                   >
                     {fileStore.loading ? (
@@ -310,6 +335,49 @@ const ImputationTab = observer(() => {
                       </>
                     ) : (
                       'Apply KNN Imputation'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white shadow-sm border-slate-200">
+              <CardHeader className="pb-4 border-b">
+                <CardTitle className="text-lg">MICE imputation</CardTitle>
+                <CardDescription className="mt-1">
+                  Impute missing values across the dataset using MICE.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-6">
+                <>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Save As (New Filename)
+                    </label>
+                    <Input
+                      value={newFilename}
+                      disabled={fileStore.loading}
+                      onChange={(e) => setNewFilename(e.target.value)}
+                      placeholder="Enter filename..."
+                      className="bg-white"
+                    />
+                  </div>
+                </>
+
+                <div className="pt-4 border-t">
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled={!newFilename || fileStore.loading}
+                    onClick={handleMiceImputation}
+                  >
+                    {fileStore.loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Imputing...
+                      </>
+                    ) : (
+                      'Apply MICE Imputation'
                     )}
                   </Button>
                 </div>

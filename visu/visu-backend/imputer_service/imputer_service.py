@@ -5,6 +5,7 @@ import os
 import info
 import simple_imputer
 import knn_imputer
+import mice_imputer
 
 app = Flask(__name__)
 
@@ -219,10 +220,68 @@ def simple_impute():
         }), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@app.route('/mice_impute', methods=['POST'])
+def mice_impute():
+    """
+    perform mice imputation
+
+    Input JSON: {
+        "src":          str
+        "dst":          str
+    }
+
+    :return: status
+    """
+    data = request.get_json()
+
+    required_keys = ['src', 'dst']
+    if not data or not all(key in data for key in required_keys):
+        return jsonify({
+            "status": "error",
+            "message": f"Missing required JSON fields. Expected: {
+                required_keys}"
+        }), HTTPStatus.BAD_REQUEST
+
+    src = "../" + data['src']
+    dst = "../" + data['dst']
+
+    if not os.path.exists(src):
+        return jsonify({
+            "status": "error",
+            "message": f"File not found at: {src}"
+        }), HTTPStatus.NOT_FOUND
+
+    try:
+        mice_imputer.mice_imputer_service(app, src, dst)
+
+        return jsonify({
+            "status": "success",
+            "message": "success"
+        }), HTTPStatus.OK
+
+    except (KeyError, ValueError, TypeError) as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.BAD_REQUEST
+
+    except RuntimeError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An unexpected server error occurred.{e}"
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 @app.route('/knn_impute', methods=['POST'])
 def knn_impute():
     """
-    perform simple imputation
+    perform knn imputation
 
     Input JSON: {
         "src":          str
@@ -253,7 +312,7 @@ def knn_impute():
         }), HTTPStatus.NOT_FOUND
 
     try:
-        knn_imputer.knn_imputer_service(src, dst, n_neighbors)
+        knn_imputer.knn_imputer_service(app, src, dst, n_neighbors)
 
         return jsonify({
             "status": "success",
