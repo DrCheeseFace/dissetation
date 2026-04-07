@@ -1,47 +1,177 @@
-\documentclass[12pt, conference]{IEEEtran}
-
+% \documentclass[11pt, conference]{IEEEtran}
+\documentclass[a4paper, 11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[square,numbers]{natbib}
-
 \usepackage{graphicx, float}
-\graphicspath{{images/}}
-
+\usepackage{etoolbox}
 \usepackage{url}
-\usepackage[letterpaper, top=0.75in, bottom=0.75in, left=0.625in, right=0.625in]{geometry}
+
+\graphicspath{{assets/}}
+\bibliographystyle{IEEEtranN}
+
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+\makeatletter
+\renewcommand{\@seccntformat}[1]{{\csname the#1\endcsname}.\enspace}
+\patchcmd{\section}{\scshape}{\bfseries}{}{}
+\patchcmd{\subsection}{\itshape}{\bfseries}{}{}
+\patchcmd{\subsubsection}{\itshape}{\bfseries}{}{}
+\makeatother
+
+\title{MICA: Missing Imputation Comparison Analysis}
+\author{Tharun Tilakumara \\ 220424448}
+\date{\today}
 
 \begin{document}
 
-\title{Tally Me Banana}
-\author{Tharun Tilakumara}
-\IEEEspecialpapernotice{\today}
-\maketitle
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    \includegraphics[width=0.6\textwidth]{uniLogo.png}\\[2cm]
+    
+    {\Huge \bfseries MICA: Missing Imputation Comparison Analysis\par}
+    \vspace{1cm}
+    {\LARGE B.Sc. Computer Science\par}
+    \vspace{2cm}
+    
+    {\Large \textbf{Tharun Tilakumara}} \\[0.5cm]
+    {\Large 220424448} \\[2cm]
+    
+    {\large Supervised by: Sara Johansson Fernstad} \\
+    {\large Word Count: 0xDEADBEEF}
+    
+    {\Large \today}
+\end{titlepage}
+
+\onecolumn 
+
+\section*{Abstract}
+This is an example of how to cite references \cite{little_statistical_2019}.
+To-do
+Another citation afoot! \cite{little_statistical_2019}
+\newpage
+
+
+\pagenumbering{arabic}
+\tableofcontents
+\newpage
 
 \section{Introduction}
-This is an example of how to cite references \cite{ma_segment_2023}.
+\subsection{Motivation}
+The workflow of a data-scientist typically follows the following order of
+tasks. 
+\begin{enumerate}
+        \item Capturing of data
+        \item Preprocessing of data 
+        \item Exploratory analysis 
+        \item Final analysis 
+\end{enumerate}
 
-Another citation afoot! \cite{noauthor_installation_nodate}
+The majority of time out of this workflow is consumed by the preprocessing of
+data step. As shown in \cite[p~3 fig~2]{sarih_data_2019} the cleaning and
+organizing of data takes up an estimated 60\% of a data-scientists time. This
+is a manual process that requires human judgement. This critical step requires
+tedious and rigorous testing; In particular, low-quality data imputation can
+result in unnatural or even worse, misleading distributions of values. The side
+effects of which can include poorly performing prediction models and inaccurate
+exploratory and final analysis. Data imputation started with simple methods
+such as mean/median imputation. With the discovery of the mechanics of missing
+data and concepts such as MCAR (missing completely at random), MAR (missing at
+random) and MNAR (missing not at random) \cite{little_statistical_2019}, data
+scientists now have access to a large array of complex algorithms to choose
+from, which each have their own positives and drawbacks. Picking the optimal
+algorithm for imputation for each feature in a dataset is time-consuming and
+prone to error. 
 
-\section{My first section}
-Yippee.
+While applications in the past have been developed to ease data imputation,
+such as VIM \cite{templ_exploring_2012}, MANET \cite{unwin_interactive_1996}
+and AmeliaView \cite{honaker_amelia_2024}, there has been little development in
+the way of comparing different imputations of the same dataset. Currently, the
+solution for comparing different imputation results would be to manually create
+separate scripts for each imputation method and then, using the created
+versions of the datasets, compare them using graphs. 
 
-\subsection{My first subsection}
-lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum 
-lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum 
-lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum 
-lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum 
+Older applications, such as the ones
+mentioned before lack newly discovered visualization methods such as MissiG
+\cite{fernstad_explore_2022} that could prove to be more useful for analyzing
+missingness of data. 
 
-\section{Another section here}
-Almost done.
+\subsection{Aims} 
 
-\begin{figure}[H]
-        \centering
-        \includegraphics[width=3in]{rei.jpg}
-        \caption{Ayanami Rei}
-\end{figure}
+This project aims to:
+\begin{itemize} 
 
+        \item Make the decision-making step for data imputation easier by
+                providing a touch screen dashboard interface for comparing
+                different imputation results that are derived from different
+                algorithms of imputation. 
 
-\bibliographystyle{ieeetr}
+        \item Reduce the time spent on the preprocessing of datasets as well as
+                improve the results of imputed datasets.
+
+        \item Create a solution for keeping track of combinations of
+                imputations performed on versions of datasets created from
+                prior imputations in a GIT \cite{noauthor_git_nodate} style
+                version control system. 
+
+\end{itemize}
+
+\subsection{Objectives}
+
+\begin{enumerate}
+
+\item \textbf{Missingness Structures} - This dissertation will investigate and
+        explain the concept of missingness structures and its role in data
+        imputation and analysis. It will explain the different types of missing data as well
+        as provide examples via synthetically created missing data.
+
+\item \textbf{Missing Data Visualizations} - This dissertation will talk about
+        methods of missing data visualizations. It will also provide
+        implementations of discussed visualizations. 
+        
+\item \textbf{Imputation Version Control} - This dissertation will propose a
+        method of keeping track of imputed datasets, discussing an example
+        use case as well as implementation details.
+
+\item \textbf{Web App Implementation and User-flow} - The main created artifact
+        of this dissertation is a web app to impute and compare imputed
+        datasets. Features and an example user-flow will be presented.
+
+\end{enumerate}
+
+\subsection{Dissertation Structure}
+
+\section{Background Review}
+\subsection{The Nature of Missing Data Structures}
+\subsection{Imputation Techniques}
+\subsection{Visualizing Missing Data}
+\subsection{Technology Stack Evaluation}
+\subsection{Previous Implementations}
+\subsection{Requirements}
+\subsubsection{Functional Requirements}
+\subsubsection{Non-Functional Requirements}
+
+\section{What Was Done and How}
+\subsection{High-level Architecture Overview}
+\subsection{Data Versioning System}
+\subsection{Pre-Imputation Analytics}
+\subsection{Post-Imputation Analytics}
+\subsection{Synthetic Data Generation}
+
+\section{Results and Evaluation}
+\subsection{System Outputs}      
+\subsection{Limitations}
+\subsection{Performance}
+
+\section{Conclusion}
+\subsection{Aims and Objectives}
+\subsection{Future Work}
+
+\newpage
 \bibliography{references}
 
 \end{document}

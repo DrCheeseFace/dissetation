@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Live Preview</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <iframe id="pdf-viewer" src="test.pdf"></iframe>
+
+    <script>
+        let lastModified = "";
+        const fileUrl = "test.pdf";
+        const iframe = document.getElementById('pdf-viewer');
+
+        async function checkUpdate() {
+            try {
+                // Fetch only the headers to check the timestamp
+                const response = await fetch(fileUrl, { method: 'HEAD', cache: 'no-cache' });
+                const currentModified = response.headers.get("Last-Modified");
+
+                if (lastModified && currentModified !== lastModified) {
+                    console.log("File changed! Reloading...");
+                    // Append a random string to the URL to bypass browser cache
+                    iframe.src = fileUrl + "?t=" + new Date().getTime();
+                }
+                lastModified = currentModified;
+            } catch (error) {
+                console.error("Error checking file:", error);
+            }
+        }
+
+        // Check for changes every 1 second
+        setInterval(checkUpdate, 1000);
+    </script>
+</body>
+</html>
