@@ -7,6 +7,7 @@ OUT_MCAR_DATASOURCE_PATH = "./out_datasets/MCAR-heart-disease.csv"
 OUT_MCAR_VARIED_DATASOURCE_PATH = "./out_datasets/MCAR-VARIED-heart-disease.csv"
 OUT_MAR_DATASOURCE_PATH = "./out_datasets/MAR-heart-disease.csv"
 OUT_MNAR_DATASOURCE_PATH = "./out_datasets/MNAR-heart-disease.csv"
+OUT_JM_DATASOURCE_PATH = "./out_datasets/JM-heart-disease.csv"
 
 OUT_SMALL_MCAR_DATASOURCE_PATH = "./out_small_datasets/MCAR-heart-disease.csv"
 OUT_SMALL_MCAR_VARIED_DATASOURCE_PATH = "./out_small_datasets/MCAR-VARIED-heart-disease.csv"
@@ -200,3 +201,23 @@ MNAR_small_df.loc[disease_mask_small & (np.random.rand(
     len(MNAR_small_df)) < 0.5), "Heart Disease"] = np.nan
 
 MNAR_small_df.to_csv(OUT_SMALL_MNAR_DATASOURCE_PATH, index=False)
+
+# JOINT MISISNGMESS
+# 30% of "age" values are missing
+# if "age" is missing, 80% change of "max hr" being missing
+# MCAR added random noise at a rate of 20%
+
+JM_dataframe = base_dataframe.copy().astype(object)
+age_missing_mask = np.random.rand(len(JM_dataframe)) < 0.3
+JM_dataframe.loc[age_missing_mask, "Age"] = np.nan
+
+age_is_nan = JM_dataframe["Age"].isna()
+max_hr_missing_mask = (age_is_nan) & (np.random.rand(len(JM_dataframe)) < 0.8)
+JM_dataframe.loc[max_hr_missing_mask, "Max HR"] = np.nan
+
+# RANDOM NOISE MCAR
+noise_level = 0.2
+noise_mask = np.random.rand(*JM_dataframe.shape) < noise_level
+JM_dataframe[noise_mask] = np.nan
+
+JM_dataframe.to_csv(OUT_JM_DATASOURCE_PATH, index=False)

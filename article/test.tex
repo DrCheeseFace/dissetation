@@ -1,12 +1,14 @@
-% \documentclass[11pt, conference]{IEEEtran}
 \documentclass[a4paper, 11pt]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{subcaption}
+\usepackage{parskip}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[square,numbers]{natbib}
 \usepackage{graphicx, float}
 \usepackage{etoolbox}
 \usepackage{url}
+\usepackage[capitalize]{cleveref}
 
 \graphicspath{{assets/}}
 \bibliographystyle{IEEEtranN}
@@ -20,6 +22,13 @@
 \patchcmd{\section}{\scshape}{\bfseries}{}{}
 \patchcmd{\subsection}{\itshape}{\bfseries}{}{}
 \patchcmd{\subsubsection}{\itshape}{\bfseries}{}{}
+\makeatother
+
+% eg etc ie implementation
+\makeatletter
+\newcommand{\ie}{\emph{i.e.}\@ifnextchar.{\!\@gobble}{}}
+\newcommand{\eg}{\emph{e.g.}\@ifnextchar.{\!\@gobble}{}}
+\newcommand{\etc}{etc\@ifnextchar.{}{.\@}}
 \makeatother
 
 \title{MICA: Missing Imputation Comparison Analysis}
@@ -126,8 +135,9 @@ This project aims to:
 
 \item \textbf{Missingness Structures} - This dissertation will investigate and
         explain the concept of missingness structures and its role in data
-        imputation and analysis. It will explain the different types of missing data as well
-        as provide examples via synthetically created missing data.
+        imputation and analysis. It will explain the different types of missing
+        data as well as provide examples via synthetically created missing
+        data.
 
 \item \textbf{Missing Data Visualizations} - This dissertation will talk about
         methods of missing data visualizations. It will also provide
@@ -144,15 +154,132 @@ This project aims to:
 \end{enumerate}
 
 \subsection{Dissertation Structure}
+To-do
+
+\newpage
 
 \section{Background Review}
+This part covers the background research gone into the design of the main
+artifact \emph{MICA} and the synthetic missing data generator.
 \subsection{The Nature of Missing Data Structures}
+There are two parts to go over for understanding how to tackle missing data. 
+\begin{enumerate}
+        \item \textit{Missingness mechanisms}
+        \item \textit{Missingness patterns}
+\end{enumerate}
+
+
+\subsubsection{Missingness mechanism}
+As explained in \cite{rubin_inference_1976}, a missingness mechanism is defined
+as why data is missing depending on other variables observed as well as the
+missing variable itself. 
+
+% TODO describe MCAR MAR MNAR 
+% TODO PUT THIS AFTER DESCRIBING CATAGOREIS
+Analyzing why data is missing is crucial in the
+best method of imputation as if we were to assume data is always
+\textit{Missing at Random}, we will skew distributions of features.
+
+\subsubsection{Missingness patterns}
+Missingness patterns are a derivation of \emph{missingness mechanism} that is
+more easily identifiable and actionable by a data scientist working on a data
+analytics task with missing variables. As defined by
+\cite{fernstad_identify_2019}, there are 3 characteristics of missing data to
+look for.
+\begin{enumerate}
+        \item \textit{Amount missing}
+        \item \textit{Joint Missingness}
+        \item \textit{Conditional Missingness}
+\end{enumerate}
+
+For the below figure examples, the UCI Irvine Heart Disease dataset
+\cite{andras_janosi_heart_1989} was used as a base with missingness patterns
+synthetically added after. 
+
+\paragraph{\textbf{Amount Missing}}~\\
+The \textit{Amount missing} describes the percentage missing of a selected variable out of
+all records in a dataset. This is useful to know in a practical sense as that
+data engineers need to know what variables are worth imputing and discarding.
+We can also use this to identify or dismiss the \textit{MCAR} missingness
+mechanism for a variable. 
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{MCAR_recorded_age_distribution.png}
+        \caption{Recorded age values.}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{MCAR_missing_hd_age_distribution.png}
+        \caption{Age when Heart Disease is missing.}
+    \end{subfigure}
+    \caption{Comparison of age distributions across the dataset; MCAR mechanism}
+    \label{fig:MCAR_age_comparison}
+\end{figure}
+
+As seen in \cref{fig:MCAR_age_comparison}, the distribution of \textit{Age} and
+the distribution of \textit{Age if Heart Disease is missing} show similar
+distributions as mathematically described by a low Wasserstein distance of
+\textbf{0.1174}. This indicates a high likelihood of the missingness mechanism
+present being \textit{MCAR}. 
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{MAR_recorded_age_distribution.png}
+        \caption{Recorded age values.}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{MAR_missing_hd_age_distribution.png}
+        \caption{Age when Heart Disease is missing.}
+    \end{subfigure}
+    \caption{Comparison of age distributions across the dataset; MAR mechanism}
+    \label{fig:MAR_age_comparison}
+\end{figure}
+
+Contrarily in \cref{fig:MAR_age_comparison} we get a Wasserstein distance of
+\textbf{6.9925}, describing a large difference in distribution between the two
+histograms. For a data scientist practitioner, this can rule out MCAR and they
+can look into verifying the nature of the missingness mechanism of the missing
+variable. 
+
+
+
+\paragraph{\textbf{Joint Missingness}} ~\\ 
+A \textit{Joint missingness} pattern refers to the likelihood of a variable
+being missing if one or more other variables are also missing. Finding evidence
+of joint missingness, suggests the presence of the MNAR mechanism. This can be
+expressed with the use of a heatmap. 
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\textwidth]{JM.png}
+        \caption{Joint Missingness depicted via Heatmap
+        \cite{bilogur_residentmariomissingno_2026}}
+    \label{fig:JM}
+\end{figure}
+
+For the given example \cref{fig:JM}, \textbf{30\%} of Age values are missing;
+If Age is missing, \textbf{80\%} of Max Hr values are missing. MCAR was added
+after at a rate of \textbf{20\%}. The blue intersecting block shows a nullity
+correlation between Age and Max Hr of \textbf{0.5}.
+
+\paragraph{\textbf{Conditional Missingness}} ~\\ 
+A \textit{Conditional missingness} pattern refers to likelihood a variable is
+missing depending on the value of another variable. A popular example of which is the survivorship bias.
+
 \subsection{Imputation Techniques}
 \subsection{Visualizing Missing Data}
 \subsection{Technology Stack Evaluation}
 \subsection{Previous Implementations}
 \subsection{Requirements}
 \subsubsection{Functional Requirements}
+
 \subsubsection{Non-Functional Requirements}
 
 \section{What Was Done and How}
