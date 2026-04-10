@@ -8,10 +8,16 @@
 \usepackage{graphicx, float}
 \usepackage{etoolbox}
 \usepackage{url}
+\usepackage{mathtools}
 \usepackage[capitalize]{cleveref}
+\usepackage[inkscapelatex=false]{svg}
 
 \graphicspath{{assets/}}
 \bibliographystyle{IEEEtranN}
+
+
+% red outline box
+\renewcommand\fbox{\fcolorbox{red}{white}}
 
 \renewcommand{\thesection}{\arabic{section}}
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
@@ -312,24 +318,135 @@ after at a rate of \textbf{20\%}. The blue intersecting block shows a nullity
 correlation between Age and Max Hr of \textbf{0.5}.
 
 \paragraph{\textbf{Conditional Missingness}} ~\\ 
-A \textit{Conditional missingness} pattern refers to likelihood a variable is
-missing depending on the value of another variable. This is more tricky to
-visualize as instead of its likelihood of being missing being dependent on the
-likelihood of other variables being missing as in \textit{Joint Missingness},
-we need a way to visualize the values of a variable to the.
-% TODO FINISH THIS WITH A VISUALISATION
+A \textit{Conditional missingness} pattern refers to the likelihood of a
+variable being missing depending on the value of another variable. This is more
+tricky to visualize as instead of its likelihood of being missing being
+dependent on the likelihood of other variables being missing as in
+\textit{Joint Missingness}, we need a way to visualize the values of a variable
+compared to the relative missingness of a variable. Finding evidence of
+\textit{Conditional Missingness} suggests the presence of a MAR mechanism.
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.9\textwidth]{conditional_missingness_MAR.png}
+        \caption{Conditional missingness of Age dependent on Max HR}
+    \label{fig:conditional_missingness_MAR}
+\end{figure}
+
+The above \cref{fig:conditional_missingness_MAR} is a synthetically created
+example of conditional missingness with the following rules \ref{conditionalmissingness}: 
+
+Let $M_i$ be the missingness indicator for the $i$-th observation, where $M_i =
+1$ if $\text{Max\_HR}$ is missing and $M_i = 0$ if it is observed. Let $A_i$
+represent the age of the individual. The missing data mechanism is defined as:
+
+\begin{equation}
+\label{conditionalmissingness}
+P(M_i = 1 \mid A_i) = 
+\begin{cases} 
+    0.7 & \text{if } A_i > 55 \\
+    0   & \text{if } A_i \le 55 
+\end{cases}
+\end{equation}
+
+\subsection{Visualizing Missing Data}
+Fernstad's study \cite{fernstad_identify_2019} into the effectiveness of
+certain visualization methods in relation to how well participants are able to
+identify missingness patterns can help make suggestions into what visualization
+methods would be beneficial to provide in the implementation of \textit{MICA}.
+The user-study test how well participants are able to identify missingness
+patterns with the use of three visualization methods. 
+
+\begin{enumerate}
+        \item Marginplot Matrix
+        \item Parallel Coordinates
+        \item Matrix Plot 
+\end{enumerate}
+
+Both Matrix plot and Parallel Coordinates performed significantly better as
+compared to Marginplot in identifying missingness patterns \cite[Table
+4]{fernstad_identify_2019}. Fernstad argues for the importance of clear
+frequency representation as well as the benefits of not separating recorded and
+unrecorded values in regard to being able to identify \textit{Conditional
+Missingness}. 
+
+\paragraph{\textbf{MissiG}} ~\\ 
+With advancements made in Fernstad's previous study into visualization methods
+for missing data \cite{fernstad_identify_2019}, Fernstad et al. develops the novel
+visualization MissiG \cite{fernstad_explore_2022} with an aim to make it easier
+for data science practitioners identify missingness patterns in a dataset.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{age.pdf}
+        \caption{Age}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{cholesterol.pdf}
+        \caption{Cholesterol}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \fbox{\includegraphics[width=\textwidth]{stdepression.pdf}}
+        \caption{ST depression}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{maxhr.pdf}
+        \caption{Max HR}
+    \end{subfigure}
+    \caption{MissiG implementation}
+    \label{fig:MissiG}
+\end{figure}
+
+\cref{fig:MissiG} is an example implementation of MissiG. 
+
+The glyphs are read as such: 
+\begin{itemize}
+        \item Red outline signified the selected variable.
+        \item Blue histogram (left) shows the frequency of the variable.
+        \item Blue bar (bottom right) shows the relative missingness of the variable.
+        \item Red histogram (right) shows the frequency for the variable where the selected variable is missing.
+        \item Red bar (bottom right) shows the joint missingness between the variable and the selected variable.
+\end{itemize}
+
+
+Following a user-study comparing how well users are able to identify
+missingness patterns with MissiG, it is confirmed that MissiG was the users
+preferred choice for identifying missingness patterns when compared to the use
+of a Heatmap and Parallel Coordinates.
+
+The uniquely interactive component of MissiG as well as its superior
+performance for identifying missingness patterns makes this visualization
+especially suited for use in \textit{MICA}.
+
+
 
 \subsection{Imputation Techniques}
-\subsection{Visualizing Missing Data}
-\subsection{Technology Stack Evaluation}
+
 \subsection{Previous Implementations}
+
+\subsection{Technology Stack Evaluation}
+
 \subsection{Requirements}
 \subsubsection{Functional Requirements}
-
 \subsubsection{Non-Functional Requirements}
 
 \section{What Was Done and How}
 \subsection{High-level Architecture Overview}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.8\textwidth]{MICA_architecture.pdf}
+        \caption{MICA architecture}
+    % \label{fig:MICA architecture}
+\end{figure}
+
 \subsection{Data Versioning System}
 \subsection{Pre-Imputation Analytics}
 \subsection{Post-Imputation Analytics}
