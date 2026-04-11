@@ -61,7 +61,10 @@
     2. Technical Evaluation
        - Performance of the backend Python calculations and D3 rendering.
     3. Limitations
-       - Features scoped out due to time (showing direct UI diffs between multiple different imputations simultaneously, file download implementation).
+       - Features scoped out due to time 
+       (showing direct UI diffs between multiple different imputations simultaneously, file download implementation).
+       - had to use react
+       - datA versioning system is bulky. can store diffs instead?
 
 6.  Conclusions
     1. Summary of Achievements

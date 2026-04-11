@@ -11,10 +11,11 @@
 \usepackage{mathtools}
 \usepackage[capitalize]{cleveref}
 \usepackage[inkscapelatex=false]{svg}
+\floatstyle{ruled}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Program}
 
 \graphicspath{{assets/}}
-\bibliographystyle{IEEEtranN}
-
 
 % red outline box
 \renewcommand\fbox{\fcolorbox{red}{white}}
@@ -253,12 +254,12 @@ mechanism for a variable.
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[H]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{MCAR_recorded_age_distribution.png}
         \caption{Recorded age values.}
     \end{subfigure}\hfill
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[H]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{MCAR_missing_hd_age_distribution.png}
         \caption{Age when Heart Disease is missing.}
@@ -274,14 +275,16 @@ distributions as mathematically described by a low Wasserstein distance of
 present being MCAR. 
 
 
+
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[H]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{MAR_recorded_age_distribution.png}
         \caption{Recorded age values.}
-    \end{subfigure}\hfill
-    \begin{subfigure}{0.5\textwidth}
+
+    \end{subfigure}
+    \begin{subfigure}[H]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{MAR_missing_hd_age_distribution.png}
         \caption{Age when Heart Disease is missing.}
@@ -372,7 +375,7 @@ Missingness}.
 
 \paragraph{\textbf{MissiG}} ~\\ 
 With advancements made in Fernstad's previous study into visualization methods
-for missing data \cite{fernstad_identify_2019}, Fernstad et al. develops the novel
+for missing data \cite{fernstad_identify_2019}, Fernstad \textit{et al}. develops the novel
 visualization MissiG \cite{fernstad_explore_2022} with an aim to make it easier
 for data science practitioners identify missingness patterns in a dataset.
 
@@ -435,21 +438,99 @@ especially suited for use in \textit{MICA}.
 \subsection{Technology Stack Evaluation}
 
 \subsection{Requirements}
+
 \subsubsection{Functional Requirements}
 \subsubsection{Non-Functional Requirements}
 
 \section{What Was Done and How}
+
 \subsection{High-level Architecture Overview}
+
+MICA is split into 3 software components \cref{fig:MICA architecture}. 
+\begin{itemize}
+        \item MICA API 
+        \item Impute Handler
+        \item Frontend Client
+\end{itemize}
+
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.8\textwidth]{MICA_architecture.pdf}
         \caption{MICA architecture}
-    % \label{fig:MICA architecture}
+    \label{fig:MICA architecture}
 \end{figure}
 
-\subsection{Data Versioning System}
+\subsubsection{MICA API}
+\textit{MICA} provides a simple-to-use API for uploading, imputing and managing
+versions of imputed datasets. This is routed through an NGINX reverse proxy to provide in
+the future RESTful API version sub-routing. The MICA API handles the imputation 
+versioning system. This acts as the bridge between the frontend client and the
+impute handler.
+
+\subsubsection{Impute Handler}
+Imputation logic as well as data required to draw graphs in the frontend
+client are calculated within the impute handler. Scikit-learn
+\cite{pedregosa_scikit-learn_2011} handles KNN and MICE imputation. The
+Scikit-learn imputation library was picked for use in \textit{MICA} as the core
+functions are written in PYX syntax and proven to be highly optimized. Custom
+functions as well as custom JSON representations are used to send information
+back to the MICA API; This includes a novel JSON standard for the MissiG
+visualization. 
+
+\subsubsection{Frontend Client}
+This utilizes D3.js \cite{noauthor_d3d3_2026} for drawing and rendering SVG
+chart components. D3.js was chosen as it provides low-level tooling to enable
+the development of novel visualizations such as MissiG. To maintain a stateful
+manner in the frontend, \textit{MICA} uses React  \cite{noauthor_react_nodate}
++ MobX  \cite{noauthor_about_nodate} to cache results requested from the MICA
+API. For low latency interactability, \textit{MICA} uses Shadcn-ui
+\cite{noauthor_shadcn-uiui_2026} for styling as it is performant.
+
+\subsection{Imputation Versioning System}
+MICA introduces a novel way to track dataset versions in regard to imputations
+performed on said dataset.
+\subsubsection*{The Problem}
+The typical workflow of a data imputation task is an iterative process where
+developers will need to create different versions of a dataset with varying
+methods of imputation. With these different versions, in order to select the
+best method of imputation, the user will need to create custom scripts
+every time they would like to compare outputs. This process is tedious and
+time-consuming. The process gets particularly complex when you have to keep
+track of more than one imputation's difference between versions. 
+
+For example, the below node diagram depicts the history of imputations
+performed on the dataset (root node). The cognitive overhead of keeping track
+of the difference between nodes D and C's history can be prone to error due to
+its complexity.
+\begin{verbatim}
+TODO REPLACE NODE DIAGRAM
+        +-->A+------>D
+        |    +------>E
+*root---+-->B------->F
+        |             
+        +-->C         
+\end{verbatim}
+\subsubsection*{The Solution}
+
+When a request to impute a dataset is sent from the client to the MICA API, the
+operations are done in the following order.
+\begin{enumerate}
+\item Request is sent to MICA API.
+\item Request is validated and passed onto the impute handler.
+\item Impute handler creates version of dataset and returns err code.
+\item MICA API creates hash for new dataset version and stores information on imputation.
+\item MICA API returns err code and new version history information to client.
+\end{enumerate}
+
+To store the history of a data imputation, \textit{MICA} uses a hierarchical
+strict tree structure. Since in some cases, imputation order matters, a tree
+data structure is suited for this problem as it inherently stores child\\parent
+information and no sideways or backwards connections are allowed.
+
+
 \subsection{Pre-Imputation Analytics}
 \subsection{Post-Imputation Analytics}
+\subsection{Example User-flow}
 \subsection{Synthetic Data Generation}
 
 \section{Results and Evaluation}
@@ -462,6 +543,42 @@ especially suited for use in \textit{MICA}.
 \subsection{Future Work}
 
 \newpage
+\section{References}
 \bibliography{references}
+
+\section{Appendix}
+\appendix
+
+\section{MICA API implementations}
+\begin{program}[H]
+\begin{verbatim}
+type FileNode struct {
+        UUID        uuid.UUID
+        Path        string
+        Imputations []Imputation
+}
+
+type Imputation struct {
+        Feature string           
+        Method  ImputationMethod 
+}
+\end{verbatim}
+\caption{Internal MICA API implementation data structure for imputation versioning system}
+\end{program}
+
+\begin{program}[H]
+\begin{verbatim}
+type BasicInfo struct {
+	UUID        uuid.UUID    `json:"uuid"`
+	Filename    string       `json:"filename"`
+	ColumnInfo  []ColumnInfo `json:"columns"`
+	Shape       [2]int       `json:"shape"`
+	Imputations []Imputation `json:"imputations"`
+}
+
+ParentHistory []model.BasicInfo `json:"parent_history"`
+\end{verbatim}
+\caption{Version history JSON structure}
+\end{program}
 
 \end{document}
