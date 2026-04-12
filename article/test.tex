@@ -31,12 +31,18 @@
 \patchcmd{\subsubsection}{\itshape}{\bfseries}{}{}
 \makeatother
 
+\newcommand{\wideimage}[2][]{%
+  \makebox[\textwidth][c]{\includegraphics[width=1.2\textwidth,#1]{#2}}%
+}
+
 % eg etc ie implementation
 \makeatletter
 \newcommand{\ie}{\emph{i.e.}\@ifnextchar.{\!\@gobble}{}}
 \newcommand{\eg}{\emph{e.g.}\@ifnextchar.{\!\@gobble}{}}
 \newcommand{\etc}{etc\@ifnextchar.{}{.\@}}
 \makeatother
+
+\newcommand{\mica}{\textit{MICA }}
 
 \title{MICA: Missing Imputation Comparison Analysis}
 \author{Tharun Tilakumara \\ 220424448}
@@ -200,7 +206,7 @@ distribution of the variables greatly. \eg
 
 Being able to easily identify MCAR using visualizations and statistics via
 developer tooling would be a feature to look for in the design and
-implementation of \textit{MICA}.
+implementation of \mica.
 
 
 \begin{figure}[H]
@@ -356,7 +362,7 @@ P(M_i = 1 \mid A_i) =
 Fernstad's study \cite{fernstad_identify_2019} into the effectiveness of
 certain visualization methods in relation to how well participants are able to
 identify missingness patterns can help make suggestions into what visualization
-methods would be beneficial to provide in the implementation of \textit{MICA}.
+methods would be beneficial to provide in the implementation of \mica.
 The user-study test how well participants are able to identify missingness
 patterns with the use of three visualization methods. 
 
@@ -427,7 +433,7 @@ of a Heatmap and Parallel Coordinates.
 
 The uniquely interactive component of MissiG as well as its superior
 performance for identifying missingness patterns makes this visualization
-especially suited for use in \textit{MICA}.
+especially suited for use in \mica.
 
 
 
@@ -445,8 +451,8 @@ especially suited for use in \textit{MICA}.
 \section{What Was Done and How}
 
 \subsection{High-level Architecture Overview}
-
-MICA is split into 3 software components \cref{fig:MICA architecture}. 
+MICA is split into three software components \cref{fig:MICA architecture}. Each
+component is dockerised for portability.
 \begin{itemize}
         \item MICA API 
         \item Impute Handler
@@ -461,17 +467,19 @@ MICA is split into 3 software components \cref{fig:MICA architecture}.
 \end{figure}
 
 \subsubsection{MICA API}
-\textit{MICA} provides a simple-to-use API for uploading, imputing and managing
-versions of imputed datasets. This is routed through an NGINX reverse proxy to provide in
-the future RESTful API version sub-routing. The MICA API handles the imputation 
-versioning system. This acts as the bridge between the frontend client and the
-impute handler.
+\mica provides a simple-to-use API for uploading, imputing and managing
+versions of imputed datasets. This is routed through an NGINX reverse proxy to
+provide in the future RESTful API version sub-routing. The MICA API handles the
+imputation versioning system. This acts as the bridge between the frontend
+client and the impute handler. \mica API design has allowed for the
+addition of other currently unimplemented imputation methods without needing 
+breaking changes.
 
 \subsubsection{Impute Handler}
 Imputation logic as well as data required to draw graphs in the frontend
 client are calculated within the impute handler. Scikit-learn
 \cite{pedregosa_scikit-learn_2011} handles KNN and MICE imputation. The
-Scikit-learn imputation library was picked for use in \textit{MICA} as the core
+Scikit-learn imputation library was picked for use in \mica as the core
 functions are written in PYX syntax and proven to be highly optimized. Custom
 functions as well as custom JSON representations are used to send information
 back to the MICA API; This includes a novel JSON standard for the MissiG
@@ -481,9 +489,9 @@ visualization.
 This utilizes D3.js \cite{noauthor_d3d3_2026} for drawing and rendering SVG
 chart components. D3.js was chosen as it provides low-level tooling to enable
 the development of novel visualizations such as MissiG. To maintain a stateful
-manner in the frontend, \textit{MICA} uses React  \cite{noauthor_react_nodate}
+manner in the frontend, \mica uses React  \cite{noauthor_react_nodate}
 + MobX  \cite{noauthor_about_nodate} to cache results requested from the MICA
-API. For low latency interactability, \textit{MICA} uses Shadcn-ui
+API. For low latency interactability, \mica uses Shadcn-ui
 \cite{noauthor_shadcn-uiui_2026} for styling as it is performant.
 
 \subsection{Imputation Versioning System}
@@ -522,15 +530,150 @@ operations are done in the following order.
 \item MICA API returns err code and new version history information to client.
 \end{enumerate}
 
-To store the history of a data imputation, \textit{MICA} uses a hierarchical
+To store the history of a data imputation, \mica uses a hierarchical
 strict tree structure. Since in some cases, imputation order matters, a tree
 data structure is suited for this problem as it inherently stores child\\parent
 information and no sideways or backwards connections are allowed.
 
 
-\subsection{Pre-Imputation Analytics}
-\subsection{Post-Imputation Analytics}
-\subsection{Example User-flow}
+\subsection{UI Implementation}
+\mica's UI is split into three tabs that aims to push the user into a simple
+linear workflow.
+\begin{enumerate}
+        \item Pre-imputation Analytics (MissiG view)
+        \item Imputation tab
+        \item Post-imputation Analytics (comparative visualizations) 
+\end{enumerate}
+
+\subsubsection{Pre-Imputation Analytics}
+\mica provides a custom react component implementation of both a singular
+MissiG glyph and an abstraction for developers to be able to handle a group of
+MissiG glyphs. Each MissiG glyph is clickable offering an interactive
+visualization to the user. Both were developed in a stateless manner to allow
+for greater modularity. See below \ref{MissiG_React_Component_Props}
+
+\begin{program}[H]
+\begin{verbatim}
+interface MissigGlyphCardProps {
+  columnSummary: ColumnSummary;
+  setSelectedGlyphIdxOnClick: (idx: number) => void;
+  selectedGlyphIdx?: number;
+}
+
+interface MissigGlyphProps {
+  columnSummary: ColumnSummary;
+  selectedGlyphIdx?: number;
+}
+\end{verbatim}
+\caption{MissiG React Component Props}
+\label{MissiG_React_Component_Props}
+\end{program}
+
+MICA API includes a custom data structure for describing a MissiG
+visualization. Numeric and Categorical data is handled with different histogram
+data structure implementations.
+
+Due to \mica's requirement of being low latency, the design decision to cache
+these results in the frontend client was taken for the cost of greater memory
+usage. This is necessary as the MissiG visualization generates a joint
+missingness histogram for every pair of variables. Consequently, the total
+number of generated histograms scales quadratically, at \( O(n^2) \) , relative
+to the number of variables. If we were to request the MICA API to load this
+data for every access instance, the latency will become noticeable and cause
+unneeded load on the MICA API and Impute Handler containers.
+
+\subsubsection{Imputation}
+\mica currently provides five imputations methods. Due to the modular design,
+the addition of further imputation methods is trivial. 
+
+For columnwise imputation, Mean, Median and Mode is provided. These were
+implemented manually with the use of the python package Pandas
+\cite{noauthor_pandas_nodate}.
+
+\mica provides 2 multivariate imputation options; KNN and MICE. KNN has the
+added parameter N nearest-neighbors for the user to adjust manually. MICE in
+the future could be expanded to allow the user to select the estimator; In the
+current implementation, this is defaulted to use the following 
+\begin{verbatim}
+    RandomForestRegressor(
+        n_estimators=10,
+        criterion="squared_error",
+        max_depth=None,
+        min_samples_split=2,
+        min_samples_leaf=1,
+        min_weight_fraction_leaf=0.0,
+        max_features=1.0,
+        max_leaf_nodes=None,
+        min_impurity_decrease=0.0,
+    )
+\end{verbatim}
+
+A feature-level missingness visualization was integrated into the column
+selector table, an approach adapted from the "Profiler" imputer application
+\cite{kandel_profiler_2012}. Other useful information such as feature name,
+data type, Null count and Non-null count is displayed to the user. The
+"Non-null count" badge indicator uses an orange-to-gray color transition to
+denote the shift from sparse to complete data.
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\textwidth]{imputationtab_featuretable.png}
+        \caption{\mica Imputation tab amount missing visualization}
+\end{figure}
+
+\subsubsection{Post-Imputation Analytics}
+The imputation version history is represented in a timeline format going from
+oldest at the top and newest at the bottom \cref{fig:commithistory}. For each applied
+imputation, a new node is appended to the head of the commit history. For each
+node on the commit history, a revert button is assigned to it; This calls the
+MICA API endpoint that reverts history to a specific file hash. Each node also
+has a dropdown to display cards showing applied imputations to that particular
+version of the dataset, from oldest to newest imputation. A comparison selector
+toggle is also provided, so the user can pick a dataset to include in a
+comparison visualization. 
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.5\textwidth]{commithistory.png}
+        \caption{Commit history card}
+        \label{fig:commithistory}
+\end{figure}
+
+As a way to interface with the currently uncommitted versions of the imputed
+dataset, a record's table is displayed \cref{fig:imputation_records}. For each
+created version, the user is given 4 options. apply imputation, download
+version, discard version and toggle comparison selector. 
+\begin{description}
+    \item[Apply imputation] This action performs a commit action, clearing the
+            staging area and appending the selected node to the head of the
+            commit history. 
+
+    \item[Download version] Creates a download link for version of imputed
+            dataset.
+
+    \item[Discard version] Permanently removes the uncommitted version from the
+            interface and backend file storage.
+
+    \item[Toggle comparison selector] Enables a side-by-side view to visualize
+            differences between any two versions of the dataset.
+\end{description}
+
+Each record has a dropdown menu to display a history of imputations performed
+on it including diff values, type of imputation performed and feature imputed
+for each imputation card. 
+
+Note that the comparison selector toggle operates in conjunction with both the
+commit history and the imputation records.
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\textwidth]{filetabrecords.png}
+        \caption{Imputation record's card}
+        \label{fig:imputation_records}
+\end{figure}
+
+
+\subsubsection{Example User-flow}
+
 \subsection{Synthetic Data Generation}
 
 \section{Results and Evaluation}
@@ -544,6 +687,7 @@ information and no sideways or backwards connections are allowed.
 
 \newpage
 \section{References}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 \section{Appendix}
@@ -581,4 +725,25 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
 \caption{Version history JSON structure}
 \end{program}
 
+\section{MICA UI}
+\begin{figure}[H]
+    \centering
+        \wideimage{MissiGSC.png}
+        \caption{MissiG visualization implementation}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{imputationtab.png}
+        \caption{\mica imputation tab}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{filestab.png}
+        \caption{\mica file management and comparison tab}
+\end{figure}
+
+
 \end{document}
+
