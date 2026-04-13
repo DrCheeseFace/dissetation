@@ -506,18 +506,18 @@ every time they would like to compare outputs. This process is tedious and
 time-consuming. The process gets particularly complex when you have to keep
 track of more than one imputation's difference between versions. 
 
-For example, the below node diagram depicts the history of imputations
+For example, the below node diagram \cref{fig:nodegraph} depicts the history of imputations
 performed on the dataset (root node). The cognitive overhead of keeping track
 of the difference between nodes D and C's history can be prone to error due to
 its complexity.
-\begin{verbatim}
-TODO REPLACE NODE DIAGRAM
-        +-->A+------>D
-        |    +------>E
-*root---+-->B------->F
-        |             
-        +-->C         
-\end{verbatim}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.5\textwidth]{nodegraph.png}
+        \caption{Example version history node graph representation}
+    \label{fig:nodegraph}
+\end{figure}
+
 \subsubsection*{The Solution}
 
 When a request to impute a dataset is sent from the client to the MICA API, the
@@ -544,6 +544,11 @@ linear workflow.
         \item Imputation tab
         \item Post-imputation Analytics (comparative visualizations) 
 \end{enumerate}
+
+All actions in \mica are accessible by a touchscreen interface. File names are
+automatically generated based on imputations requested by the user as well as
+manually editable if the user would wish to give a custom name for a particular
+version of a dataset.
 
 \subsubsection{Pre-Imputation Analytics}
 \mica provides a custom react component implementation of both a singular
@@ -623,14 +628,15 @@ denote the shift from sparse to complete data.
 
 \subsubsection{Post-Imputation Analytics}
 The imputation version history is represented in a timeline format going from
-oldest at the top and newest at the bottom \cref{fig:commithistory}. For each applied
-imputation, a new node is appended to the head of the commit history. For each
-node on the commit history, a revert button is assigned to it; This calls the
-MICA API endpoint that reverts history to a specific file hash. Each node also
-has a dropdown to display cards showing applied imputations to that particular
-version of the dataset, from oldest to newest imputation. A comparison selector
-toggle is also provided, so the user can pick a dataset to include in a
-comparison visualization. 
+oldest at the top and newest at the bottom \cref{fig:commithistory}. For each
+applied imputation, a new node is appended to the head of the commit history.
+For each node on the commit history, a revert button is assigned to it; This
+calls the MICA API endpoint that reverts history to a specific file hash. Doing
+so will delete all children of this file hash in order to save storage. Each node
+also has a dropdown to display cards showing applied imputations to that
+particular version of the dataset, from oldest to newest imputation. A
+comparison selector toggle is also provided, so the user can pick a dataset to
+include in a comparison visualization. 
 
 \begin{figure}[H]
     \centering
@@ -639,9 +645,20 @@ comparison visualization.
         \label{fig:commithistory}
 \end{figure}
 
+As seen at the top of \cref{fig:filestab}, a drop-down card gives a list of important
+information about the current head of the commit history.
+
+\begin{itemize}
+        \item File name 
+        \item Dimensions
+        \item Total null count
+        \item Applied imputations
+        \item Column names, types and null counts
+\end{itemize}
+
 As a way to interface with the currently uncommitted versions of the imputed
 dataset, a record's table is displayed \cref{fig:imputation_records}. For each
-created version, the user is given 4 options. apply imputation, download
+created version, the user is given four options. apply imputation, download
 version, discard version and toggle comparison selector. 
 \begin{description}
     \item[Apply imputation] This action performs a commit action, clearing the
@@ -662,15 +679,41 @@ Each record has a dropdown menu to display a history of imputations performed
 on it including diff values, type of imputation performed and feature imputed
 for each imputation card. 
 
-Note that the comparison selector toggle operates in conjunction with both the
-commit history and the imputation records.
 \begin{figure}[H]
     \centering
         \includegraphics[width=\textwidth]{filetabrecords.png}
-        \caption{Imputation record's card}
+        \caption{Imputation record's table}
         \label{fig:imputation_records}
 \end{figure}
 
+The comparison selector toggle was designed to work in conjunction with both
+the commit history and the imputation records table. This allows users to
+compare newly created uncommitted records with previous versions of the
+dataset.
+
+When two dataset versions are selected by the user, the user is given the
+option to open a dialog to compare the two selected datasets. This is indicated
+to the user by an enabled or disabled button. 
+
+The first visualization presented to the user is an interactive parallel
+coordinates graph comparison widget \cref{fig:parallelCoordinatesCompare}. A
+random sample of indexes is taken out of both datasets and displayed; matching
+indexes are used as the difference in each graph should only be in features
+which have changed. Each are overlaid in contrasting blue and red. Three
+buttons are provided for the user to switch between displaying both graphs or
+either of the graphs by itself. The interface assists in the detection of
+meaningful correlations, providing the clarity necessary to differentiate
+signal from data noise
+
+The main drawback of using this visualization is that order matters; it can be
+difficult for the user to spot correlations when the two features with
+correlations are on opposite ends of the graph. This has been mitigated by the
+implementation of the drag and drop reordering feature. With this feature,
+users are able to try out different orders of features.
+
+% TODO do missingnessas matrix, and stats section of comparison dialog
+The second visualization presented to the user is a missingness matrix dialog
+\cref{fig:missingnessmatrix}.
 
 \subsubsection{Example User-flow}
 
@@ -742,8 +785,23 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
     \centering
         \wideimage{filestab.png}
         \caption{\mica file management and comparison tab}
+        \label{fig:filestab}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+        \wideimage{parallelCoordinatesCompare.png}
+        \caption{Parallel Coordinates graph comparison component with drag and
+        drop feature reordering}
+        \label{fig:parallelCoordinatesCompare}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{missingnessmatrix.png}
+        \caption{Missingness Matrix comparison with on hover tooltip}
+        \label{fig:missingnessmatrix}
+\end{figure}
 
 \end{document}
 
