@@ -54,7 +54,7 @@ export const MissigGlyphCard: FC<MissigGlyphCardProps> = observer(
           <TypographyP>
             joint missingness :{' '}
             {/* this is here because there needs to be a trailing space */}
-            {!selectedGlyphIdx
+            {selectedGlyphIdx == undefined
               ? 'NA'
               : columnSummary.joint_missingness[selectedGlyphIdx]}
             %

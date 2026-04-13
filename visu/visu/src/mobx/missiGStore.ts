@@ -1,12 +1,12 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from 'mobx';
 
-import { RootStore } from "@/mobx/rootstore.ts";
+import { RootStore } from '@/mobx/rootstore.ts';
 import type {
   BasicInfoAPIResponse as MissiGInfoApiResponse,
   DatasetSummary,
-} from "@/model/MissiG";
-import { getMissiGInfo } from "@/utils/routes";
-import type { UUID } from "@/model/BasicInfo";
+} from '@/model/MissiG';
+import { getMissiGInfo } from '@/utils/routes';
+import type { UUID } from '@/model/BasicInfo';
 
 export class MissiGStore {
   root: RootStore;
@@ -19,7 +19,7 @@ export class MissiGStore {
     this.loading = false;
     makeAutoObservable(this);
 
-    const persistedData = localStorage.getItem("MissiGStoreCache");
+    const persistedData = localStorage.getItem('MissiGStoreCache');
     if (persistedData) {
       try {
         const parsed = JSON.parse(persistedData);
@@ -27,13 +27,13 @@ export class MissiGStore {
           this.missiGCache = parsed.missiGCache;
         }
       } catch (e) {
-        console.error("Failed to parse MissiGStore cache", e);
+        console.error('Failed to parse MissiGStore cache', e);
       }
     }
 
     autorun(() => {
       localStorage.setItem(
-        "MissiGStoreCache",
+        'MissiGStoreCache',
         JSON.stringify({
           missiGCache: this.missiGCache,
         }),
@@ -69,7 +69,7 @@ export class MissiGStore {
     this.setLoading(true);
     try {
       const response = await fetch(getMissiGInfo(uuid), {
-        method: "GET",
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -77,7 +77,7 @@ export class MissiGStore {
         this.setMissiGInfo(uuid, rawResult.info);
       }
     } catch (error) {
-      console.error("an error occured when fetching missig info: ", error);
+      console.error('an error occured when fetching missig info: ', error);
     } finally {
       this.setLoading(false);
     }
