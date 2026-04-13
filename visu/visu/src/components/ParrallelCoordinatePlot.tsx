@@ -16,6 +16,14 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
     const wrapperRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
+    // initialize column order from data1
+    useEffect(() => {
+      if (data1) {
+        setColumnOrder(Object.keys(data1));
+      }
+    }, [data1]);
 
     // resize observer setup
     useEffect(() => {
@@ -47,12 +55,10 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         !basicInfo1 ||
         !svgRef.current ||
         width === 0 ||
-        height === 0
+        height === 0 ||
+        columnOrder.length === 0
       )
         return;
-
-      const columnNames = Object.keys(data1);
-      if (columnNames.length === 0) return;
 
       // tag and combine datasets
       const parseData = (
@@ -60,10 +66,10 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         sourceLabel: 'data1' | 'data2',
       ) => {
         if (!sourceData || Object.keys(sourceData).length === 0) return [];
-        const rowIds = Object.keys(sourceData[columnNames[0]] || {});
+        const rowIds = Object.keys(sourceData[columnOrder[0]] || {});
         return rowIds.map((id) => {
           const row: Record<string, any> = { _id: id, _source: sourceLabel };
-          columnNames.forEach((colName) => {
+          columnOrder.forEach((colName) => {
             row[colName] = sourceData[colName][id];
           });
           return row;
@@ -89,7 +95,7 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
 
       const yScales: Record<string, any> = {};
 
-      columnNames.forEach((dimName) => {
+      columnOrder.forEach((dimName) => {
         const colInfo = basicInfo1.columns.find((c) => c.name === dimName);
         const isNumeric =
           colInfo?.dtype.includes('int') || colInfo?.dtype.includes('float');
@@ -112,7 +118,6 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
             new Set(combinedData.map((d) => String(d[dimName]))),
           ).filter((v) => v !== 'null');
 
-
           yScales[dimName] = d3
             .scalePoint()
             .domain(uniqueValues)
@@ -125,15 +130,23 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         .scalePoint()
         .range([0, innerWidth])
         .padding(1)
-        .domain(columnNames);
+        .domain(columnOrder);
 
-      const pathGenerator = (d: any) => {
+      // track positions for dragging
+      const position: Record<string, number> = {};
+      columnOrder.forEach((d) => {
+        position[d] = xScale(d)!;
+      });
+      const dragging: Record<string, number> = {};
+      let activeOrder = [...columnOrder]; // mutable copy for drag duration
+
+      const pathGenerator = (d: any, currentOrder: string[] = columnOrder) => {
         const lineGen = d3
           .line<string>()
           .defined((p) => d[p] !== null && d[p] !== undefined)
-          .x((p) => xScale(p)!)
+          .x((p) => (dragging[p] !== undefined ? dragging[p] : position[p]))
           .y((p) => yScales[p](d[p]));
-        return lineGen(columnNames);
+        return lineGen(currentOrder);
       };
 
       const colorMap = {
@@ -147,7 +160,7 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         .enter()
         .append('path')
         .attr('class', 'path')
-        .attr('d', pathGenerator)
+        .attr('d', (d) => pathGenerator(d))
         .style('fill', 'none')
         .style('stroke', (d) => colorMap[d._source as keyof typeof colorMap])
         .style('stroke-width', (d) => {
@@ -170,11 +183,50 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
       // draw axes
       const axes = g
         .selectAll('.axis')
-        .data(columnNames)
+        .data(columnOrder)
         .enter()
         .append('g')
         .attr('class', 'axis')
-        .attr('transform', (d) => `translate(${xScale(d)},0)`);
+        .attr('transform', (d) => `translate(${position[d]},0)`)
+        .call(
+          d3
+            .drag<SVGGElement, string>()
+            .subject((d) => ({ x: position[d], y: 0 }))
+            .on('start', function (_, d) {
+              dragging[d] = position[d];
+              d3.select(this).raise(); // Bring dragged axis to front
+            })
+            .on('drag', function (event, d) {
+              // bound drag to SVG width
+              dragging[d] = Math.min(innerWidth, Math.max(0, event.x));
+
+              // dynamically reorder arrays based on current X positions
+              activeOrder.sort((a, b) => {
+                const posA = dragging[a] !== undefined ? dragging[a] : position[a];
+                const posB = dragging[b] !== undefined ? dragging[b] : position[b];
+                return posA - posB;
+              });
+
+              xScale.domain(activeOrder);
+
+              // update axis positions
+              g.selectAll<SVGGElement, string>('.axis').attr('transform', function (col) {
+                if (col === d) return `translate(${dragging[col]},0)`; // dragged item follows cursor
+                position[col] = xScale(col)!;
+                return `translate(${position[col]},0)`; // others snap to grid
+              });
+
+              // update path strings smoothly
+              g.selectAll<SVGPathElement, any>('.path').attr('d', (pd) =>
+                pathGenerator(pd, activeOrder),
+              );
+            })
+            .on('end', function (_, d) {
+              delete dragging[d];
+              // Commit the new order to React state, triggering a clean re-render
+              setColumnOrder([...activeOrder]);
+            }),
+        );
 
       axes.each(function (d) {
         d3.select(this).call(d3.axisLeft(yScales[d]));
@@ -182,13 +234,14 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
 
       axes
         .append('text')
+        .style('cursor', 'grab')
         .style('text-anchor', 'middle')
         .attr('y', -15) // dont overlap graph
         .text((d) => d)
         .style('fill', 'black')
         .style('font-weight', 'bold')
         .style('font-size', '10px'); // TODO fix so that labels never overlap
-    }, [data1, data2, basicInfo1, dimensions, hoveredDataset]);
+    }, [data1, data2, basicInfo1, dimensions, hoveredDataset, columnOrder]);
 
     return (
       <div ref={wrapperRef} style={{ width: '100%', height: '100%' }}>

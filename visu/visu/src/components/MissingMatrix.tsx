@@ -53,6 +53,7 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
     );
 
     const columnScales = columns.map((_, colIndex) => {
+                        // TODO fix strings
       const colValues = data
         .map((row) => row[colIndex])
         .filter((v): v is number => v !== null && typeof v === 'number');
