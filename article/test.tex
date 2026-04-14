@@ -14,6 +14,7 @@
 \floatstyle{ruled}
 \newfloat{program}{thp}{lop}
 \floatname{program}{Program}
+\usepackage{amsmath}
 
 \graphicspath{{assets/}}
 
@@ -435,11 +436,25 @@ The uniquely interactive component of MissiG as well as its superior
 performance for identifying missingness patterns makes this visualization
 especially suited for use in \mica.
 
-
-
 \subsection{Imputation Techniques}
 
 \subsection{Previous Implementations}
+Many examples of imputation applications exist. These include VIM, Amelia view
+\cite{honaker_amelia_2024}, Profiler; but these applications focus on analyzing
+singular imputations and do not take into account the broader picture of
+comparing imputation results and managing versions. One novel example
+Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava et al. exists and
+worth analyzing.
+
+\paragraph{\textbf{Impute-VSS}}~\\
+Impute-VSS's novel feature is the \textit{comparative imputation assessment};
+this allows the user to perform a series of multivariate and univariate
+imputation methods and compare the results of each.
+
+% TODO write about seems to lack researched visualisation methods  
+% TODO write about can only compare the immediatly created versions 
+% TODO cannot compare eg against unimputed 
+
 
 \subsection{Technology Stack Evaluation}
 
@@ -476,11 +491,12 @@ addition of other currently unimplemented imputation methods without needing
 breaking changes.
 
 \subsubsection{Impute Handler}
-Imputation logic as well as data required to draw graphs in the frontend
-client are calculated within the impute handler. Scikit-learn
+Imputation logic as well as data required to draw graphs in the frontend client
+are calculated within the impute handler. Scikit-learn
 \cite{pedregosa_scikit-learn_2011} handles KNN and MICE imputation. The
 Scikit-learn imputation library was picked for use in \mica as the core
-functions are written in PYX syntax and proven to be highly optimized. Custom
+functions are written in PYX syntax and proven to be highly optimized.
+Likewise, scipy TODO REFERENCE HERE for various metrics implementations. Custom
 functions as well as custom JSON representations are used to send information
 back to the MICA API; This includes a novel JSON standard for the MissiG
 visualization. 
@@ -554,8 +570,10 @@ version of a dataset.
 \mica provides a custom react component implementation of both a singular
 MissiG glyph and an abstraction for developers to be able to handle a group of
 MissiG glyphs. Each MissiG glyph is clickable offering an interactive
-visualization to the user. Both were developed in a stateless manner to allow
-for greater modularity. See below \ref{MissiG_React_Component_Props}
+visualization to the user. Above the MissiG group, is a selector to switch
+between accessible versions of the imputed dataset. Both were developed in a
+stateless manner to allow for greater modularity. See below
+\ref{MissiG_React_Component_Props}
 
 \begin{program}[H]
 \begin{verbatim}
@@ -687,7 +705,7 @@ for each imputation card.
 \end{figure}
 
 The comparison selector toggle was designed to work in conjunction with both
-the commit history and the imputation records table. This allows users to
+the commit history card and the imputation records table. This allows users to
 compare newly created uncommitted records with previous versions of the
 dataset.
 
@@ -696,24 +714,73 @@ option to open a dialog to compare the two selected datasets. This is indicated
 to the user by an enabled or disabled button. 
 
 The first visualization presented to the user is an interactive parallel
-coordinates graph comparison widget \cref{fig:parallelCoordinatesCompare}. A
-random sample of indexes is taken out of both datasets and displayed; matching
-indexes are used as the difference in each graph should only be in features
-which have changed. Each are overlaid in contrasting blue and red. Three
-buttons are provided for the user to switch between displaying both graphs or
-either of the graphs by itself. The interface assists in the detection of
-meaningful correlations, providing the clarity necessary to differentiate
-signal from data noise
+coordinates graph comparison widget \cref{fig:parallelCoordinatesCompare}. This
+was implemented from scratch using the D3.js visualization toolkit. A random
+sample of indexes is taken out of both datasets and displayed; matching indexes
+are used as the difference in each graph should only be in features which have
+been affected by the difference in imputations between the two datasets. Each
+parallel coordinate visualization of the dataset is overlaid in contrasting
+blue and red. Three buttons are provided for the user to switch between
+displaying both graphs or either of the graphs by itself. The interface assists
+in the detection of meaningful correlations, providing the clarity necessary to
+differentiate signal from data noise
 
 The main drawback of using this visualization is that order matters; it can be
 difficult for the user to spot correlations when the two features with
 correlations are on opposite ends of the graph. This has been mitigated by the
 implementation of the drag and drop reordering feature. With this feature,
-users are able to try out different orders of features.
+users are able to try out different orders of features in order to find
+correlations between features they would not have found otherwise.
 
-% TODO do missingnessas matrix, and stats section of comparison dialog
 The second visualization presented to the user is a missingness matrix dialog
-\cref{fig:missingnessmatrix}.
+\cref{fig:missingnessmatrix}. This was implemented as a custom D3.js component.
+Similar to the parallel coordinates' implementation, a down sampled version of
+the dataset is taken to reduce render time and avoid excessive memory usage. As
+described by Fernstand \cite{fernstad_identify_2019}, each drawn column
+represents a feature within a given dataset and cells within columns are colors
+light gray for low values and dark gray for high values. Missing values are
+represented as red cells. As posited by Fernstad this may make it easy for a
+user to spot patterns between recorded and missing data. The use of an on hover
+tooltip allows the user to access information such as feature name and index
+number the cell representing.
+
+A distribution metrics section
+\cref{fig:comparison_imputations_and_distribution_metrics} was added to round
+out the visualization methods provided. They are mathematically defined as follows: 
+
+\begin{description}
+        \item [Wasserstein Distance] {\displaystyle W_{p}(\mu ,\nu )=\inf _{\gamma \in \Gamma (\mu ,\nu )}\left(\mathbf {E} _{(x,y)\sim \gamma }d(x,y)^{p}\right)^{\frac {1}{p}},} ~\\
+        \item [Kolmogorov-Smirnov Test] {\displaystyle F_{n}(x)={\frac {{\text{number of (elements in the sample}}\leq x)}{n}}={\frac {1}{n}}\sum _{i=1}^{n}1_{(-\infty ,x]}(X_{i}),}
+        \item [Variance Ratio] \displaystyle {VAR\_RATIO} = \frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
+        \item [Skew Difference] \displaystyle \Delta \text{Skew} = \text{Skew}_{\text{base}} - \text{Skew}_{\text{child}}
+\end{description}
+
+\textbf{Wasserstein Distance} is a metric to describe how similar two
+distributions are to each other. In the example a user performs an imputation
+and sees a high wasserstein distance, the user knows the distribution of that
+select variable has changed dramatically and may warrant further investigation.
+
+\textbf{Kolmogorov-Smirnov Test} similar to the Wassserstein Distance, it
+compares probability distributions. This is widely used in the data science
+space to due its advantage of not assuming the shape of the distribution. A
+limitation of the Kolmogorov-Smirnov Test is that it is more sensitive to changes
+in the center and struggles to pick up on differences near the tails.
+
+\textbf{Variance Ratio} in the context of comparing different imputations of a
+dataset shows whether one imputation method is smoothing the data more than the
+other. This is useful when evaluating the risk of information loss and the
+preservation of natural noise within the data. If we see a variance ratio
+significantly below one, this may indicate that one of the imputation methods
+has artificially collapsed the distribution. This can be used to verify if the
+other metrics provided are worth looking at due to lower standard error.
+
+\textbf{Skew Difference} is the simplest to interpret out of the four. This
+shows the direction and magnitude of the skew for a specified feature. 
+
+In the comparison dialog two imputations cards are also displayed. This shows
+the imputations performed on each version of the dataset. This also shows the
+variable name and type of imputation. These cards are rendered in the order of
+the performed imputations similar to the other implementations of this in \mica.
 
 \subsubsection{Example User-flow}
 
@@ -802,6 +869,14 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
         \caption{Missingness Matrix comparison with on hover tooltip}
         \label{fig:missingnessmatrix}
 \end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{comparison_imputations_and_distribution_metrics.png}
+        \caption{Distribution metric comparisons}
+        \label{fig:comparison_imputations_and_distribution_metrics}
+\end{figure}
+
 
 \end{document}
 
