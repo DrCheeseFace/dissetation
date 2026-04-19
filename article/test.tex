@@ -15,6 +15,7 @@
 \newfloat{program}{thp}{lop}
 \floatname{program}{Program}
 \usepackage{amsmath}
+\usepackage{enumitem}
 
 \graphicspath{{assets/}}
 
@@ -382,9 +383,10 @@ Missingness}.
 
 \paragraph{\textbf{MissiG}} ~\\ 
 With advancements made in Fernstad's previous study into visualization methods
-for missing data \cite{fernstad_identify_2019}, Fernstad \textit{et al}. develops the novel
-visualization MissiG \cite{fernstad_explore_2022} with an aim to make it easier
-for data science practitioners identify missingness patterns in a dataset.
+for missing data \cite{fernstad_identify_2019}, Fernstad \textit{et al}.
+develops the novel visualization MissiG \cite{fernstad_explore_2022} with an
+aim to make it easier for data science practitioners identify missingness
+patterns in a dataset.
 
 \begin{figure}[H]
     \centering
@@ -440,28 +442,146 @@ especially suited for use in \mica.
 
 \subsection{Previous Implementations}
 Many examples of imputation applications exist. These include VIM, Amelia view
-\cite{honaker_amelia_2024}, Profiler; but these applications focus on analyzing
+\cite{honaker_amelia_2024} and Profiler, but these applications focus on analyzing
 singular imputations and do not take into account the broader picture of
 comparing imputation results and managing versions. One novel example
 Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava et al. exists and
-worth analyzing.
+worth analyzing as it uses comparative visualizations to deduce the
+effectiveness of different methods of imputation at once.
 
 \paragraph{\textbf{Impute-VSS}}~\\
 Impute-VSS's novel feature is the \textit{comparative imputation assessment};
 this allows the user to perform a series of multivariate and univariate
-imputation methods and compare the results of each.
+imputation methods and compare the results with each other. Impute-VSS offers
+five visualization methods for the user to use when picking the optimal
+imputation results.
 
-% TODO write about seems to lack researched visualisation methods  
-% TODO write about can only compare the immediatly created versions 
-% TODO cannot compare eg against unimputed 
+\begin{itemize}
+        \item Histogram
+        \item Missing Bars
+        \item KDE
+        \item Box Plot
+        \item Correlation line graph
+\end{itemize}
 
+Although these visualizations are good for understanding the change in
+distributions of a single variable, the user is not able to effectively see the
+change in correlations between variables. As mentioned previously, the three
+missingness patterns a data engineer would look for are \textit{amount missing,
+Joint Missingness} and \texitit{condition missingness}. There is a lack of
+visualizations pertaining to displaying information about \texit{amount
+missing}. \itemit{Joint missingness} is somewhat visualized to the user with
+the use of a "Missing Bars" plot although due to the format, for numerous of
+features in a dataset, this can be clunky and hard for the user to spot the
+joint missingness pattern. \itexit{Conditional missingness} is not visualized
+with any of the provided graphs in Impute-VSS. This is especially problematic
+as conditional missingness patterns usually signify the presence of a MNAR
+mechanism which as discussed previously cannot be ignored and has to be
+explicitly handled by the data engineer in order to not introduce any unwanted
+biases in the data.
+
+Although Impute-VSS allows for the comparison of imputation techniques, the
+user is unable to test out how different imputation steps affect each other as
+the user is only able to compare a single step imputation process. This omits
+the possibility of multiple occurrences of missingness patterns that require
+separate methods of imputation. \eg Joint missingness between variables A and B
+as well as another instance of joint missingness between variables C and D.
+
+Impute-VSS also provides a comparison of calculated metrics between the dataset
+versions. 
+
+Overall although Impute-VSS has employed a variety of visualizations and
+metrics for use in analyzing imputed datasets, it lacks newly developed
+missing data visualization research and consequently visualizations.
 
 \subsection{Technology Stack Evaluation}
+There are two main data science libraries used commonly mentioned in the above
+applications. The older applications such as Amelia View use the VIM R package.
+This uses optimized C++ code to perform the bulk of the computationally heavy
+operations. Due to its age and prevalent use, a lot of testing has gone into
+improving the reliability of the implementations. New applications such as
+Profile and Impute-VSS use the python library Scikit-learn as well as scipy for
+computations such as KNN and metric formulas. These use Cython which is
+comparable to the performance of C++ code.
+
+Both Profile and Impute-VSS use a two stack architecture. Both frontend and
+backend are split into layers that handle the UI and logic respectively.
+Profiler has opted for a more performance biased design when it comes to the
+engineering decisions regarding the frontend. D3.js is used to render SVG's
+with the use of drag-and-drop and menu-based interface to offer an interactive
+experience to the user. 
 
 \subsection{Requirements}
+Using the above background research, \mica's requirements can be defined as
+such.
 
 \subsubsection{Functional Requirements}
+
+\begin{enumerate}[label=F.R.\arabic*]
+        \item \textbf{Data Ingestion and Export:} \mica must allow users to
+                upload datasets to process the data and also allow for the
+                download of imputed versions of that dataset.
+
+        \item \textbf{Imputation Methods:} \mica must provide both multivariate
+                imputations such as KNN and MICE as well as univariate
+                imputation methods such as Mean, Median, Mode.
+
+        \item \textbf{Parameter Configuration:} \mica must allow users to
+                manually configure parameters relevant to the imputation method
+                performed. \eg Tuning N nearest neighbors value for the KNN
+                imputation method.
+
+        \item \textbf{Pre-Imputation Visualization:} \mica must provide an
+                interactive MissiG implementation with the ability to generate
+                charts for each dataset version accessible to the user.
+
+        \item \textbf{Version Control Operations:} \mica must track imputations
+                applied to a dataset using a strict hierarchical tree
+                structure. Users are given the functions to perform the basic
+                version control actions of applying, deleting and reverting
+                changes to a specific historical node.
+
+        \item \textbf{Comparative Visualizations:} \mica must allow the user to
+                select at least 2 unique versions of the dataset and generate
+                comparative visualizations, specifically an interactive
+                Parallel Coordinates graph and a Missingness Matrix.
+
+        \item \textbf{Statistical Metric Computation:} \mica must provide the
+                user with comparative distribution metrics between two selected
+                dataset versions.
+\end{enumerate}
+
 \subsubsection{Non-Functional Requirements}
+
+\begin{enumerate}[label=N.F.R.\arabic*]
+
+        \item \textbf{Performance and Latency:} \mica's frontend client must be
+                performant and responsive by caching computationally difficult
+                visualization data and minimizing DOM changes.
+
+        \item \textbf{Usability / Accessibility:} All navigation and actions
+                must be accessible by a touchscreen and only require a
+                touchscreen.  
+
+        \item \textbf{Modularity and Extensibility:} \mica's API and Impute
+                Handler must be designed with a decoupled architecture so
+                future development such as supporting further imputation
+                methods, can be integrated without requiring breaking changes
+                to the API.
+
+        \item \textbf{Portability:} \mica's software components must be
+                containerized using Docker. This allows for consistent
+                deployment across different environments.
+
+        \item \textbf{Computational Efficiency:} Imputation methods and heavy
+                metric calculations must be completed using computationally
+                efficient algorithms and implementations.
+
+        \item \textbf{Storage Optimization:} Unused and inaccessible dataset
+                versions must be cleaned up by the \mica API in order to save
+                secondary storage space.
+\end{enumerate}
+
 
 \section{What Was Done and How}
 
@@ -596,6 +716,10 @@ MICA API includes a custom data structure for describing a MissiG
 visualization. Numeric and Categorical data is handled with different histogram
 data structure implementations.
 
+To improve readability from the users' perspective, the amount missing and joint
+missingness percentage was calculated for each card. This is then displayed at
+the bottom of each glyph for the user to reference when analyzing a dataset.
+
 Due to \mica's requirement of being low latency, the design decision to cache
 these results in the frontend client was taken for the cost of greater memory
 usage. This is necessary as the MissiG visualization generates a joint
@@ -713,6 +837,7 @@ When two dataset versions are selected by the user, the user is given the
 option to open a dialog to compare the two selected datasets. This is indicated
 to the user by an enabled or disabled button. 
 
+\paragraph{\textbf{Parallel Coordinates}} ~\\ 
 The first visualization presented to the user is an interactive parallel
 coordinates graph comparison widget \cref{fig:parallelCoordinatesCompare}. This
 was implemented from scratch using the D3.js visualization toolkit. A random
@@ -725,6 +850,10 @@ displaying both graphs or either of the graphs by itself. The interface assists
 in the detection of meaningful correlations, providing the clarity necessary to
 differentiate signal from data noise
 
+In addition to a standard Parallel Coordinates visualization, to indicate the
+presence of a missing value, if a value is missing for a feature, a purple line
+is drawn to the top of the axis.
+
 The main drawback of using this visualization is that order matters; it can be
 difficult for the user to spot correlations when the two features with
 correlations are on opposite ends of the graph. This has been mitigated by the
@@ -732,6 +861,7 @@ implementation of the drag and drop reordering feature. With this feature,
 users are able to try out different orders of features in order to find
 correlations between features they would not have found otherwise.
 
+\paragraph{\textbf{Missingness Matrix}} ~\\ 
 The second visualization presented to the user is a missingness matrix dialog
 \cref{fig:missingnessmatrix}. This was implemented as a custom D3.js component.
 Similar to the parallel coordinates' implementation, a down sampled version of
@@ -744,47 +874,288 @@ user to spot patterns between recorded and missing data. The use of an on hover
 tooltip allows the user to access information such as feature name and index
 number the cell representing.
 
+An added functionality was added on top of this base to utilize the interactive
+aspect of \mica. The user will be able to sort columns by a particular cells'
+magnitude. This is useful for cases where we want to analyze a conditional
+missingness pattern. \eg. $P(\text{feature}_y = \text{NaN} \mid
+\text{feature}_x > c) = \theta$. For such a case, when the user sorts
+$feature_x$, red bars (missing values) will be grouped together in the
+$feature_y$ column, clearly signifying to the user that a conditional
+missingness pattern is present. To pair with this additional feature was also
+added to bubble records with missing values for a selected column to the top.
+This is good for spotting joint missingness patterns as the user will be able
+to see red blocks aligned between columns if the pattern is present. Both the
+value magnitude and presence sorter is implemented using a toggle button on the
+axis of each column.
+
 A distribution metrics section
 \cref{fig:comparison_imputations_and_distribution_metrics} was added to round
 out the visualization methods provided. They are mathematically defined as follows: 
 
-\begin{description}
-        \item [Wasserstein Distance] {\displaystyle W_{p}(\mu ,\nu )=\inf _{\gamma \in \Gamma (\mu ,\nu )}\left(\mathbf {E} _{(x,y)\sim \gamma }d(x,y)^{p}\right)^{\frac {1}{p}},} ~\\
-        \item [Kolmogorov-Smirnov Test] {\displaystyle F_{n}(x)={\frac {{\text{number of (elements in the sample}}\leq x)}{n}}={\frac {1}{n}}\sum _{i=1}^{n}1_{(-\infty ,x]}(X_{i}),}
-        \item [Variance Ratio] \displaystyle {VAR\_RATIO} = \frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
-        \item [Skew Difference] \displaystyle \Delta \text{Skew} = \text{Skew}_{\text{base}} - \text{Skew}_{\text{child}}
-\end{description}
+\textbf{Wasserstein Distance}
 
-\textbf{Wasserstein Distance} is a metric to describe how similar two
-distributions are to each other. In the example a user performs an imputation
-and sees a high wasserstein distance, the user knows the distribution of that
-select variable has changed dramatically and may warrant further investigation.
+{\displaystyle W_{p}(\mu ,\nu )=\inf _{\gamma \in \Gamma (\mu ,\nu
+)}\left(\mathbf {E} _{(x,y)\sim \gamma }d(x,y)^{p}\right)^{\frac {1}{p}},}
 
-\textbf{Kolmogorov-Smirnov Test} similar to the Wassserstein Distance, it
+this metric describes how similar two distributions are to each other. In the
+example a user performs an imputation and sees a high wasserstein distance, the
+user knows the distribution of that select variable has changed dramatically
+and may warrant further investigation.
+
+\textbf{Kolmogorov-Smirnov Test} 
+
+{\displaystyle F_{n}(x)={\frac {{\text{number of (elements in the sample}}\leq
+x)}{n}}={\frac {1}{n}}\sum _{i=1}^{n}1_{(-\infty ,x]}(X_{i}),}
+
+similar to the Wassserstein Distance, it
 compares probability distributions. This is widely used in the data science
 space to due its advantage of not assuming the shape of the distribution. A
 limitation of the Kolmogorov-Smirnov Test is that it is more sensitive to changes
 in the center and struggles to pick up on differences near the tails.
 
-\textbf{Variance Ratio} in the context of comparing different imputations of a
-dataset shows whether one imputation method is smoothing the data more than the
-other. This is useful when evaluating the risk of information loss and the
-preservation of natural noise within the data. If we see a variance ratio
-significantly below one, this may indicate that one of the imputation methods
-has artificially collapsed the distribution. This can be used to verify if the
-other metrics provided are worth looking at due to lower standard error.
+\textbf{Variance Ratio} 
 
-\textbf{Skew Difference} is the simplest to interpret out of the four. This
-shows the direction and magnitude of the skew for a specified feature. 
+\displaystyle {VAR\_RATIO} =
+\frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
+
+In the context of comparing different imputations of a dataset shows whether
+one imputation method is smoothing the data more than the other. This is useful
+when evaluating the risk of information loss and the preservation of natural
+noise within the data. If we see a variance ratio significantly below one, this
+may indicate that one of the imputation methods has artificially collapsed the
+distribution. This can be used to verify if the other metrics provided are
+worth looking at due to lower standard error.
+
+\textbf{Skew Difference} 
+
+\displaystyle \Delta \text{Skew} = \text{Skew}_{\text{base}} -
+\text{Skew}_{\text{child}}
+
+Skew Difference is the simplest to interpret out of the four. This shows the
+direction and magnitude of the skew for a specified feature. 
 
 In the comparison dialog two imputations cards are also displayed. This shows
 the imputations performed on each version of the dataset. This also shows the
 variable name and type of imputation. These cards are rendered in the order of
-the performed imputations similar to the other implementations of this in \mica.
+the performed imputations similar to the other implementations of this in
+\mica.
 
 \subsubsection{Example User-flow}
 
 \subsection{Synthetic Data Generation}
+
+To assist in the development, testing and construction of the example
+user-flow, synthetic data generation scripts were used to insert artificially
+created missingness mechanisms and patterns into a dataset. This generated both
+a full sized and down sampled versions of the UCI Irvine Heart Disease dataset
+\cite{andras_janosi_heart_1989}. The larger datasets were used to test the
+performance of \mica under strain. The smaller down sampled datasets were used
+during the development and testing phase as a way to speed up the code/test
+cycle. 
+
+
+The missingness mechanisms and patterns have been defined and constructed as
+such.
+
+\subsubsection*{MCAR}
+Two versions were generated for the MCAR mechanism; A regular and "varied"
+version. The regular version contains both numerical and categorical data while
+the varied version contains only numerical data. This was used as a way to
+verify the rendering of categorical features as well as the backend handling of
+categorical components was valid. This was required to verify the correctness
+of the MissiG, Parallel Coordinate and Missingness matrix components as all
+three visualizations required specific rendering requirements for categorical
+data.
+
+For MCAR, the conditions were such
+
+\begin{equation} 
+D_{i,j}^* = 
+\begin{cases} 
+\text{NaN} & \text{if } u_{i,j} < w_j \\ 
+D_{i,j} & \text{otherwise} 
+\end{cases}
+\end{equation} 
+
+\begin{itemize}
+    \item $D_{i,j}^*$ represents the resulting value in the incomplete dataset.
+    \item $D_{i,j}$ represents the original, observed value.
+    \item $w_j$ is the predefined probability threshold for column $j$.
+    \item $u_{i,j}$ is the random draw from a standard uniform distribution.
+    \item \text{NaN} denotes the missing or undefined state.
+\end{itemize}
+
+
+\begin{description}
+        \item [MissiG] We expect in the unselected feature the distribution of
+                the missing values to roughly conform to the distribution of
+                the recorded values when a glyph with missing values is
+                selected. 
+
+        \item [Parallel Coordinates] We expect the fully imputed and the MCAR
+                variant to have a similar shape and show no major changes in
+                the distribution. We also expect missing value lines to be
+                spread evenly between all axes.
+
+        \item [Missingness Matrix] We expect evenly distributions red bars that
+                signify unrecorded values in columns where MCAR was applied to.
+                Sorting by value magnitude and presence should show no
+                patterns.
+\end{description}
+
+
+\subsubsection*{MAR}
+
+For MAR, the conditions were such
+
+\begin{equation} 
+D_{i,j}^* = 
+\begin{cases} 
+\text{NaN} & \text{if } \text{Age}_i > 55 \land u_i < w_j \\ 
+D_{i,j} & \text{otherwise} 
+\end{cases}
+\end{equation} 
+
+\begin{itemize}
+    \item $D_{i,j}^*$ represents the resulting value in the incomplete dataset.
+    \item $D_{i,j}$ represents the original, observed value.
+    \item $\text{Age}_i$ is the observed age for the $i$-th observation.
+    \item $u_i$ is the shared random draw for row $i$ from a standard uniform distribution.
+    \item $w_j$ is the predefined probability threshold for column $j$.
+    \item \text{NaN} denotes the missing or undefined state.
+\end{itemize}
+
+\begin{description}
+        \item [MissiG] We expect a hard drop-off in joint missingness histogram
+                distribution for Age above 55 when another variable is
+                selected. 
+
+        \item [Parallel Coordinates] When the Age column is drag-and-dropped
+                next to columns with missing values, we will see missing lines
+                only diverging from the Age axis above the value 55. For all
+                other columns, we will see missing lines coming out of the Age
+                axis spread evenly.
+
+        \item [Missingness Matrix] We expect missing values highlighted in red
+                to appear exclusively in rows where $\text{Age} > 55$. If the
+                matrix is sorted by the Age variable, this will be displayed as
+                a completely solid block of observed data for ages 55 and
+                under, followed by a visible scattering of missingness across
+                other columns for the older demographic, distributed according
+                to the column probabilities $w_j$.
+\end{description}
+
+\subsubsection*{MNAR}
+
+For MNAR, the conditions were such:
+
+\begin{equation} 
+$$
+D_{i,j}^* = 
+\begin{cases} 
+\text{NaN} & \text{if } (j = \text{Cholesterol} \land D_{i,j} > 250 \land u_{i,j} < 0.8) \\
+           & \lor \: (j = \text{BP} \land D_{i,j} > 140 \land u_{i,j} < 0.8) \\
+           & \lor \: (j = \text{Heart Disease} \land D_{i,j} = 1 \land u_{i,j} < 0.5) \\
+D_{i,j} & \text{otherwise} 
+\end{cases}
+$$
+\end{equation} 
+
+\begin{itemize}
+    \item $D_{i,j}^*$ represents the resulting value in the incomplete dataset.
+    \item $D_{i,j}$ represents the original, observed value.
+    \item $j$ identifies the specific variable column being evaluated.
+    \item $u_{i,j}$ is an independent random draw for row $i$ and column $j$
+            from a standard uniform distribution.
+    \item \text{NaN} denotes the missing or undefined state.
+\end{itemize}
+
+\begin{description}
+        \item [MissiG] We do not expect to see a visual difference between the
+                red Histogram and the blue Histogram. Because the missingness
+                is dependent on the variable's own values rather than the
+                values of other variables, selecting a variable will not reveal
+                a shift or pattern in the distribution of the remaining data.
+
+        \item [Parallel Coordinates] We will see a concentration of purple
+                lines (missing values) above the Cholesterol, BP and Heart
+                Disease axis which then path out evenly to other features
+                showing no correlation between the two features.
+
+        \item [Missingness Matrix] Compared to the full dataset, we expect to
+                see red blocks (missing values) clustered in areas that would
+                otherwise be white (high values). If the matrix is sorted by
+                Cholesterol or BP, there will be a clear transition from black
+                (low values) to white, with a high density of red at the top of
+                the gradient.
+\end{description}
+
+\subsubsection*{Joint Missingness}
+To elaborate further into the type of patterns in the three visualizations that
+exist when joint missingness is present, an MCAR mechanism was added
+afterward.
+
+For Joint Missingness, the conditions were such:
+
+\begin{equation}
+    \text{Age}_i^* = 
+    \begin{cases} 
+    \text{NaN} & \text{if } u_{i, \text{Age}} < 0.3 \\ 
+    \text{Age}_i & \text{otherwise} 
+    \end{cases}
+\end{equation}
+
+\begin{equation}
+    \text{Max HR}_i^* = 
+    \begin{cases} 
+    \text{NaN} & \text{if } \text{Age}_i^* = \text{NaN} \land u_{i, \text{HR}} < 0.8 \\ 
+    \text{Max HR}_i & \text{otherwise} 
+    \end{cases}
+\end{equation}
+
+\begin{equation}
+    X_{i,j}^{**} = 
+    \begin{cases} 
+    \text{NaN} & \text{if } \omega_{i,j} < 0.2 \\ 
+    X_{i,j}^* & \text{otherwise} 
+    \end{cases}
+\end{equation}
+
+\begin{itemize}
+    \item $\text{Age}_i^*$ and $\text{Max HR}_i^*$ represent the values after
+            the Joint Missingness process for the $i$-th observation.
+    \item $\text{Age}_i$ and $\text{Max HR}_i$ represent the original, fully
+            observed values.
+    \item $u_{i, \text{Age}}$ and $u_{i, \text{HR}}$ are independent random
+            draws from a standard uniform distribution $U(0,1)$ used for the JM
+            conditions.
+    \item $X_{i,j}^{**}$ represents the final state of the dataset after
+            applying Missing Completely at Random (MCAR) noise to the JM
+            results ($X_{i,j}^*$).
+    \item $\omega_{i,j}$ is a random draw from a uniform distribution $U(0,1)$
+            sampled for each cell $(i,j)$ in the data frame. 
+    \item \text{NaN} denotes the missing or undefined state.
+\end{itemize}
+
+
+\begin{description}
+        \item [MissiG] When switching the selected feature between Age and Max
+                HR, we expect to see a high joint missingness percentage
+                between the Age and Max HR features. Due to the added MCAR
+                mechanism added throughout, we also expect to see a flat spot
+                in the red histogram of Age. 
+
+        \item [Parallel Coordinates] 
+                We expect to see a large amount of purple lines in between Age
+                and Max HR. The added MCAR will manifest as isolated purple
+                lines across all features.
+
+        \item [Missingness Matrix] 
+                When Age is sorted by value presence, we expect to see matching
+                missing blocks in Max Hr. We also expect to see randomly
+                scattered red cells throughout due to the MCAR step in the
+                synthetic missing data generation.
+\end{description}
 
 \section{Results and Evaluation}
 \subsection{System Outputs}      
