@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import utils
-from scipy.stats import wasserstein_distance
-from sklearn.metrics import mean_absolute_error
+from scipy.stats import wasserstein_distance, ks_2samp, pearsonr, skew
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -184,11 +184,12 @@ def get_sample(file_path, n):
 
 def get_comparison(file_path_base, file_path_child):
     """
+    Compares a base dataset with an child dataset using various statistical metrics.
+
     :param str file_path_base: path to base dataset
     :param str file_path_child: path to child dataset
-
-    :return: json string representation of comparison info
-    :rtype: str
+    :return: List of dictionaries containing comparison info per column
+    :rtype: list
     """
 
     try:
@@ -205,49 +206,65 @@ def get_comparison(file_path_base, file_path_child):
     column_names = df_base.columns.tolist()
     col_info = []
 
-    for i, column in enumerate(column_names):
-        if column not in df_base.columns or column not in df_child.columns:
+    for column in column_names:
+        if column not in df_child.columns:
             continue
 
-        base_clean = df_base[column].dropna()
-        child_clean = df_child[column].dropna()
+        base_raw = df_base[column]
+        child_raw = df_child[column]
 
-        # if after droping, everything is empty
+        base_clean = base_raw.dropna()
+        child_clean = child_raw.dropna()
+
         if base_clean.empty or child_clean.empty:
             col_info.append({
                 column: {
                     "WD": None,
-                    "MAD": None,
+                    "KS_STAT": None,
+                    "VAR_RATIO": None,
+                    "SKEW_DIFF": None
                 }
             })
             continue
 
-        # if catagorical, encode
-        if not pd.api.types.is_numeric_dtype(base_clean) or not pd.api.types.is_numeric_dtype(child_clean):
+        is_numeric = pd.api.types.is_numeric_dtype(
+            base_clean) and pd.api.types.is_numeric_dtype(child_clean)
+
+        if not is_numeric:
             le = LabelEncoder()
+            combined = pd.concat([base_clean, child_clean]).astype(str)
+            le.fit(combined)
+            base_encoded = le.transform(base_clean.astype(str))
+            child_encoded = le.transform(child_clean.astype(str))
 
-            combined_data = pd.concat([base_clean, child_clean]).astype(str)
-            le.fit(combined_data)
+            wd_val = wasserstein_distance(base_encoded, child_encoded)
+            ks_stat, _ = ks_2samp(base_encoded, child_encoded)
 
-            base_clean = pd.Series(le.transform(
-                base_clean.astype(str)), index=base_clean.index)
-            child_clean = pd.Series(le.transform(
-                child_clean.astype(str)), index=child_clean.index)
+            var_ratio = None
+            skew_diff = None
 
-        aligned_df = pd.concat([base_clean, child_clean], axis=1).dropna()
-
-        if aligned_df.empty:
-            wd_val = wasserstein_distance(base_clean, child_clean)
-            mae_val = None
         else:
-            wd_val = wasserstein_distance(base_clean, child_clean)
-            mae_val = mean_absolute_error(
-                aligned_df.iloc[:, 0], aligned_df.iloc[:, 1])
+            # Handling for Numeric Data
+            base_encoded = base_clean.values
+            child_encoded = child_clean.values
+
+            wd_val = wasserstein_distance(base_encoded, child_encoded)
+            ks_stat, _ = ks_2samp(base_encoded, child_encoded)
+
+            var_base = np.var(base_encoded)
+            var_ratio = np.var(child_encoded) / \
+                var_base if var_base != 0 else None
+
+            base_skew = skew(base_encoded)
+            child_skew = skew(child_encoded)
+            skew_diff = base_skew - child_skew
 
         col_info.append({
             column: {
                 "WD": wd_val,
-                "MAD": mae_val,
+                "KS_STAT": ks_stat,
+                "VAR_RATIO": var_ratio,
+                "SKEW_DIFF": skew_diff
             }
         })
 

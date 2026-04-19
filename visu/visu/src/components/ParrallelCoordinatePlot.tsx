@@ -95,6 +95,15 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
 
       const yScales: Record<string, any> = {};
 
+      // Helper to identify any missing value representations
+      const isMissing = (val: any) =>
+        val === null ||
+        val === undefined ||
+        val === 'NaN' ||
+        val === 'null' ||
+        val === 'undefined' ||
+        Number.isNaN(val);
+
       columnOrder.forEach((dimName) => {
         const colInfo = basicInfo1.columns.find((c) => c.name === dimName);
         const isNumeric =
@@ -113,10 +122,10 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
             .range([innerHeight, 0])
             .nice();
         } else {
-          // if catagorical, get unique values
+          // if catagorical, get unique values and filter out missing texts
           const uniqueValues = Array.from(
             new Set(combinedData.map((d) => String(d[dimName]))),
-          ).filter((v) => v !== 'null');
+          ).filter((v) => !isMissing(v));
 
           yScales[dimName] = d3
             .scalePoint()
@@ -138,15 +147,45 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         position[d] = xScale(d)!;
       });
       const dragging: Record<string, number> = {};
-      let activeOrder = [...columnOrder]; // mutable copy for drag duration
+      let activeOrder = [...columnOrder];
 
+      // generator for non-missing data
       const pathGenerator = (d: any, currentOrder: string[] = columnOrder) => {
         const lineGen = d3
           .line<string>()
-          .defined((p) => d[p] !== null && d[p] !== undefined)
+          .defined((p) => !isMissing(d[p]))
           .x((p) => (dragging[p] !== undefined ? dragging[p] : position[p]))
           .y((p) => yScales[p](d[p]));
         return lineGen(currentOrder);
+      };
+
+      // generator to route missing connections to the top
+      const missingPathGenerator = (
+        d: any,
+        currentOrder: string[] = columnOrder,
+      ) => {
+        const path = d3.path();
+        for (let i = 0; i < currentOrder.length - 1; i++) {
+          const p1 = currentOrder[i];
+          const p2 = currentOrder[i + 1];
+          const v1 = d[p1];
+          const v2 = d[p2];
+          const m1 = isMissing(v1);
+          const m2 = isMissing(v2);
+
+          // If either point is missing, draw a line segment connecting to the top (y = 0)
+          if (m1 || m2) {
+            const x1 = dragging[p1] !== undefined ? dragging[p1] : position[p1];
+            const y1 = m1 ? 0 : yScales[p1](v1);
+
+            const x2 = dragging[p2] !== undefined ? dragging[p2] : position[p2];
+            const y2 = m2 ? 0 : yScales[p2](v2);
+
+            path.moveTo(x1, y1);
+            path.lineTo(x2, y2);
+          }
+        }
+        return path.toString();
       };
 
       const colorMap = {
@@ -154,19 +193,13 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
         data2: '#1a80bb',
       };
 
-      // draw lines
-      g.selectAll('.path')
+      // create groups for each row to hold both normal and missing lines together
+      const rowGroups = g
+        .selectAll('.row')
         .data(combinedData)
         .enter()
-        .append('path')
-        .attr('class', 'path')
-        .attr('d', (d) => pathGenerator(d))
-        .style('fill', 'none')
-        .style('stroke', (d) => colorMap[d._source as keyof typeof colorMap])
-        .style('stroke-width', (d) => {
-          if (hoveredDataset && d._source !== hoveredDataset) return 1;
-          return 1.5;
-        })
+        .append('g')
+        .attr('class', 'row')
         .style('opacity', (d) => {
           // if nothing hovered, opacity = 0.4
           if (!hoveredDataset) return 0.4;
@@ -174,10 +207,34 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
           return d._source === hoveredDataset ? 0.7 : 0.1;
         })
         .each(function (d) {
-          // if this is selected, draw ontop of everything else
+          // if this is selected, draw on top of everything else
           if (hoveredDataset && d._source === hoveredDataset) {
             d3.select(this).raise();
           }
+        });
+
+      // draw standard lines
+      rowGroups
+        .append('path')
+        .attr('class', 'path-normal')
+        .attr('d', (d) => pathGenerator(d))
+        .style('fill', 'none')
+        .style('stroke', (d) => colorMap[d._source as keyof typeof colorMap])
+        .style('stroke-width', (d) => {
+          if (hoveredDataset && d._source !== hoveredDataset) return 1;
+          return 1.5;
+        });
+
+      // draw purple missing data lines
+      rowGroups
+        .append('path')
+        .attr('class', 'path-missing')
+        .attr('d', (d) => missingPathGenerator(d))
+        .style('fill', 'none')
+        .style('stroke', 'purple')
+        .style('stroke-width', (d) => {
+          if (hoveredDataset && d._source !== hoveredDataset) return 1;
+          return 1.5;
         });
 
       // draw axes
@@ -202,28 +259,36 @@ export const ParallelCoordinates: FC<ParallelCoordinatesProps> = observer(
 
               // dynamically reorder arrays based on current X positions
               activeOrder.sort((a, b) => {
-                const posA = dragging[a] !== undefined ? dragging[a] : position[a];
-                const posB = dragging[b] !== undefined ? dragging[b] : position[b];
+                const posA =
+                  dragging[a] !== undefined ? dragging[a] : position[a];
+                const posB =
+                  dragging[b] !== undefined ? dragging[b] : position[b];
                 return posA - posB;
               });
 
               xScale.domain(activeOrder);
 
               // update axis positions
-              g.selectAll<SVGGElement, string>('.axis').attr('transform', function (col) {
-                if (col === d) return `translate(${dragging[col]},0)`; // dragged item follows cursor
-                position[col] = xScale(col)!;
-                return `translate(${position[col]},0)`; // others snap to grid
-              });
+              g.selectAll<SVGGElement, string>('.axis').attr(
+                'transform',
+                function (col) {
+                  if (col === d) return `translate(${dragging[col]},0)`; // dragged item follows cursor
+                  position[col] = xScale(col)!;
+                  return `translate(${position[col]},0)`; // others snap to grid
+                },
+              );
 
-              // update path strings smoothly
-              g.selectAll<SVGPathElement, any>('.path').attr('d', (pd) =>
+              // update path strings smoothly for both standard and missing lines
+              g.selectAll<SVGPathElement, any>('.path-normal').attr('d', (pd) =>
                 pathGenerator(pd, activeOrder),
+              );
+              g.selectAll<SVGPathElement, any>('.path-missing').attr(
+                'd',
+                (pd) => missingPathGenerator(pd, activeOrder),
               );
             })
             .on('end', function (_, d) {
               delete dragging[d];
-              // Commit the new order to React state, triggering a clean re-render
               setColumnOrder([...activeOrder]);
             }),
         );

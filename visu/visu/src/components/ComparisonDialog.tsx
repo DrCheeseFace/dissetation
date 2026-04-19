@@ -89,10 +89,12 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
           {title}
         </h4>
-        <div className="grid grid-cols-3 gap-4 font-medium text-sm mb-2 border-b pb-2">
+        <div className="grid grid-cols-5 gap-4 font-medium text-sm mb-2 border-b pb-2">
           <div>Column</div>
           <div>WD</div>
-          <div>MAD</div>
+          <div>KS_STAT</div>
+          <div>VAR_RATIO</div>
+          <div>SKEW_DIFF</div>
         </div>
         {node1?.columns
           .filter((col) => {
@@ -100,7 +102,7 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
             const metrics = colMetricObj ? colMetricObj[col.name] : null;
             return (
               metrics &&
-              (Math.abs(metrics.WD) > 1e-9 || Math.abs(metrics.MAD) > 1e-9)
+              (Math.abs(metrics.WD) > 1e-9 || Math.abs(metrics.MAE) > 1e-9)
             );
           })
           .map((col) => {
@@ -110,11 +112,24 @@ export const ComparisonDialog: FC<ComparisonDialogProps> = observer(
             return (
               <div
                 key={col.name}
-                className="grid grid-cols-3 gap-4 text-sm border-b border-slate-100 pb-2 last:border-0"
+                className="grid grid-cols-5 text-sm border-b border-slate-100 pb-2 last:border-0"
               >
                 <div className="font-medium">{col.name}</div>
-                <div>{metrics?.WD != null ? metrics.WD.toFixed(4) : '—'}</div>
-                <div>{metrics?.MAD != null ? metrics.MAD.toFixed(4) : '—'}</div>
+                <div>{metrics?.WD != null ? metrics.WD.toFixed(4) : '-'}</div>
+                <div>
+                  {metrics?.KS_STAT != null ? metrics.KS_STAT.toFixed(4) : '-'}
+                </div>
+                <div>
+                  {metrics?.VAR_RATIO != null
+                    ? metrics.VAR_RATIO.toFixed(4)
+                    : '-'}
+                </div>
+
+                <div>
+                  {metrics?.SKEW_DIFF != null
+                    ? metrics.SKEW_DIFF.toFixed(4)
+                    : '-'}
+                </div>
               </div>
             );
           })}

@@ -1,6 +1,8 @@
 export interface ComparisonMetrics {
   WD: number; // wassersteinm distance
-  MAD: number; // mean absolute difference
+  KS_STAT: number; // kolmogorov-smirnov test for goodness of fit
+  VAR_RATIO: number; // varience ratio
+  SKEW_DIFF: number; // skew difference 
 }
 
 export interface ColumnComparisonMetrics {
