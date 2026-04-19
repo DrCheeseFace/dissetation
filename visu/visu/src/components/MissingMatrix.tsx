@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC, useMemo } from 'react';
 import * as d3 from 'd3';
 import type MatrixInfo from '@/model/MissingMatrix';
 
@@ -6,13 +6,22 @@ interface MissingMatrixProps {
   matrixInfo: MatrixInfo;
 }
 
+type SortType = 'none' | 'value' | 'presence';
+
 const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
   const d3Container = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 500 });
 
-  // handle resizing
+  const [sortConfig, setSortConfig] = useState<{
+    colIndex: number;
+    type: SortType;
+  }>({
+    colIndex: -1,
+    type: 'none',
+  });
+
   useEffect(() => {
     if (!wrapperRef.current) return;
 
@@ -31,10 +40,35 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
     return () => observer.disconnect();
   }, [matrixInfo.data.length]);
 
+  const sortedData = useMemo(() => {
+    if (sortConfig.type === 'none' || sortConfig.colIndex === -1) {
+      return matrixInfo.data;
+    }
+
+    return [...matrixInfo.data].sort((a, b) => {
+      const valA = a[sortConfig.colIndex];
+      const valB = b[sortConfig.colIndex];
+
+      if (sortConfig.type === 'presence') {
+        if (valA === null && valB !== null) return -1;
+        if (valA !== null && valB === null) return 1;
+        return 0;
+      }
+
+      if (sortConfig.type === 'value') {
+        if (valA === null) return 1;
+        if (valB === null) return -1;
+        return (valA as number) - (valB as number);
+      }
+
+      return 0;
+    });
+  }, [matrixInfo.data, sortConfig]);
+
   useEffect(() => {
     if (
       !matrixInfo?.columns ||
-      !matrixInfo?.data ||
+      !sortedData ||
       !matrixInfo?.metadata ||
       !d3Container.current ||
       dimensions.width === 0
@@ -42,8 +76,9 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
       return;
     }
 
-    const { columns, data, metadata } = matrixInfo;
-    const numRows = data.length;
+    const { columns, metadata } = matrixInfo;
+    const numRows = sortedData.length;
+    const headerHeight = 30;
 
     if (numRows === 0 || columns.length === 0) return;
 
@@ -53,8 +88,7 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
     );
 
     const columnScales = columns.map((_, colIndex) => {
-                        // TODO fix strings
-      const colValues = data
+      const colValues = matrixInfo.data
         .map((row) => row[colIndex])
         .filter((v): v is number => v !== null && typeof v === 'number');
 
@@ -68,7 +102,6 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
     });
 
     const innerWidth = dimensions.width;
-    const innerHeight = dimensions.height;
 
     const container = d3.select(d3Container.current);
     container.selectAll('*').remove();
@@ -100,14 +133,51 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
     const yScale = d3
       .scaleBand<number>()
       .domain(d3.range(numRows))
-      .range([0, innerHeight])
+      .range([headerHeight, dimensions.height])
       .paddingInner(0);
+
+    const headers = svg
+      .selectAll('.column-label')
+      .data(columns)
+      .enter()
+      .append('g')
+      .attr('class', 'column-label')
+      .style('cursor', 'pointer')
+      .on('click', (_event, d) => {
+        const i = columns.indexOf(d);
+        setSortConfig((prev) => {
+          if (prev.colIndex === i) {
+            if (prev.type === 'none') return { colIndex: i, type: 'value' };
+            if (prev.type === 'value') return { colIndex: i, type: 'presence' };
+            return { colIndex: -1, type: 'none' };
+          }
+          return { colIndex: i, type: 'value' };
+        });
+      });
+
+    headers
+      .append('text')
+      .attr('x', (colName) => (xScale(colName) ?? 0) + xScale.bandwidth() / 2)
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '10px')
+      .style('font-weight', (_, i) =>
+        sortConfig.colIndex === i ? 'bold' : 'normal',
+      )
+      .style('fill', (_, i) => (sortConfig.colIndex === i ? '#2563eb' : '#666'))
+      .text((colName, i) => {
+        let suffix = '';
+        if (sortConfig.colIndex === i) {
+          suffix = sortConfig.type === 'value' ? ' ⇅' : ' ⊘';
+        }
+        return `${colName}${suffix}`;
+      });
 
     const MISSING_COLOR = '#ff4d4d';
 
     const rowGroups = svg
       .selectAll<SVGGElement, (number | null)[]>('.matrix-row')
-      .data(data)
+      .data(sortedData)
       .enter()
       .append('g')
       .attr('class', 'matrix-row')
@@ -132,15 +202,18 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
         const rowNode = rectNode.parentNode as SVGGElement;
         const rowData = d3.select(rowNode).datum() as (number | null)[];
 
-        const rowIndex = data.indexOf(rowData);
+        const rowIndex = sortedData.indexOf(rowData);
         const colIndex = Array.from(rowNode.children).indexOf(rectNode);
 
         const actualRow = rowIndex * rowStep;
         const colName = columns[colIndex];
+        const val = rowData[colIndex];
 
         tooltip
           .html(
-            `<strong>Feature:</strong> ${colName}<br/><strong>Row:</strong> ${actualRow}`,
+            `<strong>Feature:</strong> ${colName}<br/>
+             <strong>Row:</strong> ${actualRow}<br/>
+             <strong>Value:</strong> ${val === null ? 'Missing' : val}`,
           )
           .style('top', `${event.clientY - 45}px`)
           .style('left', `${event.clientX + 15}px`);
@@ -149,7 +222,7 @@ const MissingMatrix: FC<MissingMatrixProps> = ({ matrixInfo }) => {
         d3.select(this).style('stroke', 'none');
         tooltip.style('visibility', 'hidden');
       });
-  }, [matrixInfo, dimensions]);
+  }, [matrixInfo, dimensions, sortedData, sortConfig]);
 
   return (
     <div
