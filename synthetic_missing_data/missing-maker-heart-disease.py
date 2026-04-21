@@ -72,7 +72,7 @@ COL_WEIGHTS = {
 }
 
 for col in MCAR_dataframe.columns:
-    rate = COL_WEIGHTS.get(col, np.random.uniform(0.05, 0.35))
+    rate = COL_WEIGHTS.get(col, 0)
     random_draw = np.random.rand(len(MCAR_dataframe)) < rate
     MCAR_dataframe.loc[random_draw, col] = np.nan
 
@@ -88,7 +88,7 @@ COL_WEIGHTS = {
 }
 
 for col in MCAR_varied_df.columns:
-    rate = COL_WEIGHTS.get(col, np.random.uniform(0.05, 0.35))
+    rate = COL_WEIGHTS.get(col, 0)
     random_draw = np.random.rand(len(MCAR_varied_df)) < rate
     MCAR_varied_df.loc[random_draw, col] = np.nan
 
@@ -142,7 +142,7 @@ COL_WEIGHTS_SMALL = {
 }
 
 for col in MCAR_small_df.columns:
-    rate = COL_WEIGHTS_SMALL.get(col, np.random.uniform(0.05, 0.35))
+    rate = COL_WEIGHTS_SMALL.get(col, 0)
     random_draw = np.random.rand(len(MCAR_small_df)) < rate
     MCAR_small_df.loc[random_draw, col] = np.nan
 
@@ -158,7 +158,7 @@ COL_WEIGHTS_VARIED_SMALL = {
 }
 
 for col in MCAR_varied_small_df.columns:
-    rate = COL_WEIGHTS_VARIED_SMALL.get(col, np.random.uniform(0.05, 0.35))
+    rate = COL_WEIGHTS_VARIED_SMALL.get(col, 0)
     random_draw = np.random.rand(len(MCAR_varied_small_df)) < rate
     MCAR_varied_small_df.loc[random_draw, col] = np.nan
 

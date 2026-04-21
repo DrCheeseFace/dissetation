@@ -1163,8 +1163,83 @@ For Joint Missingness, the conditions were such:
 \subsection{Performance}
 
 \section{Conclusion}
+This part discuses the aims and objectives previously stated and confirms
+whether they have been achieved or not as well as future work regarding \mica
+and its related research.
 \subsection{Aims and Objectives}
-\subsection{Future Work}
+\subsubsection{Aims}
+With regard to the main artifact, \mica provides a solution in three aspects.
+\begin{itemize}
+        \item \mica provides a touch screen interface for users to collaborate
+                with other data scientists. This interface provides a variety
+                of imputation algorithms as well as visualizations picked for
+                the express purpose of data imputation.
+
+        \item \mica utilizes state of the art, missing data research as well as
+                newly developed visualizations in order to reduce the time
+                spent on the preprocessing of datasets as well as make it
+                easier for data science practitioners make the correct
+                decisions when imputing a dataset.
+
+        \item \mica introduces a novel way of handling versions of datasets by
+                tracking imputations performed in a GIT version control style
+                system. This aims to reduce confusion when handling multiple
+                versions of imputed datasets and decrease the chances of making
+                mistakes in regard to picking the most optimal imputation
+                steps for a dataset.
+
+\end{itemize}
+\subsubsection{Objectives}
+
+\begin{description}
+
+        \item[\textbf{Missingness Structures}] This objective was met by
+                researching and presenting the missingness mechanisms MCAR, MAR
+                and MNAR as well as the missingness patterns amount, joint and
+                conditional. The generation of synthetic missing data using the
+                UCI Heart Disease dataset was used to visualize how missingness
+                mechanisms and patterns appear in practical examples.
+
+        \item[\textbf{Missing Data Visualizations}] This objective was met
+                through the review of recently published researched on missing
+                data visualizations as well as the implementation of three
+                comparative visualization methods within \mica: A interactive
+                implementation of a MissiG component, a custom Parallel
+                Coordinate graph component and an interactive Missingness
+                Matrix. These grouped together allow the user to visually spot
+                missingness mechanisms and patterns and conclude what
+                imputation method is most efficient.
+        
+        
+        \item[\textbf{Imputation Version Control}] This objective was fulfilled
+                by the engineering of a novel GIT styled version control system
+                for tracking imputation methods performed on a dataset. The
+                MICA API successfully manages the backend logic allowing data
+                science practitioners to track, apply and branch different
+                imputation operations and files without the cognitive overhead
+                of recording files manually and keeping track of scripts.
+
+
+        \item[\textbf{Web App Implementation and User-flow}] This objective was
+                met by the creation of \mica, a fully implemented,
+                containerized web application. By using a performant and
+                decoupled technology stack, the application exhibits a
+                low-latency intuitive interface that pushes users to a linear
+                pre-imputation, imputation, and post-imputation step analytics
+                workflow.
+
+\end{description}
+
+\subsection{Future Work} 
+
+\mica currently supports only 5 methods of imputations. Adding further
+imputation methods such as "hot-deck imputation" would be trivial with the use
+of the sci-kit learn library. Further improvements on performance particularly
+on optimizing JSON string representations of custom data structures such as the
+one used for representing a MissiG visualization can help reduce latency on the
+client side as well as reduce round-trip-time on requests made to the MICA API.
+Currently, multitouch gestures are unused within \mica; research and
+implementations could be worth doing in order to further improve usability. 
 
 \newpage
 \section{References}
