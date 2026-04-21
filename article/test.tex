@@ -687,7 +687,7 @@ manually editable if the user would wish to give a custom name for a particular
 version of a dataset.
 
 \subsubsection{Pre-Imputation Analytics}
-\mica provides a custom react component implementation of both a singular
+\mica provides a custom React component implementation of both a singular
 MissiG glyph and an abstraction for developers to be able to handle a group of
 MissiG glyphs. Each MissiG glyph is clickable offering an interactive
 visualization to the user. Above the MissiG group, is a selector to switch
@@ -1159,7 +1159,6 @@ For Joint Missingness, the conditions were such:
 
 \section{Results and Evaluation}
 \subsection{System Outputs}      
-\subsection{Limitations}
 \subsection{Performance}
 
 \section{Conclusion}
@@ -1234,12 +1233,44 @@ With regard to the main artifact, \mica provides a solution in three aspects.
 
 \mica currently supports only 5 methods of imputations. Adding further
 imputation methods such as "hot-deck imputation" would be trivial with the use
-of the sci-kit learn library. Further improvements on performance particularly
-on optimizing JSON string representations of custom data structures such as the
-one used for representing a MissiG visualization can help reduce latency on the
-client side as well as reduce round-trip-time on requests made to the MICA API.
+of the sci-kit learn library and would greatly improve the functionality and
+usability for data scientist practitioners. 
+
+Further improvements on performance, particularly on optimizing JSON string
+representations of custom data structures such as the one used for representing
+a MissiG visualization, can help reduce latency on the client side as well as
+reduce round-trip-time on requests made to the MICA API. 
+
 Currently, multitouch gestures are unused within \mica; research and
-implementations could be worth doing in order to further improve usability. 
+implementations could be worth experimentation in order to further improve
+usability. For example the ability to render large graphics and give the user
+the ability to zoom in for greater clarity may prove useful for certain
+visualization methods.
+
+\mica currently only supports side by side comparisons of 2 different datasets
+maximum. This limitation makes it hard for users to compare more than 2
+different versions of imputation as the user is forced to switch between
+comparing pairs of datasets instead of all at once in parallel. For complex
+workflows this results in a cumbersome user experience. This can be addressed
+by altering the currently implemented visualization components such as Parallel
+Coordinates, to allow for an arbitrary number of dataset versions.
+
+The current way \mica stores dataset versions is by creating a copy of every
+dataset version in file storage. This is significantly inefficient especially
+when handling large datasets. A proposed solution to this problem would be to
+store only the \textit{diffs} of the changes applied to a dataset. This was not
+implemented into \mica due to time constraints.
+
+\mica utilizes React components to render its web app. This was picked for the
+development of \mica as it allows for quick and simple implementations of
+features. However, render times for React are slower compared to newly
+developed web frameworks such as svelte. Memory usage also suffers as on idle
+\mica uses a significant amount of primary storage as compared to plain HTML
+and JavaScript or svelte. Rewriting the visualization components using a better
+optimized web framework would make the user experience more responsive. 
+
+
+% llm thing write todo
 
 \newpage
 \section{References}
