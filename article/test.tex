@@ -37,11 +37,12 @@
   \makebox[\textwidth][c]{\includegraphics[width=1.2\textwidth,#1]{#2}}%
 }
 
-% eg etc ie implementation
+% eg etc ie et al implementation
 \makeatletter
 \newcommand{\ie}{\emph{i.e.}\@ifnextchar.{\!\@gobble}{}}
 \newcommand{\eg}{\emph{e.g.}\@ifnextchar.{\!\@gobble}{}}
 \newcommand{\etc}{etc\@ifnextchar.{}{.\@}}
+\newcommand{\etal}{\textit{et al.}}
 \makeatother
 
 \newcommand{\mica}{\textit{MICA }}
@@ -383,7 +384,7 @@ Missingness}.
 
 \paragraph{\textbf{MissiG}} ~\\ 
 With advancements made in Fernstad's previous study into visualization methods
-for missing data \cite{fernstad_identify_2019}, Fernstad \textit{et al}.
+for missing data \cite{fernstad_identify_2019}, Fernstad \etal 
 develops the novel visualization MissiG \cite{fernstad_explore_2022} with an
 aim to make it easier for data science practitioners identify missingness
 patterns in a dataset.
@@ -445,7 +446,7 @@ Many examples of imputation applications exist. These include VIM, Amelia view
 \cite{honaker_amelia_2024} and Profiler, but these applications focus on analyzing
 singular imputations and do not take into account the broader picture of
 comparing imputation results and managing versions. One novel example
-Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava et al. exists and
+Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava \etal exists and
 worth analyzing as it uses comparative visualizations to deduce the
 effectiveness of different methods of imputation at once.
 
@@ -940,7 +941,58 @@ variable name and type of imputation. These cards are rendered in the order of
 the performed imputations similar to the other implementations of this in
 \mica.
 
-\subsubsection{Example User-flow}
+\subsection{Example User-flow}
+
+\mica was designed to push the user towards a linear workflow to minimize
+cognitive overhead. An expected workflow when using \mica follows four phases:
+
+\subsubsection*{Pre-imputation Analysis}
+The user first uploads the unimputed dataset via the file upload component
+located on \mica's landing page. A root node is created via the MICA API upload
+endpoint after which the user is then routed to the pre-imputation tab. The
+MissiG request for the newly created root node is sent and buffered on the
+client end.
+
+Once the MissiG visualization is loaded, the user will be able to look for
+missingness patterns \cref{fig:MissiG_imp} and hypothesize possible missingness
+mechanisms included in the given dataset. After this the user will move onto
+the next step of the process by clicking on the imputation tab. 
+
+\subsubsection*{Executing Data Imputation} 
+The user is able to review what the data types for each feature have been
+inferred as by the MICA API as well as an exact Null and Non-null count for
+each column visualized as a partially colored bar.
+
+The user then queues imputation methods that are suited to the missingness
+patterns found earlier by selecting a method and optionally setting
+hyperparameters as well as a custom file name if needed. This is done through
+the imputation UI component \cref{fig:imputation_tab}. This newly created
+version of the dataset is kept in a staged state where in the next step the
+user is able to perform operations on the file.
+
+\subsubsection*{Post-imputation Analysis} 
+When a new file version is created, a MissiG representation is sent from the
+MICA API which is then accessible via the MissiG tab. The user is then able to
+compare any two versions of a dataset by selecting them in the file records
+table \cref{fig:filestab} as well as the commit history card
+\cref{fig:commithistory}. Selecting two recorded will enable a button for users
+to enable a popup which will show comparative metrics as well as
+visualizations. If a particular version of the dataset is not worth analyzing,
+the user is given the option to discard a staged file in order to declutter the
+staging area and avoid confusions during this analysis step.
+        
+
+\subsubsection*{Version Management and Export} 
+After comparing different imputed versions of the dataset, the user then makes
+the decision on how to proceed by picking the optimal imputation method. This
+is done by clicking the Apply button; this will append the staged file to the
+head of the commit history and clear staged files. Once the user has done this,
+if there are still features left to impute the head of the commit history, the
+user will move back to the first pre-imputation analysis tab and repeat the
+process from the beginning until there are no features with missing values.
+At any time in the process, the user is able to revert to an old version of the
+dataset if needed. Once all features are fully imputed, the user can export the
+final version of the dataset via the download button.
 
 \subsection{Synthetic Data Generation}
 
@@ -1269,8 +1321,20 @@ developed web frameworks such as svelte. Memory usage also suffers as on idle
 and JavaScript or svelte. Rewriting the visualization components using a better
 optimized web framework would make the user experience more responsive. 
 
+\mica currently treats all number data as numerical and string data as
+categorical. For cases such as in the UCI heart disease dataset, this means
+users would have to encode the categorical features from numbers to strings
+before uploading the dataset to MICA API. This can be avoided by providing the
+user the ability to mark certain features as categorical from within \mica's
+user interface. This feature was scoped out due to time constraints.
 
-% llm thing write todo
+As referenced by Shrivastava \etal \cite{shrivastava_impute-vss_2025}, the use
+of recent advancements in large language models may prove useful when analyzing
+complex missingness mechanisms and patterns present in datasets. An example
+possible use case would include passing a specially trained LLM model
+visualizations, statistics and dataset samples in order to give analytics and
+suggested imputation methods.
+
 
 \newpage
 \section{References}
@@ -1317,12 +1381,14 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
     \centering
         \wideimage{MissiGSC.png}
         \caption{MissiG visualization implementation}
+        \label{fig:MissiG_imp}
 \end{figure}
 
 \begin{figure}[H]
     \centering
         \wideimage{imputationtab.png}
         \caption{\mica imputation tab}
+        \label{fig:imputation_tab}
 \end{figure}
 
 \begin{figure}[H]
