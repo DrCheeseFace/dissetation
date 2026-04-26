@@ -9,6 +9,18 @@
 \usepackage{etoolbox}
 \usepackage{url}
 \usepackage{mathtools}
+
+\usepackage{hyperref}
+\hypersetup{
+    bookmarksopen=true,
+    colorlinks=true,
+    linkcolor=black,
+    anchorcolor=black,
+    citecolor=black,
+    filecolor=black,
+    urlcolor=black
+}
+
 \usepackage[capitalize]{cleveref}
 \usepackage[inkscapelatex=false]{svg}
 \floatstyle{ruled}
@@ -440,6 +452,73 @@ performance for identifying missingness patterns makes this visualization
 especially suited for use in \mica.
 
 \subsection{Imputation Techniques}
+Imputation techniques fall under two categories; Univariate and Multivariate.
+Univariate techniques include simple methods such as mean, median and mode and
+are used to impute singular features at a time. Multivariate methods like KNN
+and MICE on the other hand can impute multiple features at once by using the
+full context of surrounding values in order to impute values from other
+features. Based on feature distributions and types of data, \mica could offer
+suggestions on what imputation techniques are worth analyzing. 
+
+
+\subsubsection{Univariate methods}
+For numerical features, the methods available are \textit{Mean} and
+\textit{Median}. 
+
+\textit{Mean} is best used in situations where the variable follows a normal
+distribution while containing few outliers as many outliers can greatly bias
+the average. This would be data such as hourly temperature throughout the day
+because we expect a normal distribution and few drastic fluctuations in
+temperature. 
+
+\textit{Median} is best for skewed normal distributions or if the feature
+contains outliers. This would be good for handling financial survey data such
+as housing prices where we expect to see outliers. 
+
+\textit{Mode} can be utilized for imputing categorical data due to the method
+not being reliant on magnitude. Mode simply maximizes the probability that a
+random guess is correct based on recorded frequency.
+
+These methods are best used for MCAR data as they will not alter correlations
+and distributions greatly if the user would not like to perform listwise
+deletion instead. 
+
+\subsubsection{Multivariate methods} 
+\textit{Listwise deletion} is the simplest method of imputation where all rows
+containing missing data are dropped. As discussed previously, if the dataset
+contains only the MCAR missingness mechanism, we can safely perform a listwise
+deletion operation as we know patterns and distributions will be preserved
+after imputation. For datasets that are sparse, we may choose not to use this
+method as shrinking the dataset further could make using the dataset to train
+models unusable.
+
+\textit{k-nearest neighbors} is a non-parametric imputation method that uses
+local records to estimate missing values. The number of local records checked
+is dependent on the hyperparameter \textit{k}. KNN typically uses Euclidean
+distance for continuous variables and Manhattan distance for discrete features
+to determine the "distance" between two records. Using the closest \textit{k}
+neighbors ,the missing value is imputed using mean or mode dependent on
+the data type being numerical or categorical data.
+
+Unlike univariate methods, using the context of multiple features, KNN is able
+to address MAR missingness mechanisms. A caveat when working with this method
+is its need for hyperparameter tuning. For data with large amount of outliers
+and noise, the use of a greater \textit{k} is needed for smoothing. A too large
+\textit{k} will cause over smoothing, resulting in a loss of information and
+detail of patterns within a dataset. For these reasons \mica should provide
+distribution metrics for users to be able to spot over smoothing.
+
+\textit{Multivariate Imputation by Chained equations (MICE)} unlike KNN
+requires MAR mechanisms to be present in the dataset for it to be effective. As
+discussed by Greenland \etal \cite{greenland_critical_1995}, if MICE imputation
+is performed on a dataset with a non-MAR missingness mechanism, we can expect
+high variability with large standard errors in the analyses. 
+
+MICE requires considerably more compute power as compared to the other methods
+listed; this characteristic needs to be considered with its usage in \mica. The
+ability for a user to queue imputations may solve this problem as the user will
+be able to keep using the application while a background process performs the
+imputation.
 
 \subsection{Previous Implementations}
 Many examples of imputation applications exist. These include VIM, Amelia view
@@ -469,7 +548,7 @@ Although these visualizations are good for understanding the change in
 distributions of a single variable, the user is not able to effectively see the
 change in correlations between variables. As mentioned previously, the three
 missingness patterns a data engineer would look for are \textit{amount missing,
-Joint Missingness} and \texitit{condition missingness}. There is a lack of
+Joint Missingness} and \textit{condition missingness}. There is a lack of
 visualizations pertaining to displaying information about \texit{amount
 missing}. \itemit{Joint missingness} is somewhat visualized to the user with
 the use of a "Missing Bars" plot although due to the format, for numerous of
@@ -1212,6 +1291,39 @@ For Joint Missingness, the conditions were such:
 \section{Results and Evaluation}
 \subsection{System Outputs}      
 \subsection{Performance}
+\subsection{Requirements}
+
+This project successfully fulfilled functional requirements 2-7 with a partial
+implementation of 1. \mica provides both univariate and multivariate imputation
+methods as well as control some hyperparameter options relating to the KNN
+imputation method which satisfies F.R.2 and F.R.3. A custom interactive react
+component and backend code for the MissiG visualization was fully developed,
+satisfying F.R.4. Custom interactive react components were also developed for
+Parallel Coordinates and Missingness Matrix visualizations, this satisfies
+F.R.6. To pair with this, within the comparison tab, \mica calculates and
+displays distribution metrics, satisfying F.R.7. A basic implementation of
+version control for imputation methods supporting applying, deleting and
+reverting operations meets F.R.5. F.R.1 was partially completed with the
+ability for users to upload a dataset, however the operation for exporting the
+imputed dataset was not met due to time constraints. Files are instead manually
+accessible from the docker container within an "uploads/" directory.
+
+Non-functional requirements 1, 2, 4, 5 were met successfully with partial
+completions of the remaining 3 and 6. Effort regarding minimizing DOM edits and
+re-rendering proved to be successful in increasing the responsiveness of the
+UI. Caching responses from the MICA API also helped satisfy F.R.1. All UI
+navigation methods as well as menus can be accessible with only the use of a
+touchscreen interface, satisfying F.R.2. The use of already highly optimized
+imputation python libraries satisfies F.R.5. \mica is fully dockerised for full
+portability between operating systems and computer architecture. This satisfies
+F.R.4. F.R.3 was partially obtained with the use of a decoupled design between
+MICA API and Impute Handler. However, extensibility is not met well enough. No
+implementation for user made plugin integration was created. Although unused
+file versions are automatically cleaned up when the user is unable to access
+them via the version control system, files are stored with the nieve approach
+of a separate file for each version. Storing file diff information could prove
+more storage economical. Therefore, F.R.6 was not met.
+
 
 \section{Conclusion}
 This part discuses the aims and objectives previously stated and confirms
@@ -1334,6 +1446,20 @@ complex missingness mechanisms and patterns present in datasets. An example
 possible use case would include passing a specially trained LLM model
 visualizations, statistics and dataset samples in order to give analytics and
 suggested imputation methods.
+
+Although \mica is capable of expanding to allow the implementation of other
+imputation algorithms, it fails to cater to highly specific imputation needs.
+Giving the user the ability to create scripts to perform custom
+imputation methods on would fill this need. This could be done with the already
+widely used python scripting language or a custom syntax specifically designed
+for imputation tasks.
+
+Identifying missingness patterns could be assisted programmatically by
+designing an algorithm to analyze the difference between recorded distributions
+and joint missingness distributions as well as other metrics. The result of
+which would be an application that is able to altogether identify missingness
+patterns, suggest imputation methods and perform imputations. This leaves only
+the last step of analysis and final decision-making to the user.
 
 
 \newpage
