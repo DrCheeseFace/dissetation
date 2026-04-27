@@ -520,6 +520,85 @@ ability for a user to queue imputations may solve this problem as the user will
 be able to keep using the application while a background process performs the
 imputation.
 
+\subsection{User Interface Design} Since \mica is a user interface driven
+application, usability must be taken into consideration when designing the
+frontend interface. Nielsen \etal \cite{nielsen_enhancing_1994} conducts a user
+study survey tracking 249 possible usability problems. The author categorized
+these issues and proposes that there are ten factors that account for the
+majority of usability problems.
+
+\begin{enumerate}[label=\arabic*., wide=0pt, labelindent=0pt]
+
+    \item \textbf{Visibility of System Status} -- The UI design should keep the
+            user informed on what the system is currently doing at all times.
+            An example possible case for \mica would be displaying a spinner
+            when a long running imputation is in progress and a notification
+            when a task if finished.
+
+    \item \textbf{Match Between the System and the Real World} -- The UI design
+            should be familiar to the user. This includes text being in the
+            same language the user speaks and using a vocabulary the expected
+            user will know. Since \mica will exclusively cater to data
+            scientists, using data science domain vocabulary should work well
+            to remove ambiguity when describing the actions' user can take
+            within the UI. 
+
+    \item \textbf{User Control and Freedom} -- The user should be able to
+            backtrack of cancel actions at anytime without having to take many
+            steps. This "cancel" action also has to be clearly visible to the
+            user. \mica will likely have long-running processes that the user
+            is able to run in the form of computationally difficult imputation
+            algorithms. The ability for the user to exit this request at
+            anytime as well as undo the effect the action has done will improve
+            usability. 
+
+    \item \textbf{Consistency and Standards} -- Design and vocabulary usage
+            should match industry standards. This is to avoid confusion on the
+            user side due to having two different wordings for the same action.
+            In the case of \mica, the use of precise vocabulary such as when
+            referring to imputation or visualization methods should satisfy this
+            heuristic.
+
+    \item \textbf{Error Prevention} -- The design should minimize error-prone
+            conditions or provide validation to the user based on inputs. This
+            is commonly addressed in forms with the use of input validation.
+            For \mica to function, user inputs are required. To meet this
+            condition, checks such as input validation with error messages
+            should be implemented in the frontend client.
+
+
+    \item \textbf{Recognition Rather than Recall} -- This heuristic aims to
+            reduce cognitive overhead by making information easily accessible
+            to the user if needed. A common example would be a "Recently
+            Viewed" tab in an online store. 
+
+    \item \textbf{Flexibility and Efficiency of Use} -- The design should
+            provide shortcuts for expert users that are hidden from novice
+            users. This aims to cater to both experienced and inexperienced
+            users. For use in \mica, shortcuts for repetitive actions would
+            help satisfy this heuristic.
+
+    \item \textbf{Aesthetic and Minimalist Design} -- The UI should only
+            include relevant information. The theory behind this is that every
+            component on an interface competes with each other for visibility.
+            So if the interface includes too many irrelevant components the
+            visibility of the relevant information is diminished, increasing
+            the user's cognitive load and making it harder to find essential
+            features.
+
+    \item \textbf{Help Users Recognize, Diagnose, and Recover from Errors} --
+            Error messages should use simple language. The error message should
+            precisely describe the problem as well as suggesting fixes. A
+            possible use case for \mica would include upon an error, the UI
+            indicates what action caused the error as well as provide a log
+            message of what the error was. This could be used within the
+            imputation step of the application.
+
+    \item \textbf{Help and Documentation}
+\end{enumerate}
+
+
+
 \subsection{Previous Implementations}
 Many examples of imputation applications exist. These include VIM, Amelia view
 \cite{honaker_amelia_2024} and Profiler, but these applications focus on analyzing
@@ -1548,4 +1627,3 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
 
 
 \end{document}
-
