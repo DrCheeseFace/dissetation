@@ -188,9 +188,13 @@ To-do
 
 \section{Background Review}
 This part covers the background research gone into the design of the main
-artifact \emph{MICA} and the synthetic missing data generator.
-\subsection{The Nature of Missing Data Structures}
+artifact \emph{MICA} and the synthetic missing data generator. To design \mica,
+knowledge on existing visualization methods as well as underlying reasoning
+behind missing data is vital. This paired with knowledge of basic concepts of
+good usability heuristics will assist in creating a better user experience when
+using \mica.
 
+\subsection{The Nature of Missing Data Structures}
 For the below figure examples, the UCI Irvine Heart Disease dataset
 \cite{andras_janosi_heart_1989} was used as a base with missingness mechanisms
 and patterns synthetically added after. 
@@ -291,9 +295,9 @@ mechanism for a variable.
 
 As seen in \cref{fig:MCAR_age_comparison}, the distribution of \textbf{Age} and
 the distribution of \textbf{Age if Heart Disease is missing} show similar
-distributions as mathematically described by a low Wasserstein distance of
-\textbf{0.1174}. This indicates a high likelihood of the missingness mechanism
-present being MCAR. 
+distributions as mathematically described by a low Wasserstein distance
+\cref{wasserstein} of \textbf{0.1174}. This indicates a high likelihood of the
+missingness mechanism present being MCAR. 
 
 
 
@@ -323,10 +327,11 @@ of the missing variable.
 
 
 \paragraph{\textbf{Joint Missingness}} ~\\ 
-A \textit{Joint missingness} pattern refers to the likelihood of a variable
-being missing if one or more other variables are also missing. Finding evidence
-of joint missingness, suggests the presence of the MNAR mechanism. This can be
-expressed with the use of a heatmap. 
+A \textit{Joint missingness} pattern refers to the likelihood of a data item
+having a missing value for a variable if values are also missing for other
+variables. Finding evidence of joint missingness, suggests the presence of the
+MNAR mechanism. This can be expressed with the use of a heatmap. 
+
 
 \begin{figure}[H]
     \centering
@@ -396,10 +401,10 @@ Missingness}.
 
 \paragraph{\textbf{MissiG}} ~\\ 
 With advancements made in Fernstad's previous study into visualization methods
-for missing data \cite{fernstad_identify_2019}, Fernstad \etal 
-develops the novel visualization MissiG \cite{fernstad_explore_2022} with an
-aim to make it easier for data science practitioners identify missingness
-patterns in a dataset.
+for missing data \cite{fernstad_identify_2019}, Fernstad and Westberg develops
+the novel visualization MissiG \cite{fernstad_explore_2022} with an aim to make
+it easier for data science practitioners identify missingness patterns in a
+dataset.
 
 \begin{figure}[H]
     \centering
@@ -407,6 +412,7 @@ patterns in a dataset.
         \centering
         \includegraphics[width=\textwidth]{age.pdf}
         \caption{Age}
+        \label{missig_age}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
@@ -435,10 +441,19 @@ patterns in a dataset.
 The glyphs are read as such: 
 \begin{itemize}
         \item Red outline signified the selected variable.
+
         \item Blue histogram (left) shows the frequency of the variable.
-        \item Blue bar (bottom right) shows the relative missingness of the variable.
-        \item Red histogram (right) shows the frequency for the variable where the selected variable is missing.
-        \item Red bar (bottom right) shows the joint missingness between the variable and the selected variable.
+
+        \item Blue bar (bottom right) shows the relative missingness of the
+                variable.
+
+        \item Red histogram (right) shows the frequency for the variable where
+                the selected variable is missing. \eg  The red histogram in
+                \cref{missig_age} represents the Age values of items that have
+                missing values in the selected variable, ST depression.
+
+        \item Red bar (bottom right) shows the joint missingness between the
+                variable and the selected variable.
 \end{itemize}
 
 
@@ -520,19 +535,19 @@ ability for a user to queue imputations may solve this problem as the user will
 be able to keep using the application while a background process performs the
 imputation.
 
-\subsection{User Interface Design} Since \mica is a user interface driven
-application, usability must be taken into consideration when designing the
-frontend interface. Nielsen \etal \cite{nielsen_enhancing_1994} conducts a user
-study survey tracking 249 possible usability problems. The author categorized
-these issues and proposes that there are ten factors that account for the
-majority of usability problems.
+\subsection{User Interface Design} 
+Since \mica is a user interface driven application, usability must be taken
+into consideration when designing the frontend interface. Nielsen \etal
+\cite{nielsen_enhancing_1994} conducts a user study survey tracking 249
+possible usability problems. The author categorized these issues and proposes
+that there are ten factors that account for the majority of usability problems.
 
 \begin{enumerate}[label=\arabic*., wide=0pt, labelindent=0pt]
 
     \item \textbf{Visibility of System Status} -- The UI design should keep the
             user informed on what the system is currently doing at all times.
             An example possible case for \mica would be displaying a spinner
-            when a long running imputation is in progress and a notification
+            when a long-running imputation is in progress and a notification
             when a task if finished.
 
     \item \textbf{Match Between the System and the Real World} -- The UI design
@@ -544,8 +559,8 @@ majority of usability problems.
             within the UI. 
 
     \item \textbf{User Control and Freedom} -- The user should be able to
-            backtrack of cancel actions at anytime without having to take many
-            steps. This "cancel" action also has to be clearly visible to the
+            cancel actions at anytime without having to take many steps to do
+            so. This "cancel" action also has to be clearly visible to the
             user. \mica will likely have long-running processes that the user
             is able to run in the form of computationally difficult imputation
             algorithms. The ability for the user to exit this request at
@@ -594,19 +609,25 @@ majority of usability problems.
             message of what the error was. This could be used within the
             imputation step of the application.
 
-    \item \textbf{Help and Documentation}
+    \item \textbf{Help and Documentation} -- Information on how to complete
+            tasks should be documented and easily accessible. This should be
+            considered a last resort as the system should not require any
+            additional explanation for a use. 
+
 \end{enumerate}
-
-
+In order for \mica to be user accessible and friendly, the above heuristics
+should be taken into account in the design of the frontend client.
 
 \subsection{Previous Implementations}
-Many examples of imputation applications exist. These include VIM, Amelia view
-\cite{honaker_amelia_2024} and Profiler, but these applications focus on analyzing
-singular imputations and do not take into account the broader picture of
-comparing imputation results and managing versions. One novel example
-Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava \etal exists and
-worth analyzing as it uses comparative visualizations to deduce the
-effectiveness of different methods of imputation at once.
+Many examples of imputation applications exist. These include VIM
+\cite{templ_exploring_2012}, Amelia view \cite{honaker_amelia_2024},
+\cite{honaker_amelia_2024} and Profiler \cite{kandel_profiler_2012}, but these
+applications focus on analyzing singular imputations and do not take into
+account the broader picture of comparing imputation results and managing
+versions. One novel example Impute-VSS \cite{shrivastava_impute-vss_2025} by
+Shrivastava \etal exists and worth analyzing as it uses comparative
+visualizations to deduce the effectiveness of different methods of imputation
+at once.
 
 \paragraph{\textbf{Impute-VSS}}~\\
 Impute-VSS's novel feature is the \textit{comparative imputation assessment};
@@ -626,18 +647,14 @@ imputation results.
 Although these visualizations are good for understanding the change in
 distributions of a single variable, the user is not able to effectively see the
 change in correlations between variables. As mentioned previously, the three
-missingness patterns a data engineer would look for are \textit{amount missing,
-Joint Missingness} and \textit{condition missingness}. There is a lack of
-visualizations pertaining to displaying information about \texit{amount
-missing}. \itemit{Joint missingness} is somewhat visualized to the user with
-the use of a "Missing Bars" plot although due to the format, for numerous of
-features in a dataset, this can be clunky and hard for the user to spot the
-joint missingness pattern. \itexit{Conditional missingness} is not visualized
-with any of the provided graphs in Impute-VSS. This is especially problematic
-as conditional missingness patterns usually signify the presence of a MNAR
-mechanism which as discussed previously cannot be ignored and has to be
-explicitly handled by the data engineer in order to not introduce any unwanted
-biases in the data.
+missingness patterns a data engineer would look for are amount missing, joint
+missingness and condition missingness. There is a lack of visualizations
+pertaining to displaying information about amount missing. Joint missingness is
+somewhat visualized to the user with the use of a "Missing Bars" plot although
+due to the format, for numerous of features in a dataset, this can be clunky
+and hard for the user to spot the joint missingness pattern. Conditional
+missingness is not visualized with any of the provided graphs in Impute-VSS as
+no graphs are provided that compare values to the presence of values.
 
 Although Impute-VSS allows for the comparison of imputation techniques, the
 user is unable to test out how different imputation steps affect each other as
@@ -673,6 +690,7 @@ experience to the user.
 \subsection{Requirements}
 Using the above background research, \mica's requirements can be defined as
 such.
+% TODO more explanation 
 
 \subsubsection{Functional Requirements}
 
@@ -695,10 +713,10 @@ such.
                 charts for each dataset version accessible to the user.
 
         \item \textbf{Version Control Operations:} \mica must track imputations
-                applied to a dataset using a strict hierarchical tree
-                structure. Users are given the functions to perform the basic
-                version control actions of applying, deleting and reverting
-                changes to a specific historical node.
+                applied to a dataset using a strict hierarchical tree structure
+                to model version history. Users are given the functions to
+                perform the basic version control actions of applying, deleting
+                and reverting changes to a specific historical node.
 
         \item \textbf{Comparative Visualizations:} \mica must allow the user to
                 select at least 2 unique versions of the dataset and generate
@@ -1053,24 +1071,28 @@ out the visualization methods provided. They are mathematically defined as follo
 
 \textbf{Wasserstein Distance}
 
+\begin{equation}
+\label{wasserstein}
 {\displaystyle W_{p}(\mu ,\nu )=\inf _{\gamma \in \Gamma (\mu ,\nu
 )}\left(\mathbf {E} _{(x,y)\sim \gamma }d(x,y)^{p}\right)^{\frac {1}{p}},}
+\end{equation}
 
-this metric describes how similar two distributions are to each other. In the
-example a user performs an imputation and sees a high wasserstein distance, the
-user knows the distribution of that select variable has changed dramatically
-and may warrant further investigation.
+This metric describes how similar two distributions are to each other
+\cite[p~93]{villani_optimal_2009}. In the example a user performs an imputation
+and sees a high Wasserstein distance, the user knows the distribution of that
+select variable has changed dramatically and may warrant further investigation.
 
 \textbf{Kolmogorov-Smirnov Test} 
+\begin{equation}
+F_{n}(x) = \frac{\text{number of elements in the sample} \leq x}{n} =
+\frac{1}{n} \sum_{i=1}^{n} \mathbf{1}_{(-\infty, x]}(X_{i})
+\end{equation}
 
-{\displaystyle F_{n}(x)={\frac {{\text{number of (elements in the sample}}\leq
-x)}{n}}={\frac {1}{n}}\sum _{i=1}^{n}1_{(-\infty ,x]}(X_{i}),}
-
-similar to the Wassserstein Distance, it
-compares probability distributions. This is widely used in the data science
-space to due its advantage of not assuming the shape of the distribution. A
-limitation of the Kolmogorov-Smirnov Test is that it is more sensitive to changes
-in the center and struggles to pick up on differences near the tails.
+Similar to the Wasserstein Distance, it compares probability distributions.
+This is widely used in the data science space due to its advantage of not
+assuming the shape of the distribution \cite{massey_kolmogorov-smirnov_1951}. A
+limitation of the Kolmogorov-Smirnov Test is that it is more sensitive to
+changes in the center and struggles to pick up on differences near the tails.
 
 \textbf{Variance Ratio} 
 
@@ -1369,7 +1391,8 @@ For Joint Missingness, the conditions were such:
 
 \section{Results and Evaluation}
 \subsection{System Outputs}      
-\subsection{Performance}
+\subsection{Performance} 
+% TODO should i do this 
 \subsection{Requirements}
 
 This project successfully fulfilled functional requirements 2-7 with a partial
