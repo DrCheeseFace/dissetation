@@ -1096,8 +1096,9 @@ changes in the center and struggles to pick up on differences near the tails.
 
 \textbf{Variance Ratio} 
 
-\displaystyle {VAR\_RATIO} =
-\frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
+\begin{equation}
+\mathrm{VAR\_RATIO} = \frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
+\end{equation}
 
 In the context of comparing different imputations of a dataset shows whether
 one imputation method is smoothing the data more than the other. This is useful
@@ -1109,8 +1110,9 @@ worth looking at due to lower standard error.
 
 \textbf{Skew Difference} 
 
-\displaystyle \Delta \text{Skew} = \text{Skew}_{\text{base}} -
-\text{Skew}_{\text{child}}
+\begin{equation}
+\Delta \mathrm{Skew} = \mathrm{Skew}_{\text{base}} - \mathrm{Skew}_{\text{child}}
+\end{equation}
 
 Skew Difference is the simplest to interpret out of the four. This shows the
 direction and magnitude of the skew for a specified feature. 
@@ -1391,8 +1393,6 @@ For Joint Missingness, the conditions were such:
 
 \section{Results and Evaluation}
 \subsection{System Outputs}      
-\subsection{Performance} 
-% TODO should i do this 
 \subsection{Requirements}
 
 This project successfully fulfilled functional requirements 2-7 with a partial
