@@ -257,7 +257,7 @@ MNAR is a missingness mechanism where the likelihood of a value being missing
 is dependent on unobserved values. Out of the three missingness mechanisms,
 this is the most severe as knowledge of the underlying cause of the missing
 data is required to perform data imputation. MNAR suggests there could be fault
-in the data gathering process. WHO TO CITE FOR THIS?.
+in the data gathering process.
 
 \subsubsection{Missingness patterns}
 Missingness patterns are a derivation of \emph{missingness mechanism} that is
@@ -793,10 +793,9 @@ are calculated within the impute handler. Scikit-learn
 \cite{pedregosa_scikit-learn_2011} handles KNN and MICE imputation. The
 Scikit-learn imputation library was picked for use in \mica as the core
 functions are written in PYX syntax and proven to be highly optimized.
-Likewise, scipy TODO REFERENCE HERE for various metrics implementations. Custom
-functions as well as custom JSON representations are used to send information
-back to the MICA API; This includes a novel JSON standard for the MissiG
-visualization. 
+Likewise, scipy for various metrics implementations. Custom functions as well
+as custom JSON representations are used to send information back to the MICA
+API; This includes a novel JSON standard for the MissiG visualization. 
 
 \subsubsection{Frontend Client}
 This utilizes D3.js \cite{noauthor_d3d3_2026} for drawing and rendering SVG
@@ -864,6 +863,7 @@ manually editable if the user would wish to give a custom name for a particular
 version of a dataset.
 
 \subsubsection{Pre-Imputation Analytics}
+\label{pre-imputations_analytics}
 \mica provides a custom React component implementation of both a singular
 MissiG glyph and an abstraction for developers to be able to handle a group of
 MissiG glyphs. Each MissiG glyph is clickable offering an interactive
@@ -945,14 +945,15 @@ denote the shift from sparse to complete data.
         \caption{\mica Imputation tab amount missing visualization}
 \end{figure}
 
-\subsubsection{Post-Imputation Analytics}
+\subsubsection{Post-Imputation Analytics} 
+\label{post-imputation_analytics_sec}
 The imputation version history is represented in a timeline format going from
 oldest at the top and newest at the bottom \cref{fig:commithistory}. For each
 applied imputation, a new node is appended to the head of the commit history.
 For each node on the commit history, a revert button is assigned to it; This
 calls the MICA API endpoint that reverts history to a specific file hash. Doing
 so will delete all children of this file hash in order to save storage. Each node
-also has a dropdown to display cards showing applied imputations to that
+also has a drop-down to display cards showing applied imputations to that
 particular version of the dataset, from oldest to newest imputation. A
 comparison selector toggle is also provided, so the user can pick a dataset to
 include in a comparison visualization. 
@@ -994,7 +995,7 @@ version, discard version and toggle comparison selector.
             differences between any two versions of the dataset.
 \end{description}
 
-Each record has a dropdown menu to display a history of imputations performed
+Each record has a drop-down menu to display a history of imputations performed
 on it including diff values, type of imputation performed and feature imputed
 for each imputation card. 
 
@@ -1038,7 +1039,8 @@ implementation of the drag and drop reordering feature. With this feature,
 users are able to try out different orders of features in order to find
 correlations between features they would not have found otherwise.
 
-\paragraph{\textbf{Missingness Matrix}} ~\\ 
+\paragraph{\textbf{Missingness Matrix}} ~\\  
+\label{missingmessmatrix_explan}
 The second visualization presented to the user is a missingness matrix dialog
 \cref{fig:missingnessmatrix}. This was implemented as a custom D3.js component.
 Similar to the parallel coordinates' implementation, a down sampled version of
@@ -1065,7 +1067,8 @@ to see red blocks aligned between columns if the pattern is present. Both the
 value magnitude and presence sorter is implemented using a toggle button on the
 axis of each column.
 
-A distribution metrics section
+A distribution metrics section 
+\label{distribution_metrics_sec}
 \cref{fig:comparison_imputations_and_distribution_metrics} was added to round
 out the visualization methods provided. They are mathematically defined as follows: 
 
@@ -1393,6 +1396,188 @@ For Joint Missingness, the conditions were such:
 
 \section{Results and Evaluation}
 \subsection{System Outputs}      
+
+\subsubsection{MICA API endpoints}      
+MICA API offers the following endpoints \cref{MICA_API_endpoints}.
+
+The \textbf{/info} sub-route is used for retrieving dataset statistics as well
+as state of the version history.
+\begin{description}[labelindent=1cm, leftmargin=2.5cm]
+        \item[GetFilesInfo] - Gets general information about current head
+                of the history as well as the staged files. This is used within
+                the files tab of \mica.
+
+        \item[GetParentHistory] - Gets information about the committed
+                history.
+
+        \item[GetMissiGInfo] - Gets MissiG info for given file UUID.
+
+        \item[GetMissingMatrixInfo] - Gets Missing Matrix info for a given file
+                UUID.
+
+        \item[GetSample] - Retrieves a random sample from a given file UUID.
+
+        \item[GetRows] - Given a list of indexes, retrieves row information
+                from indexes of a given file UUID.
+
+        \item[GetCompareInfo] - Calculates and returns Wasserstein distance,
+                Kolmogorov-Smirnov Test, Variance ratio, Skew difference
+                between two given file UUIDs.
+\end{description}
+
+The \textbf{/dataset} sub-route is used to perform version control actions.
+\begin{description}[labelindent=1cm, leftmargin=2.5cm]
+        \item[DeleteChildFile] - Deletes staged file given file UUID.
+
+        \item[CommitChild] - Given staged file UUID, appends to head of version
+                history.
+
+        \item[UploadParentFile] - Clears and sets root of history to uploaded
+                file.
+
+        \item[RevertToFile] - Reverts version history to given file UUID.
+
+\end{description}
+
+The \textbf{/impute} sub-route is used to perform imputation actions on a
+given file version.
+\begin{description}[labelindent=1cm, leftmargin=2.5cm]
+        \item[PostSimpleImpute] - Performs Mean, Median or Mode imputation for
+                a given variable and file UUID.
+
+        \item[PostKNNImpute] - Performs k-nearest neighbors imputation for a
+                given file UUID.
+
+        \item[PostMICEImpute] - Performs MICE imputation for a given file UUID.
+\end{description}
+
+The above MICA API endpoints are used to render visualizations and user
+interfaces.
+
+\subsubsection{MissiG Visualization}      
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.9\textwidth]{missiGoutputs.png}
+        \caption{MissiG visualization implementation}
+        \label{fig:missiGoutputs}
+\end{figure}
+
+As mentioned in \cref{pre-imputations_analytics}, \mica includes a custom
+implementation of the MissiG visualization \cref{fig:missiGoutputs}. The
+currently selected variable is indicated by a red outline and can be changed if
+the user clicks another glyphs card. Viewing another files MissiG can be done
+by clicking the files corresponding button at the top of the MissiG tab. This
+visualization was designed as a standalone react component that can be used in
+other react projects.
+
+\subsubsection{Comparative Parallel Coordinates Visualization}      
+
+\mica includes a custom implementation for comparing parallel coordinate graphs
+\cref{fig:parallelcooroutputs}. Selecting a file will toggle what parallel
+coordinate graph will be rendered on top with a higher opacity. Missing values
+are rendered as purple lines connecting to the axis at the top. Variables can
+be reordered by clicking and dragging the top of axis. Similar to the MissiG
+component, this component is also designed as a standalone react component.
+
+\begin{figure}[H]
+        \centering
+        \wideimage{parallelcooroutputs.png}
+        \caption{Comparative Parallel Coordinates visualization implementation}
+        \label{fig:parallelcooroutputs}
+\end{figure}
+
+
+\subsubsection{Missingness Matrix Visualization}      
+
+As described in \cref{missingmessmatrix_explan}, cells are rendered with a gray
+gradient depending on the magnitude of the value
+\cref{fig:missingnessmatrix-normal}. Red cells indicate a missing value. In
+addition to this basic visualization, the user is able to sort variables by
+either row index, magnitude \cref{fig:missingnessmatrix_sorted} or missingness
+\cref{fig:missingnessmatrix_bubble_missing} by clicking the variable name of a
+bar. This was also architectured to be a standalone react component. 
+        
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{missingnessmatrix-normal.png}
+        \caption{Missingness matrix}
+        \label{fig:missingnessmatrix-normal}
+\end{figure}
+
+\subsubsection{Distribution Metrics}      
+Between two selected file versions and the current head of the version history,
+distribution metrics are calculated and displayed in the comparison dialog
+\cref{fig:distributionmetricsoutput}. The distribution metrics Wasserstein
+Distance, Kolmogorov-Smirnov Test, Variance ratio and Skew Difference are
+provided \cref{distribution_metrics_sec}.
+
+\begin{figure}[H]
+        \centering
+        \wideimage{distributionmetricsoutput.png}
+        \caption{Comparative distribution metrics}
+        \label{fig:distributionmetricsoutput}
+\end{figure}
+
+
+\subsubsection{Imputation Tab}
+This menu displays the current history state, listing each column and using a
+green background bar to represent the proportion of missing data
+\cref{fig:imputationtaboutput}. The user is able to select a variable and
+perform an imputation method listed to the right of the screen. Mean, Median,
+Mode, k-nearest neighbors with adjustable hyperparameter \textit{n} and MICE
+are the provided options for imputation. Clicking "Apply Imputation" will
+create a version of the dataset that the user can analyze within the MissiG tab
+or the Files tab.
+
+\begin{figure}[H]
+        \centering
+        \wideimage{imputationtaboutput.png}
+        \caption{Missingness matrix}
+        \label{fig:imputationtaboutput}
+\end{figure}
+
+
+\subsubsection{File Records}
+This component lists the currently uncommitted files that are generated from
+the current head of the file version history \cref{fig:filerecordoutput}.
+Actions to Download, Apply Imputation, Discard and Compare results are provided
+for each record. A drop-down menu shows a list of imputations performed on the
+file version in chronological order.
+
+Above this component is a menu for viewing information about the current head
+of the file history \cref{fig:Historyheadoutput}. The drop-down menu for this
+shows the list of variables present in the dataset as well as the type and
+null-counts for each. This also reveals a list of imputations performed on the
+dataset similar to the previously mentioned component.
+
+\begin{figure}[H]
+        \centering
+        \wideimage{filerecordoutput.png}
+        \caption{File records component}
+        \label{fig:filerecordoutput}
+\end{figure}
+
+\begin{figure}[H]
+        \centering
+        \wideimage{Historyheadoutput.png}
+        \caption{Current version head information component}
+        \label{fig:Historyheadoutput}
+\end{figure}
+
+\subsubsection{File History}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\textwidth]{historytimelineoutput.png}
+        \caption{Version history timeline component}
+        \label{fig:historytimelineoutput}
+\end{figure}
+This component gives a visualization of the current state of the version
+history \cref{fig:historytimelineoutput}. Each node is given the option of the
+compare toggle as well as a revert option as described in
+\cref{post-imputation_analytics_sec}. File versions with applied imputation
+have the option to open a dropdown to view the applied imputations.
+
 \subsection{Requirements}
 
 This project successfully fulfilled functional requirements 2-7 with a partial
@@ -1604,6 +1789,36 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
 \caption{Version history JSON structure}
 \end{program}
 
+\begin{program}[H]
+\label{MICA_API_endpoints}
+\begin{verbatim}
+	r.Route("/info", func(r chi.Router) {
+		r.Get("/", imputerHandler.GetFilesInfo)
+		r.Get("/history", imputerHandler.GetParentHistory)
+		r.Get("/{uuid}/missiG", imputerHandler.GetMissiGInfo)
+		r.Get("/{uuid}/missing_matrix", imputerHandler.GetMissingMatrixInfo)
+		r.Get("/{uuid}/sample/{n}", imputerHandler.GetSample)
+		r.Get("/compare/{uuid1}/{uuid2}", imputerHandler.GetCompareInfo)
+		r.Post("/{uuid}/rows", imputerHandler.GetRows)
+	})
+
+	r.Route("/dataset", func(r chi.Router) {
+		r.Delete("/{uuid}", fileHandler.DeleteChildFile)
+		r.Patch("/{uuid}", fileHandler.CommitChild)
+		r.Post("/", fileHandler.UploadParentFile)
+		r.Patch("/revert/{uuid}", fileHandler.RevertToFile)
+	})
+
+	r.Route("/impute", func(r chi.Router) {
+		r.Post("/simple", imputerHandler.PostSimpleImpute)
+		r.Post("/knn", imputerHandler.PostKNNImpute)
+		r.Post("/mice", imputerHandler.PostMICEImpute)
+	})
+\end{verbatim}
+\caption{MICA API endpoints}
+\end{program}
+
+
 \section{MICA UI}
 \begin{figure}[H]
     \centering
@@ -1640,6 +1855,21 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
         \caption{Missingness Matrix comparison with on hover tooltip}
         \label{fig:missingnessmatrix}
 \end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{missingnessmatrix_sorted.png}
+        \caption{Missingness matrix sorted by magnitude for Max HR}
+        \label{fig:missingnessmatrix_sorted}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \wideimage{missingnessmatrix_bubble_missing.png}
+        \caption{Missingness matrix with missing values bubbled to the top for Max HR}
+        \label{fig:missingnessmatrix_bubble_missing}
+\end{figure}
+
 
 \begin{figure}[H]
     \centering
