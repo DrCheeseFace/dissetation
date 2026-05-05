@@ -194,8 +194,8 @@ This project aims to:
 
 \end{enumerate}
 
-% \subsection{Dissertation Structure}
-% To-do?
+\subsection{Dissertation Structure}
+% To-do!!!!
 
 \newpage
 
@@ -392,11 +392,76 @@ P(M_i = 1 \mid A_i) =
 \end{equation}
 
 \subsection{Visualizing Missing Data}
+This section goes over broader research into methods and design of missing data
+visualizations. 
+
+\subsubsection{Taxonomy of Missing Data Visualization Methods}
+
+\paragraph{\textbf{Design Strategies for Visualizing Missingness}} ~\\ 
+To-do!!!! % TODO
+Song and Szafir \cite{song_wheres_2019} 
+% encode misisng values. highlight, downplay, annotations
+
+
+% TODO find differnet heading here
+\paragraph{\textbf{Encoding Missing Values}} ~\\ 
+Eaton \etal \cite{costabile_visualizing_2005} proposes three methods of
+encoding missing values for use in missing data visualizations.
+\begin{enumerate}
+        \item Misleading
+        \item Absent
+        \item Coded
+\end{enumerate}
+
+\textbf{Misleading} refers to either interpolating missing values or by
+substituting the values with the value zero. \cref{fig:costabile_misleading}
+presents a sample where missing values are coded as zeros. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{costabile_misleading.png}
+        \caption{Missing values coded as zeros}
+    \label{fig:costabile_misleading}
+\end{figure}
+
+\textbf{Absent} refers to missing values being omitted from a visualization,
+seen as line breaks within line graphs.
+\cref{fig:costabile_absent} is an example of omitting missing values and only
+rendering recorded values. Line breaks for indexes 2, 5 and 6 indicate missing
+values.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{costabile_absent.png}
+        \caption{Missing values omitted}
+    \label{fig:costabile_absent}
+\end{figure}
+
+\textbf{Coded} refers to missing values being omitted from a visualization, as
+well as the next recorded value after a missing value having an icon indicating
+the presence of missing data previous to this point. \cref{fig:costabile_noise}
+shows an example where the first recorded value after a missing value is
+annotated with an orange circle and question mark.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{costabile_coded.png}
+        \caption{Missing values coded}
+    \label{fig:costabile_noise}
+\end{figure}
+
+The user-study by Eaton \etal compared how well participants could analyze
+graphs to identify trends when presented with these three missing data encoding
+methods. The authors concluded that users may not realize missing data if
+replaced with default values such as in the "Misleading" method. The authors
+also found that 27 of the 30 participants preferred using the coded display.
+
+\subsubsection{MissiG}
 Fernstad's study \cite{fernstad_identify_2019} into the effectiveness of
 certain visualization methods in relation to how well participants are able to
 identify missingness patterns can help make suggestions into what visualization
-methods would be beneficial to provide in the implementation of \mica.
-The user-study tests how well participants are able to identify missingness
+methods would be beneficial to provide in the implementation of \mica. The
+user-study tests how well participants are able to identify missingness
 patterns with the use of three visualization methods. 
 
 \begin{enumerate}
@@ -412,7 +477,6 @@ frequency representation as well as the benefits of not separating recorded and
 unrecorded values in regard to being able to identify \textit{Conditional
 Missingness}. 
 
-\paragraph{\textbf{MissiG}} ~\\ 
 With advancements made in Fernstad's previous study into visualization methods
 for missing data \cite{fernstad_identify_2019}, Fernstad and Westberg develop
 the novel visualization MissiG \cite{fernstad_explore_2022} with an aim to make
