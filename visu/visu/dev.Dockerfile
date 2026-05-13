@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:23-slim AS base
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -8,7 +8,9 @@ COPY package.json pnpm-lock.yaml ./
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-RUN pnpm install --frozen-lockfile
+ENV NPM_CONFIG_ALLOWED_BUILD_SCRIPTS=esbuild,msw
+
+RUN pnpm config set allowed-build-scripts esbuild,msw && pnpm install --frozen-lockfile
 
 COPY . ./
 

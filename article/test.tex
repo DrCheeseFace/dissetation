@@ -51,14 +51,14 @@
 
 % eg etc ie et al implementation
 \makeatletter
-\newcommand{\ie}{\emph{i.e.}\@ifnextchar.{\!\@gobble}{}}
-\newcommand{\eg}{\emph{e.g.}\@ifnextchar.{\!\@gobble}{}}
+\newcommand{\ie}{\emph{i.e. }\@ifnextchar.{\!\@gobble}{}}
+\newcommand{\eg}{\emph{e.g. }\@ifnextchar.{\!\@gobble}{}}
 \newcommand{\etc}{etc\@ifnextchar.{}{.\@}}
-\newcommand{\etal}{\textit{et al.}}
+\newcommand{\etal}{\textit{et al. }}
 \makeatother
 
 \newcommand{\mica}{\textit{MICA }}
-\newcommand{\micas}{\textit{MICA }}
+\newcommand{\micas}{\textit{MICA's }}
 
 \title{MICA: Missing Imputation Comparison Analysis}
 \author{Tharun Tilakumara \\ 220424448}
@@ -80,7 +80,7 @@
     {\Large 220424448} \\[2cm]
     
     {\large Supervised by: Sara Johansson Fernstad} \\
-    {\large Word Count: 0xDEADBEEF}
+    {\large Word Count: 10236}
     
     {\Large \today}
 \end{titlepage}
@@ -91,9 +91,9 @@
 Data preprocessing remains one of the most labor-intensive activities for a
 data scientist, with data cleaning and organization consuming roughly 60\% of
 the total time spent handling datasets. Errors during this critical step of the
-process can lead to biased datasets and in turn poorly performing models. \mica
+process can lead to biased datasets and, in turn, poorly performing models. \mica
 aims to minimize the risk of improper imputation with the use of newly
-researched missing data visualizations such as MissiG as well as a novel
+researched missing data visualizations, such as MissiG, as well as a novel
 solution to handling multiple versions of imputed datasets via a Git-like
 version control system. The result is an all-in-one application that can
 perform imputation algorithms while providing comparative visualizations
@@ -101,8 +101,17 @@ between any two versions of an imputed dataset. Modular implementations of
 these comparative visualizations allow other developers to use such graphs
 within their own research and projects. The development of the artificial
 missingness mechanisms and patterns generator used for verifying \micas
-implementation, may benefit wider research in missing data visualization
+implementation may benefit wider research in missing data visualization
 methods.
+\newpage
+
+\section*{Declaration}
+“I declare that this dissertation represents my own work"
+\newpage
+
+\section*{Acknowledgements}
+I would like to thank my supervisor, Sara Johansson Fernstad, for guiding and
+offering help through the duration of this project.
 \newpage
 
 
@@ -121,34 +130,33 @@ tasks.
         \item Final analysis 
 \end{enumerate}
 
-The majority of time out of this workflow is consumed by the preprocessing of
-data step. As shown in \cite[p~3 fig~2]{sarih_data_2019}, the cleaning and
+The majority of the time out of this workflow is consumed by the preprocessing of
+the data step. As shown in \cite[p~3 fig~2]{sarih_data_2019}, the cleaning and
 organizing of data takes up an estimated 60\% of a data scientist's time. This
-is a manual process that requires human judgement. This critical step requires
+is a manual process that requires human judgment. This critical step requires
 tedious and rigorous testing; in particular, low-quality data imputation can
 result in unnatural or, even worse, misleading distributions of values. These
 side effects can include poorly performing prediction models and inaccurate
-exploratory and final analysis. Data imputation started with simple methods
+exploratory and final analysis. Data imputation started with simple methods,
 such as mean/median imputation. With the discovery of the mechanics of missing
 data and concepts such as MCAR (missing completely at random), MAR (missing at
 random) and MNAR (missing not at random) \cite{little_statistical_2019}, data
 scientists now have access to a large array of complex algorithms to choose
-from, which each have their own positives and drawbacks. Picking the optimal
+from, each of which has its own positives and drawbacks. Picking the optimal
 algorithm for imputation for each feature in a dataset is time-consuming and
 prone to error. 
 
 While applications in the past have been developed to ease data imputation,
-such as VIM \cite{templ_exploring_2012}, MANET \cite{unwin_interactive_1996}
+such as VIM \cite{templ_exploring_2012}, MANET \cite{unwin_interactive_1996},
 and AmeliaView \cite{honaker_amelia_2024}, there has been little development in
 the way of comparing different imputations of the same dataset. Currently, the
 solution for comparing different imputation results would be to manually create
 separate scripts for each imputation method and then, using the created
 versions of the datasets, compare them using graphs. 
 
-Older applications, such as the ones
-mentioned before, lack newly discovered visualization methods such as MissiG
-\cite{fernstad_explore_2022} that could prove to be more useful for analyzing
-missingness of data. 
+Older applications, such as the ones mentioned before, lack newly discovered
+visualization methods, such as MissiG \cite{fernstad_explore_2022} that could
+prove to be more useful for analyzing missingness of data. 
 
 \subsection{Aims} 
 
@@ -177,7 +185,7 @@ This project aims to:
 \item \textbf{Missingness Structures} - This dissertation will investigate and
         explain the concept of missingness structures and its role in data
         imputation and analysis. It will explain the different types of missing
-        data as well as provide examples via synthetically created missing
+        data, as well as provide examples via synthetically created missing
         data.
 
 \item \textbf{Missing Data Visualizations} - This dissertation will talk about
@@ -186,7 +194,7 @@ This project aims to:
         
 \item \textbf{Imputation Version Control} - This dissertation will propose a
         method of keeping track of imputed datasets, discussing an example
-        use case as well as implementation details.
+        use case, as well as implementation details.
 
 \item \textbf{Web App Implementation and User-flow} - The main created artifact
         of this dissertation is a web app to impute and compare imputed
@@ -194,17 +202,56 @@ This project aims to:
 
 \end{enumerate}
 
-\subsection{Dissertation Structure}
-% To-do!!!!
+\section{Dissertation Structure}
+This section provides an overview of the remaining chapters within this dissertation:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Background Review} \\
+    A background study of the nature of missing data, current understanding of
+    missing data visualizations and the theoretical foundation for the MICA
+    system.
+    \begin{itemize}
+        \item Missingness mechanisms and patterns
+        \item Taxonomy of Visualization Methods
+        \item MissiG framework
+        \item Univariate and Multivariate Imputation
+        \item Requirements definition
+    \end{itemize}
+
+    \item \textbf{What Was Done and How} \\
+    A technical analysis of \micas architecture, as well as implementations
+    developed for \mica.
+    \begin{itemize}
+        \item MICA API and Impute Handler
+        \item Imputation Versioning System
+        \item Frontend UI Implementation
+        \item Synthetic Data Generation
+    \end{itemize}
+
+    \item \textbf{Results and Evaluation} \\
+    An overview of all \mica features and custom components and an evaluation
+    on initial requirements.
+    \begin{itemize}
+        \item \mica Components
+        \item Requirements Evaluation
+    \end{itemize}
+
+    \item \textbf{Conclusion} \\
+    A summary of this project's achievements and possible future development.
+    \begin{itemize}
+        \item Review of Aims and Objectives
+        \item Future Work
+    \end{itemize}
+\end{itemize}
 
 \newpage
 
 \section{Background Review}
 This part covers the background research that went into the design of the main
-artifact \emph{MICA} and the synthetic missing data generator. To design \mica,
-knowledge on existing visualization methods as well as underlying reasoning
+artifact \emph{MICA}, and the synthetic missing data generator. To design \mica,
+knowledge of existing visualization methods, as well as underlying reasoning
 behind missing data is vital. This paired with knowledge of basic concepts of
-good usability heuristics will assist in creating a better user experience when
+good usability heuristics, will assist in creating a better user experience when
 using \mica.
 
 \subsection{The Nature of Missing Data Structures}
@@ -220,10 +267,10 @@ There are two parts to go over for understanding how to tackle missing data.
 
 \subsubsection{Missingness mechanism}
 As explained in \cite{rubin_inference_1976}, a missingness mechanism is defined
-as why data is missing depending on other variables observed as well as the
+as why data is missing, depending on other variables observed as well as the
 missing variable itself. Analyzing why data is missing is crucial in finding
-the best method to deal with missing values as if we were to assume data is
-always \textit{Missing Completely at Random}, we can skew distributions of
+the best method to deal with missing values, as if we were to assume data is
+always \textit{Missing Completely at Random}, we can skew the distributions of
 features unintentionally. We have three categories to describe the types of
 missingness mechanisms.
 
@@ -231,7 +278,7 @@ missingness mechanisms.
 MCAR is a missingness mechanism where missing values are not related to other
 recorded or unrecorded data. This is the least severe of the three missingness
 mechanisms as you are able to impute the dataset without causing large
-unintended side effects without knowing the underlying mechanism of why the
+unintended side effects, without knowing the underlying mechanism of why the
 data is missing. Dropping records with missing values will not affect the
 distribution of the variables greatly. \eg
 \cref{fig:distribution_lines_age_MCAR}. 
@@ -250,12 +297,12 @@ implementation of \mica.
 
 \paragraph{\textbf{Missing at Random (MAR)}}~\\ 
 MAR is a missingness mechanism where missing values are related to other
-observed values. Handling MAR is more nuanced as compared to MCAR as we can
+observed values. Handling MAR is more nuanced than MCAR as we can
 introduce biases if we naively drop records containing missing values
 \cref{fig:distribution_lines_age_MAR}.
 
 Similar to MCAR, we most likely still do not need to know the underlying cause
-of the missing values in order to impute the data as we can use Multivariate
+of the missing values in order to impute the data, as we can use multivariate
 imputation algorithms such as KNN and MICE \cite{buuren_mice_2011} to estimate these.
 
 \begin{figure}[H]
@@ -285,57 +332,52 @@ defines three specific characteristics of missing data to look for.
 
 \paragraph{\textbf{Amount Missing}}~\\
 The \textit{Amount missing} describes the percentage missing of a selected variable out of
-all records in a dataset. This is useful to know in a practical sense as that
+all records in a dataset. This is useful to know in a practical sense as
 data engineers need to know what variables are worth imputing and discarding.
 We can also use this to identify or dismiss the \textit{MCAR} missingness
 mechanism for a variable. 
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[H]{\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{MCAR_recorded_age_distribution.png}
-        \caption{Recorded age values.}
-    \end{subfigure}\hfill
-    \begin{subfigure}[H]{\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{MCAR_missing_hd_age_distribution.png}
-        \caption{Age when Heart Disease is missing.}
-    \end{subfigure}
-    \caption{Comparison of age distributions across the dataset; MCAR mechanism}
-    \label{fig:MCAR_age_comparison}
+    \includegraphics[width=0.85\textwidth]{MCAR_recorded_age_distribution.png}
+    \caption{Recorded age values.}
+    \label{fig:MCAR_recorded_age}
 \end{figure}
-
-As seen in \cref{fig:MCAR_age_comparison}, the distribution of \textbf{Age} and
-the distribution of \textbf{Age if Heart Disease is missing} show similar
-distributions as mathematically described by a low Wasserstein distance
-\cref{wasserstein} of \textbf{0.1174}. This indicates a high likelihood of the
-missingness mechanism present being MCAR. 
-
-
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[H]{\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{MAR_recorded_age_distribution.png}
-        \caption{Recorded age values.}
-
-    \end{subfigure}
-    \begin{subfigure}[H]{\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{MAR_missing_hd_age_distribution.png}
-        \caption{Age when Heart Disease is missing.}
-    \end{subfigure}
-    \caption{Comparison of age distributions across the dataset; MAR mechanism}
-    \label{fig:MAR_age_comparison}
+    \includegraphics[width=0.85\textwidth]{MCAR_missing_hd_age_distribution.png}
+    \caption{Age when Heart Disease is missing.}
+    \label{fig:MCAR_missing_hd_age}
 \end{figure}
 
-Contrarily in \cref{fig:MAR_age_comparison} we get a Wasserstein distance of
+As seen in \cref{fig:MCAR_recorded_age} and \cref{fig:MCAR_missing_hd_age}, the
+distribution of \textbf{Age} and the distribution of \textbf{Age if Heart
+Disease is missing} shows similar distributions as mathematically described by a
+low Wasserstein distance \cref{wasserstein} of \textbf{0.1174}. This indicates
+a high likelihood of the missingness mechanism present being MCAR. 
+
+
+Contrarily in \cref{fig:MAR_age_comparison_1} and
+\cref{fig:MAR_age_comparison_2} we get a Wasserstein distance of
 \textbf{6.9925}, describing a large difference in distribution between the two
 Age frequency histograms. For a data scientist practitioner, this can rule out
-MCAR and they can look into verifying the nature of the missingness mechanism
+MCAR, and they can look into verifying the nature of the missingness mechanism
 of the missing variable. 
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\textwidth]{MAR_recorded_age_distribution.png}
+        \caption{Recorded age values; MAR mechanism}
+        \label{fig:MAR_age_comparison_1}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\textwidth]{MAR_missing_hd_age_distribution.png}
+        \caption{Age when Heart Disease is missing; MAR mechanism}
+        \label{fig:MAR_age_comparison_2}
+    \end{figure}
 
 
 
@@ -355,15 +397,15 @@ MNAR mechanism. This can be expressed with the use of a heatmap.
 \end{figure}
 
 For the given example \cref{fig:JM}, \textbf{30\%} of Age values are missing;
-If Age is missing, \textbf{80\%} of Max Hr values are missing. MCAR was added
-after at a rate of \textbf{20\%}. The blue intersecting block shows a nullity
-correlation between Age and Max Hr of \textbf{0.5}.
+If Age is missing, \textbf{80\%} of Max Hr values are missing. Uniformly
+missing data was added at a rate of \textbf{20\%}. The blue intersecting
+block shows a nullity correlation between Age and Max Hr of \textbf{0.5}.
 
 \paragraph{\textbf{Conditional Missingness}} ~\\ 
 A \textit{Conditional missingness} pattern refers to the likelihood of a
-variable being missing depending on the value of another variable. This is more
-tricky to visualize as instead of its likelihood of being missing being
-dependent on the likelihood of other variables being missing as in
+variable being missing depending on the value of another variable. This is 
+trickier to visualize, as instead of its likelihood of being missing being
+dependent on the likelihood of other variables being missing, as in
 \textit{Joint Missingness}, we need a way to visualize the values of a variable
 compared to the relative missingness of a variable. Finding evidence of
 \textit{Conditional Missingness} suggests the presence of a MAR mechanism.
@@ -392,18 +434,64 @@ P(M_i = 1 \mid A_i) =
 \end{equation}
 
 \subsection{Visualizing Missing Data}
-This section goes over broader research into methods and design of missing data
-visualizations. 
+This section goes over broader research into the methods and design of missing
+data visualizations. 
 
 \subsubsection{Taxonomy of Missing Data Visualization Methods}
 
 \paragraph{\textbf{Design Strategies for Visualizing Missingness}} ~\\ 
-To-do!!!! % TODO
-Song and Szafir \cite{song_wheres_2019} 
-% encode misisng values. highlight, downplay, annotations
+Song and Szafir \cite{song_wheres_2019} propose four design strategies for
+how to visualize missing values.
+\begin{enumerate}
+        \item Highlight 
+        \item Downplay 
+        \item Annotations 
+        \item Removal 
+\end{enumerate}
+
+\textbf{Highlight} refers to coloring in missing values as seen in \cref{fig:song_highlighting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{song_highlighting.png}
+        \caption{Missing value highlight design strategy}
+    \label{fig:song_highlighting}
+\end{figure}
+
+\textbf{Downplay} is the opposite of highlight, where points with missing values
+are instead left unfilled, as seen in \cref{fig:song_downplay}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{song_downplaying.png}
+        \caption{Missing value downplay design strategy}
+    \label{fig:song_downplay}
+\end{figure}
+
+\textbf{Annotations} as seen in \cref{fig:song_annotating} indicate missing
+data with additional information, in this case, being error bars.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{song_annotating.png}
+        \caption{Missing value annotation design strategy}
+    \label{fig:song_annotating}
+\end{figure}
+
+\textbf{Removal} refers to not rendering points with missing data
+\cref{fig:song_removal}. This breaks continuity and, as mentioned by the authors, 
+may affect participants confidence in their analysis.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{song_removal.png}
+        \caption{Missing value information removal design strategy}
+    \label{fig:song_removal}
+\end{figure}
 
 
-% TODO find differnet heading here
+The authors concluded that highlighting missing values resulted in participants
+perceiving higher quality data as compared to downplay or information removal. It
+was also concluded that information removal caused data to be perceived by
+participants as having a lower quality. The participants also had lower
+confidence in their analysis of the graphs.
+
 \paragraph{\textbf{Encoding Missing Values}} ~\\ 
 Eaton \etal \cite{costabile_visualizing_2005} proposes three methods of
 encoding missing values for use in missing data visualizations.
@@ -413,13 +501,13 @@ encoding missing values for use in missing data visualizations.
         \item Coded
 \end{enumerate}
 
-\textbf{Misleading} refers to either interpolating missing values or by
+\textbf{Misleading} refers to either interpolating missing values or
 substituting the values with the value zero. \cref{fig:costabile_misleading}
 presents a sample where missing values are coded as zeros. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{costabile_misleading.png}
+    \includegraphics[width=0.75\textwidth]{costabile_misleading.png}
         \caption{Missing values coded as zeros}
     \label{fig:costabile_misleading}
 \end{figure}
@@ -427,41 +515,41 @@ presents a sample where missing values are coded as zeros.
 \textbf{Absent} refers to missing values being omitted from a visualization,
 seen as line breaks within line graphs.
 \cref{fig:costabile_absent} is an example of omitting missing values and only
-rendering recorded values. Line breaks for indexes 2, 5 and 6 indicate missing
+rendering recorded values. Line breaks for indexes 2, 5 and 6 indicates missing
 values.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{costabile_absent.png}
+    \includegraphics[width=0.75\textwidth]{costabile_absent.png}
         \caption{Missing values omitted}
     \label{fig:costabile_absent}
 \end{figure}
 
 \textbf{Coded} refers to missing values being omitted from a visualization, as
-well as the next recorded value after a missing value having an icon indicating
+well as the next recorded value after a missing value, having an icon indicating
 the presence of missing data previous to this point. \cref{fig:costabile_noise}
 shows an example where the first recorded value after a missing value is
 annotated with an orange circle and question mark.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{costabile_coded.png}
+    \includegraphics[width=0.75\textwidth]{costabile_coded.png}
         \caption{Missing values coded}
     \label{fig:costabile_noise}
 \end{figure}
 
-The user-study by Eaton \etal compared how well participants could analyze
+The user study by Eaton \etal compared how well participants could analyze
 graphs to identify trends when presented with these three missing data encoding
 methods. The authors concluded that users may not realize missing data if
-replaced with default values such as in the "Misleading" method. The authors
+replaced with default values, such as in the "Misleading" method. The authors
 also found that 27 of the 30 participants preferred using the coded display.
 
 \subsubsection{MissiG}
 Fernstad's study \cite{fernstad_identify_2019} into the effectiveness of
 certain visualization methods in relation to how well participants are able to
-identify missingness patterns can help make suggestions into what visualization
-methods would be beneficial to provide in the implementation of \mica. The
-user-study tests how well participants are able to identify missingness
+identify missingness patterns can help make suggestions on what visualization
+methods would be beneficial to provide for the implementation of \mica. The
+user study tests how well participants are able to identify missingness
 patterns with the use of three visualization methods. 
 
 \begin{enumerate}
@@ -478,7 +566,7 @@ unrecorded values in regard to being able to identify \textit{Conditional
 Missingness}. 
 
 With advancements made in Fernstad's previous study into visualization methods
-for missing data \cite{fernstad_identify_2019}, Fernstad and Westberg develop
+for missing data \cite{fernstad_identify_2019}, Fernstad and Westberg developed
 the novel visualization MissiG \cite{fernstad_explore_2022} with an aim to make
 it easier for data science practitioners identify missingness patterns in a
 dataset.
@@ -534,20 +622,20 @@ The glyphs are read as such:
 \end{itemize}
 
 
-Following a user-study comparing how well users are able to identify
+Following a user study comparing how well users are able to identify
 missingness patterns with MissiG, it is confirmed that MissiG was the users'
 preferred choice for identifying missingness patterns when compared to the use
-of a Heatmap and Parallel Coordinates.
+of a Heatmap and Parallel Coordinates graph.
 
-The uniquely interactive component of MissiG as well as its superior
+The uniquely interactive component of MissiG, as well as its superior
 performance for identifying missingness patterns makes this visualization
 especially suited for use in \mica.
 
 \subsection{Imputation Techniques}
-Imputation techniques fall under two categories; Univariate and Multivariate.
-Univariate techniques include simple methods such as mean, median and mode and
+Imputation techniques fall under two categories: Univariate and Multivariate.
+Univariate techniques include simple methods such as mean, median, and mode, and
 are used to impute singular features at a time. Multivariate methods like KNN
-and MICE on the other hand can impute multiple features at once by using the
+and MICE, on the other hand, can impute multiple features at once by using the
 full context of surrounding values in order to impute values from other
 features. Based on feature distributions and types of data, \mica could offer
 suggestions on what imputation techniques are worth analyzing. 
@@ -558,30 +646,30 @@ For numerical features, the methods available are \textit{Mean} and
 \textit{Median}. 
 
 \textit{Mean} is best used in situations where the variable follows a normal
-distribution while containing few outliers as many outliers can greatly bias
-the average. This would be data such as hourly temperature throughout the day
-because we expect a normal distribution and few drastic fluctuations in
+distribution while containing few outliers, as many outliers can greatly bias
+the average. This would be data like hourly temperature throughout the day,
+because we expect a normal distribution and a few drastic fluctuations in
 temperature. 
 
 \textit{Median} is best for skewed normal distributions or if the feature
-contains outliers. This would be good for handling financial survey data such
-as housing prices where we expect to see outliers. 
+contains outliers. This would be good for handling financial survey data, such
+as housing prices, where we expect to see outliers. 
 
 \textit{Mode} can be utilized for imputing categorical data due to the method
 not being reliant on magnitude. Mode simply maximizes the probability that a
 random guess is correct based on recorded frequency.
 
 These methods are best used for MCAR data as they will not alter correlations
-and distributions greatly if the user would not like to perform listwise
+and distributions greatly if the user does not want to perform listwise
 deletion instead. 
 
 \subsubsection{Multivariate methods} 
 \textit{Listwise deletion} is the simplest method of imputation where all rows
 containing missing data are dropped. As discussed previously, if the dataset
 contains only the MCAR missingness mechanism, we can safely perform a listwise
-deletion operation as we know patterns and distributions will be preserved
+deletion operation, as we know patterns and distributions will be preserved
 after imputation. For datasets that are sparse, we may choose not to use this
-method as shrinking the dataset further could make using the dataset to train
+method, as shrinking the dataset further could make using the dataset to train
 models unusable.
 
 \textit{k-nearest neighbors} is a non-parametric imputation method that uses
@@ -589,16 +677,16 @@ local records to estimate missing values. The number of local records checked
 is dependent on the hyperparameter \textit{k}. KNN typically uses Euclidean
 distance for continuous variables and Manhattan distance for discrete features
 to determine the "distance" between two records. Using the closest \textit{k}
-neighbors ,the missing value is imputed using mean or mode dependent on
+neighbors ,the missing value is imputed using the mean or mode depending on
 the data type being numerical or categorical data.
 
 Unlike univariate methods, using the context of multiple features, KNN is able
 to address MAR missingness mechanisms. A caveat when working with this method
 is its need for hyperparameter tuning. For data with large amount of outliers
 and noise, the use of a greater \textit{k} is needed for smoothing. A too large
-\textit{k} will cause over smoothing, resulting in a loss of information and
-detail of patterns within a dataset. For these reasons \mica should provide
-distribution metrics for users to be able to spot over smoothing.
+\textit{k} will cause over-smoothing, resulting in a loss of information and
+detail of patterns within a dataset. For these reasons, \mica should provide
+distribution metrics for users to be able to spot over-smoothing.
 
 \textit{Multivariate Imputation by Chained equations (MICE)} unlike KNN
 requires MAR mechanisms to be present in the dataset for it to be effective. As
@@ -606,14 +694,14 @@ discussed by Greenland \etal \cite{greenland_critical_1995}, if MICE imputation
 is performed on a dataset with a non-MAR missingness mechanism, we can expect
 high variability with large standard errors in the analyses. 
 
-MICE requires considerably more compute power as compared to the other methods
+MICE requires considerably more computing power as compared to the other methods
 listed; this characteristic needs to be considered with its usage in \mica. The
 ability for a user to queue imputations may solve this problem as the user will
 be able to keep using the application while a background process performs the
 imputation.
 
 \subsection{User Interface Design} 
-Since \mica is a user interface driven application, usability must be taken
+Since \mica is a user interface-driven application, usability must be taken
 into consideration when designing the frontend interface. Nielsen \etal
 \cite{nielsen_enhancing_1994} conducts a user study survey tracking 249
 possible usability problems. The author categorized these issues and proposes
@@ -623,8 +711,8 @@ that there are ten factors that account for the majority of usability problems.
 
     \item \textbf{Visibility of System Status} -- The UI design should keep the
             user informed on what the system is currently doing at all times.
-            An example possible case for \mica would be displaying a spinner
-            when a long-running imputation is in progress and a notification
+            An example of a possible case for \mica would be displaying a spinner
+            when a long-running imputation is in progress, and a notification
             when a task is finished.
 
     \item \textbf{Match Between the System and the Real World} -- The UI design
@@ -632,30 +720,30 @@ that there are ten factors that account for the majority of usability problems.
             same language the user speaks and using a vocabulary the expected
             user will know. Since \mica will exclusively cater to data
             scientists, using data science domain vocabulary should work well
-            to remove ambiguity when describing the actions' user can take
+            to remove ambiguity when describing the actions the user can take
             within the UI. 
 
     \item \textbf{User Control and Freedom} -- The user should be able to
-            cancel actions at anytime without having to take many steps to do
+            cancel actions at any time without having to take many steps to do
             so. This "cancel" action also has to be clearly visible to the
             user. \mica will likely have long-running processes that the user
             is able to run in the form of computationally difficult imputation
             algorithms. The ability for the user to exit this request at
-            anytime as well as undo the effect the action has done will improve
+            any time as well as undo the effect the action has done will improve
             usability. 
 
     \item \textbf{Consistency and Standards} -- Design and vocabulary usage
             should match industry standards. This is to avoid confusion on the
             user side due to having two different wordings for the same action.
-            In the case of \mica, the use of precise vocabulary such as when
-            referring to imputation or visualization methods should satisfy this
+            In the case of \mica, the use of precise vocabulary, such as when
+            referring to imputation or visualization methods, should satisfy this
             heuristic.
 
     \item \textbf{Error Prevention} -- The design should minimize error-prone
             conditions or provide validation to the user based on inputs. This
             is commonly addressed in forms with the use of input validation.
             For \mica to function, user inputs are required. To meet this
-            condition, checks such as input validation with error messages
+            condition, checks, such as input validation with error messages
             should be implemented in the frontend client.
 
 
@@ -680,16 +768,16 @@ that there are ten factors that account for the majority of usability problems.
 
     \item \textbf{Help Users Recognize, Diagnose, and Recover from Errors} --
             Error messages should use simple language. The error message should
-            precisely describe the problem as well as suggesting fixes. A
-            possible use case for \mica would include upon an error, the UI
-            indicates what action caused the error as well as provide a log
+            precisely describe the problem, as well as suggesting fixes. A
+            possible use case for \mica would include, upon an error, the UI
+            indicates what action caused the error, as well as providing a log
             message of what the error was. This could be used within the
             imputation step of the application.
 
     \item \textbf{Help and Documentation} -- Information on how to complete
             tasks should be documented and easily accessible. This should be
-            considered a last resort as the system should not require any
-            additional explanation for a use. 
+            considered a last resort, as the system should not require any
+            additional explanation for use. 
 
 \end{enumerate}
 In order for \mica to be user accessible and friendly, the above heuristics
@@ -697,14 +785,13 @@ should be taken into account in the design of the frontend client.
 
 \subsection{Previous Implementations}
 Many examples of imputation applications exist. These include VIM
-\cite{templ_exploring_2012}, Amelia view \cite{honaker_amelia_2024},
-\cite{honaker_amelia_2024} and Profiler \cite{kandel_profiler_2012}, but these
-applications focus on analyzing singular imputations and do not take into
-account the broader picture of comparing imputation results and managing
-versions. One novel example Impute-VSS \cite{shrivastava_impute-vss_2025} by
-Shrivastava \etal exists and worth analyzing as it uses comparative
-visualizations to deduce the effectiveness of different methods of imputation
-at once.
+\cite{templ_exploring_2012}, Amelia view \cite{honaker_amelia_2024}, and
+Profiler \cite{kandel_profiler_2012}, but these applications focus on analyzing
+singular imputations and does not take into account the broader picture of
+comparing imputation results and managing versions. One novel example
+Impute-VSS \cite{shrivastava_impute-vss_2025} by Shrivastava \etal exists and
+is worth analyzing as it uses comparative visualizations to deduce the
+effectiveness of different methods of imputation at once.
 
 \paragraph{\textbf{Impute-VSS}}~\\
 Impute-VSS's novel feature is the \textit{comparative imputation assessment};
@@ -727,42 +814,42 @@ change in correlations between variables. As mentioned previously, the three
 missingness patterns a data engineer would look for are amount missing, joint
 missingness and condition missingness. There is a lack of visualizations
 pertaining to displaying information about amount missing. Joint missingness is
-somewhat visualized to the user with the use of a "Missing Bars" plot although
-due to the format, for numerous of features in a dataset, this can be clunky
+somewhat visualized to the user with the use of a "Missing Bars" plot, although
+due to the format, for numerous features in a dataset, this can be clunky
 and hard for the user to spot the joint missingness pattern. Conditional
 missingness is not visualized with any of the provided graphs in Impute-VSS as
 no graphs are provided that compare values to the presence of values.
 
 Although Impute-VSS allows for the comparison of imputation techniques, the
-user is unable to test out how different imputation steps affect each other as
-the user is only able to compare a single step imputation process. This omits
+user is unable to test out how different imputation steps affect each other, as
+the user is only able to compare a single-step imputation process. This omits
 the possibility of multiple occurrences of missingness patterns that require
 separate methods of imputation. \eg Joint missingness between variables A and B
-as well as another instance of joint missingness between variables C and D.
+,as well as another instance of joint missingness between variables C and D.
 
 Impute-VSS also provides a comparison of calculated metrics between the dataset
 versions. 
 
-Overall although Impute-VSS has employed a variety of visualizations and
+Overall, although Impute-VSS has employed a variety of visualizations and
 metrics for use in analyzing imputed datasets, it lacks newly developed
 missing data visualization research and consequently visualizations.
 
 \subsection{Technology Stack Evaluation}
 There are two main data science libraries used commonly mentioned in the above
-applications. The older applications such as Amelia View use the VIM R package.
+applications. The older applications, such as Amelia View, use the VIM R package.
 This uses optimized C++ code to perform the bulk of the computationally heavy
 operations. Due to its age and prevalent use, a lot of testing has gone into
 improving the reliability of the implementations. New applications such as
-Profile and Impute-VSS use the python library Scikit-learn as well as Scipy for
-computations such as KNN and metric formulas. These use Cython which is
+Profiler and Impute-VSS use the Python library Scikit-learn as well as Scipy for
+computations, such as KNN and metric formulas. These use Cython, which is
 comparable to the performance of C++ code.
 
-Both Profile and Impute-VSS use a two stack architecture. Both frontend and
-backend are split into layers that handle the UI and logic respectively.
-Profiler has opted for a more performance biased design when it comes to the
-engineering decisions regarding the frontend. D3.js is used to render SVG's
-with the use of drag-and-drop and menu-based interface to offer an interactive
-experience to the user. 
+Both Profile and Impute-VSS use a two-stack architecture. Both frontend and
+backend are split into layers that handle the UI and logic, respectively.
+Profiler has opted for a more performance-biased design when it comes to the
+engineering decisions regarding the frontend. D3.js is used to render SVGs
+with drag-and-drop and menu-based interfaces to offer an interactive experience
+to the user. 
 
 \subsection{Requirements}
 Using the above background research, \micas requirements can be defined as
@@ -773,12 +860,12 @@ such.
 
 \begin{enumerate}[label=F.R.\arabic*]
         \item \textbf{Data Ingestion and Export:} \mica must allow users to
-                upload datasets to process the data and also allow for the
+                upload datasets to process the data, and also allow for the
                 download of imputed versions of that dataset.
 
         \item \textbf{Imputation Methods:} \mica must provide both multivariate
-                imputations such as KNN and MICE as well as univariate
-                imputation methods such as Mean, Median, Mode.
+                imputations, such as KNN and MICE, as well as univariate
+                imputation methods, such as Mean, Median and Mode.
 
         \item \textbf{Parameter Configuration:} \mica must allow users to
                 manually configure parameters relevant to the imputation method
@@ -793,10 +880,10 @@ such.
                 applied to a dataset using a strict hierarchical tree structure
                 to model version history. Users are given the functions to
                 perform the basic version control actions of applying, deleting
-                and reverting changes to a specific historical node.
+                ,and reverting changes to a specific historical node.
 
         \item \textbf{Comparative Visualizations:} \mica must allow the user to
-                select at least 2 unique versions of the dataset and generate
+                select at least 2 unique versions of the dataset, and generate
                 comparative visualizations, specifically an interactive
                 Parallel Coordinates graph and a Missingness Matrix.
 
@@ -814,7 +901,7 @@ such.
                 visualization data and minimizing DOM changes.
 
         \item \textbf{Usability / Accessibility:} All navigation and actions
-                must be accessible by a touchscreen and only require a
+                must be accessible by a touchscreen and only requires a
                 touchscreen.  
 
         \item \textbf{Modularity and Extensibility:} \micas API and Impute
@@ -858,20 +945,20 @@ component is Dockerised for portability.
 \subsubsection{MICA API}
 \mica provides a simple-to-use API for uploading, imputing and managing
 versions of imputed datasets. This is routed through an NGINX reverse proxy to
-provide in the future RESTful API version sub-routing. The MICA API handles the
+provide, in the future, RESTful API version sub-routing. The MICA API handles the
 imputation versioning system. This acts as the bridge between the frontend
-client and the impute handler. \mica API design has allowed for the
-addition of other currently unimplemented imputation methods without needing 
+client and the impute handler. The \mica API design has allowed for the
+addition of other currently unimplemented imputation methods without needing to make
 breaking changes.
 
 \subsubsection{Impute Handler}
-Imputation logic as well as data required to draw graphs in the frontend client
+Imputation logic, as well as data required to draw graphs in the frontend client,
 are calculated within the impute handler. Scikit-learn
 \cite{pedregosa_scikit-learn_2011} handles KNN and MICE imputation. The
 Scikit-learn imputation library was picked for use in \mica as the core
 functions are written in PYX syntax and proven to be highly optimized.
-Likewise, Scipy for various metrics implementations. Custom functions as well
-as custom JSON representations are used to send information back to the MICA
+Likewise, Scipy provides various metrics implementations. Custom functions, as well
+as custom JSON representations, are used to send information back to the MICA
 API; This includes a novel JSON standard for the MissiG visualization. 
 
 \subsubsection{Frontend Client}
@@ -880,7 +967,7 @@ chart components. D3.js was chosen as it provides low-level tooling to enable
 the development of novel visualizations such as MissiG. To maintain a stateful
 manner in the frontend, \mica uses React  \cite{noauthor_react_nodate}
 + MobX  \cite{noauthor_about_nodate} to cache results requested from the MICA
-API. For low latency interactability, \mica uses Shadcn-ui
+API. For low-latency interactability, \mica uses Shadcn-ui
 \cite{noauthor_shadcn-uiui_2026} for styling as it is performant.
 
 \subsection{Imputation Versioning System}
@@ -912,11 +999,11 @@ its complexity.
 When a request to impute a dataset is sent from the client to the MICA API, the
 operations are done in the following order.
 \begin{enumerate}
-\item Request is sent to MICA API.
-\item Request is validated and passed onto the impute handler.
-\item Impute handler creates version of dataset and returns err code.
-\item MICA API creates hash for new dataset version and stores information on imputation.
-\item MICA API returns err code and new version history information to client.
+\item The request is sent to MICA API.
+\item The request is validated and passed onto the impute handler.
+\item The Impute handler creates a version of dataset and returns an error code.
+\item The MICA API creates a hash for new the dataset version and stores information on imputation.
+\item The MICA API returns an error code and the new version history information to client.
 \end{enumerate}
 
 To store the history of a data imputation, \mica uses a hierarchical
@@ -934,17 +1021,17 @@ linear workflow.
         \item Post-imputation Analytics (comparative visualizations) 
 \end{enumerate}
 
-All actions in \mica are accessible by a touchscreen interface. File names are
-automatically generated based on imputations requested by the user as well as
-manually editable if the user would wish to give a custom name for a particular
+All actions in \mica are accessible through a touchscreen interface. File names are
+automatically generated based on imputations requested by the user, as well as
+manually editable if the user wants to give a custom name for a particular
 version of a dataset.
 
 \subsubsection{Pre-Imputation Analytics}
 \label{pre-imputations_analytics}
 \mica provides a custom React component implementation of both a singular
 MissiG glyph and an abstraction for developers to be able to handle a group of
-MissiG glyphs. Each MissiG glyph is clickable offering an interactive
-visualization to the user. Above the MissiG group, is a selector to switch
+MissiG glyphs. Each MissiG glyph is clickable, offering an interactive
+visualization to the user. Above the MissiG group is a selector to switch
 between accessible versions of the imputed dataset. Both were developed in a
 stateless manner to allow for greater modularity. See below
 \ref{MissiG_React_Component_Props}
@@ -967,31 +1054,31 @@ interface MissigGlyphProps {
 \end{program}
 
 MICA API includes a custom data structure for describing a MissiG
-visualization. Numeric and Categorical data is handled with different histogram
+visualization. Numeric and Categorical data are handled with different histogram
 data structure implementations.
 
 To improve readability from the users' perspective, the amount missing and joint
-missingness percentage was calculated for each card. This is then displayed at
+missingness percentage were calculated for each card. This is then displayed at
 the bottom of each glyph for the user to reference when analyzing a dataset.
 
-Due to \micas requirement of being low latency, the design decision to cache
+Due to \micas requirement of being low-latency, the design decision to cache
 these results in the frontend client was taken for the cost of greater memory
 usage. This is necessary as the MissiG visualization generates a joint
 missingness histogram for every pair of variables. Consequently, the total
 number of generated histograms scales quadratically, at \( O(n^2) \) , relative
 to the number of variables. If we were to request the MICA API to load this
-data for every access instance, the latency will become noticeable and cause
+data for every access instance, the latency would become noticeable and cause
 unneeded load on the MICA API and Impute Handler containers.
 
 \subsubsection{Imputation}
-\mica currently provides five imputations methods. Due to the modular design,
+\mica currently provides five imputation methods. Due to the modular design,
 the addition of further imputation methods is trivial. 
 
-For columnwise imputation, Mean, Median and Mode is provided. These were
-implemented manually with the use of the python package Pandas
+For columnwise imputation, Mean, Median, and Mode are provided. These were
+implemented manually with the use of the Python package Pandas
 \cite{noauthor_pandas_nodate}.
 
-\mica provides 2 multivariate imputation options; KNN and MICE. KNN has the
+\mica provides 2 multivariate imputation options: KNN and MICE. KNN has the
 added parameter N-nearest-neighbors for the user to adjust manually. MICE in
 the future could be expanded to allow the user to select the estimator; In the
 current implementation, this is defaulted to use the following 
@@ -1011,8 +1098,8 @@ current implementation, this is defaulted to use the following
 
 A feature-level missingness visualization was integrated into the column
 selector table, an approach adapted from the "Profiler" imputer application
-\cite{kandel_profiler_2012}. Other useful information such as feature name,
-data type, Null count and Non-null count is displayed to the user. The
+\cite{kandel_profiler_2012}. Other useful information, such as feature name,
+data type, Null count, and Non-null count, is displayed to the user. The
 "Non-null count" badge indicator uses an orange-to-gray color transition to
 denote the shift from sparse to complete data.
 
@@ -1024,7 +1111,7 @@ denote the shift from sparse to complete data.
 
 \subsubsection{Post-Imputation Analytics} 
 \label{post-imputation_analytics_sec}
-The imputation version history is represented in a timeline format going from
+The imputation version history is represented in a timeline format, going from
 oldest at the top and newest at the bottom \cref{fig:commithistory}. For each
 applied imputation, a new node is appended to the head of the commit history.
 For each node on the commit history, a revert button is assigned to it; This
@@ -1050,20 +1137,19 @@ information about the current head of the commit history.
         \item Dimensions
         \item Total null count
         \item Applied imputations
-        \item Column names, types and null counts
+        \item Column names, types, and null counts
 \end{itemize}
 
 As a way to interface with the currently uncommitted versions of the imputed
 dataset, a record's table is displayed \cref{fig:imputation_records}. For each
 created version, the user is given four options. apply imputation, download
-version, discard version and toggle comparison selector. 
+version, discard version, and toggle comparison selector. 
 \begin{description}
     \item[Apply imputation] This action performs a commit action, clearing the
             staging area and appending the selected node to the head of the
             commit history. 
 
-    \item[Download version] Creates a download link for version of imputed
-            dataset.
+    \item[Download version] Creates a download link for the selected version.
 
     \item[Discard version] Permanently removes the uncommitted version from the
             interface and backend file storage.
@@ -1073,8 +1159,8 @@ version, discard version and toggle comparison selector.
 \end{description}
 
 Each record has a drop-down menu to display a history of imputations performed
-on it including diff values, type of imputation performed and feature imputed
-for each imputation card. 
+on it, including diff values, the type of imputation performed, and the feature
+imputed for each imputation card. 
 
 \begin{figure}[H]
     \centering
@@ -1103,7 +1189,7 @@ parallel coordinate visualization of the dataset is overlaid in contrasting
 blue and red. Three buttons are provided for the user to switch between
 displaying both graphs or either of the graphs by itself. The interface assists
 in the detection of meaningful correlations, providing the clarity necessary to
-differentiate signal from data noise
+differentiate signal from data noise.
 
 In addition to a standard Parallel Coordinates visualization, to indicate the
 presence of a missing value, if a value is missing for a feature, a purple line
@@ -1112,7 +1198,7 @@ is drawn to the top of the axis.
 The main drawback of using this visualization is that order matters; it can be
 difficult for the user to spot correlations when the two features with
 correlations are on opposite ends of the graph. This has been mitigated by the
-implementation of the drag and drop reordering feature. With this feature,
+implementation of the drag-and-drop reordering feature. With this feature,
 users are able to try out different orders of features in order to find
 correlations between features they would not have found otherwise.
 
@@ -1120,29 +1206,29 @@ correlations between features they would not have found otherwise.
 \label{missingmessmatrix_explan}
 The second visualization presented to the user is a missingness matrix dialog
 \cref{fig:missingnessmatrix}. This was implemented as a custom D3.js component.
-Similar to the parallel coordinates' implementation, a down sampled version of
+Similar to the parallel coordinates' implementation, a down-sampled version of
 the dataset is taken to reduce render time and avoid excessive memory usage. As
 described by Fernstand \cite{fernstad_identify_2019}, each drawn column
-represents a feature within a given dataset and cells within columns are colored
+represents a feature within a given dataset, and cells within columns are colored
 light gray for low values and dark gray for high values. Missing values are
-represented as red cells. As posited by Fernstad this may make it easy for a
-user to spot patterns between recorded and missing data. The use of an on hover
-tooltip allows the user to access information such as feature name and index
-number the cell representing.
+represented as red cells. As posited by Fernstad, this may make it easy for a
+user to spot patterns between recorded and missing data. The use of an on-hover
+tooltip allows the user to access information, such as the feature name and index
+number the cell represents.
 
 An added functionality was added on top of this base to utilize the interactive
-aspect of \mica. The user will be able to sort columns by a particular cells'
+aspect of \mica. The user will be able to sort columns by a particular cell's
 magnitude. This is useful for cases where we want to analyze a conditional
 missingness pattern. \eg. $P(\text{feature}_y = \text{NaN} \mid
 \text{feature}_x > c) = \theta$. For such a case, when the user sorts
 $feature_x$, red bars (missing values) will be grouped together in the
 $feature_y$ column, clearly signifying to the user that a conditional
-missingness pattern is present. To pair with this additional feature was also
-added to bubble records with missing values for a selected column to the top.
-This is good for spotting joint missingness patterns as the user will be able
-to see red blocks aligned between columns if the pattern is present. Both the
-value magnitude and presence sorter is implemented using a toggle button on the
-axis of each column.
+missingness pattern is present. To pair with this an additional feature was
+also added to bubble records with missing values for a selected column to the
+top. This is good for spotting joint missingness patterns, as the user will be
+able to see red blocks aligned between columns if the pattern is present. Both
+the value magnitude and presence sorter are implemented using a toggle button
+on the axis of each column.
 
 A distribution metrics section 
 \label{distribution_metrics_sec}
@@ -1158,7 +1244,7 @@ out the visualization methods provided. They are mathematically defined as follo
 \end{equation}
 
 This metric describes how similar two distributions are to each other
-\cite[p~93]{villani_optimal_2009}. In the example a user performs an imputation
+\cite[p~93]{villani_optimal_2009}. For example, if user performs an imputation
 and sees a high Wasserstein distance, the user knows the distribution of that
 select variable has changed dramatically and may warrant further investigation.
 
@@ -1180,13 +1266,13 @@ changes in the center and struggles to pick up on differences near the tails.
 \mathrm{VAR\_RATIO} = \frac{\sigma^2_{\text{child}}}{\sigma^2_{\text{base}}}
 \end{equation}
 
-In the context of comparing different imputations of a dataset shows whether
-one imputation method is smoothing the data more than the other. This is useful
-when evaluating the risk of information loss and the preservation of natural
-noise within the data. If we see a variance ratio significantly below one, this
-may indicate that one of the imputation methods has artificially collapsed the
-distribution. This can be used to verify if the other metrics provided are
-worth looking at due to lower standard error.
+In the context of comparing different imputations of a dataset, this shows
+whether one imputation method is smoothing the data more than the other. This
+is useful when evaluating the risk of information loss and the preservation of
+natural noise within the data. If we see a variance ratio significantly below
+one, this may indicate that one of the imputation methods has artificially
+collapsed the distribution. This can be used to verify if the other metrics
+provided are worth looking at due to lower standard error.
 
 \textbf{Skew Difference} 
 
@@ -1197,10 +1283,10 @@ worth looking at due to lower standard error.
 Skew Difference is the simplest to interpret out of the four. This shows the
 direction and magnitude of the skew for a specified feature. 
 
-In the comparison dialog two imputations cards are also displayed. This shows
+In the comparison dialog, two imputations cards are also displayed. This shows
 the imputations performed on each version of the dataset. This also shows the
 variable name and type of imputation. These cards are rendered in the order of
-the performed imputations similar to the other implementations of this in
+the performed imputations, similar to the other implementations of this in
 \mica.
 
 \subsection{Example User-flow}
@@ -1211,37 +1297,37 @@ cognitive overhead. An expected workflow when using \mica follows four phases:
 \subsubsection*{Pre-imputation Analysis}
 The user first uploads the unimputed dataset via the file upload component
 located on \micas landing page. A root node is created via the MICA API upload
-endpoint after which the user is then routed to the pre-imputation tab. The
+endpoint, after which the user is then routed to the pre-imputation tab. The
 MissiG request for the newly created root node is sent and buffered on the
 client end.
 
 Once the MissiG visualization is loaded, the user will be able to look for
 missingness patterns \cref{fig:MissiG_imp} and hypothesize possible missingness
-mechanisms included in the given dataset. After this the user will move onto
+mechanisms included in the given dataset. After this, the user will move on to
 the next step of the process by clicking on the imputation tab. 
 
 \subsubsection*{Executing Data Imputation} 
-The user is able to review what the data types for each feature have been
-inferred as by the MICA API as well as an exact Null and Non-null count for
-each column visualized as a partially colored bar.
+The user is able to review the data types for each feature inferred by the MICA
+API, as well as an exact Null and Non-null count for each column, visualized as
+a partially colored bar.
 
 The user then queues imputation methods that are suited to the missingness
 patterns found earlier by selecting a method and optionally setting
 hyperparameters as well as a custom file name if needed. This is done through
 the imputation UI component \cref{fig:imputation_tab}. This newly created
-version of the dataset is kept in a staged state where in the next step the
+version of the dataset is kept in a staged state, where in the next step, the
 user is able to perform operations on the file.
 
 \subsubsection*{Post-imputation Analysis} 
 When a new file version is created, a MissiG representation is sent from the
-MICA API which is then accessible via the MissiG tab. The user is then able to
+MICA API, which is then accessible via the MissiG tab. The user is then able to
 compare any two versions of a dataset by selecting them in the file records
-table \cref{fig:filestab} as well as the commit history card
+table \cref{fig:filestab}, as well as the commit history card
 \cref{fig:commithistory}. Selecting two records will enable a button for users
-to enable a popup which will show comparative metrics as well as
+to enable a pop-up, which will show comparative metrics as well as
 visualizations. If a particular version of the dataset is not worth analyzing,
 the user is given the option to discard a staged file in order to declutter the
-staging area and avoid confusions during this analysis step.
+staging area and avoid confusion during this analysis step.
         
 
 \subsubsection*{Version Management and Export} 
@@ -1258,12 +1344,12 @@ final version of the dataset via the download button.
 
 \subsection{Synthetic Data Generation}
 
-To assist in the development, testing and construction of the example
-user-flow, synthetic data generation scripts were used to insert artificially
+To assist in the development, testing, and construction of the example
+user flow, synthetic data generation scripts were used to insert artificially
 created missingness mechanisms and patterns into a dataset. This generated both
 a full-sized and down sampled versions of the UCI Irvine Heart Disease dataset
 \cite{andras_janosi_heart_1989}. The larger datasets were used to test the
-performance of \mica under strain. The smaller down sampled datasets were used
+performance of \mica under strain. The smaller down-sampled datasets were used
 during the development and testing phase as a way to speed up the code/test
 cycle. 
 
@@ -1273,12 +1359,12 @@ such.
 
 \subsubsection*{MCAR}
 Two versions were generated for the MCAR mechanism; A regular and "varied"
-version. The regular version contains both numerical and categorical data while
+version. The regular version contains both numerical and categorical data, while
 the varied version contains only numerical data. This was used as a way to
-verify the rendering of categorical features as well as the backend handling of
-categorical components was valid. This was required to verify the correctness
-of the MissiG, Parallel Coordinate and Missingness matrix components as all
-three visualizations required specific rendering requirements for categorical
+verify that the rendering of categorical features, as well as the backend handling of
+categorical components, was valid. This was required to verify the correctness
+of the MissiG, Parallel Coordinate, and Missingness matrix components, as all
+three visualizations require specific rendering requirements for categorical
 data.
 
 For MCAR, the conditions were such
@@ -1311,8 +1397,8 @@ D_{i,j} & \text{otherwise}
                 the distribution. We also expect missing value lines to be
                 spread evenly between all axes.
 
-        \item [Missingness Matrix] We expect evenly distributions red bars that
-                signify unrecorded values in columns where MCAR was applied to.
+        \item [Missingness Matrix] We expect evenly distributed red bars that
+                signify unrecorded values in columns where MCAR was applied.
                 Sorting by value magnitude and presence should show no
                 patterns.
 \end{description}
@@ -1392,9 +1478,9 @@ $$
                 a shift or pattern in the distribution of the remaining data.
 
         \item [Parallel Coordinates] We will see a concentration of purple
-                lines (missing values) above the Cholesterol, BP and Heart
-                Disease axis which then path out evenly to other features
-                showing no correlation between the two features.
+                lines (missing values) above the Cholesterol, BP, and Heart
+                Disease axis, which then path out evenly to other features
+                ,showing no correlation between the two features.
 
         \item [Missingness Matrix] Compared to the full dataset, we expect to
                 see red blocks (missing values) clustered in areas that would
@@ -1405,9 +1491,8 @@ $$
 \end{description}
 
 \subsubsection*{Joint Missingness}
-To elaborate further into the type of patterns in the three visualizations that
-exist when joint missingness is present, an MCAR mechanism was added
-afterward.
+To elaborate further on the type of patterns in the three visualizations that
+exist when joint missingness is present, a MCAR mechanism was added afterward.
 
 For Joint Missingness, the conditions were such:
 
@@ -1456,11 +1541,11 @@ For Joint Missingness, the conditions were such:
         \item [MissiG] When switching the selected feature between Age and Max
                 HR, we expect to see a high joint missingness percentage
                 between the Age and Max HR features. Due to the added MCAR
-                mechanism added throughout, we also expect to see a flat spot
+                mechanism throughout, we also expect to see a flat spot
                 in the red histogram of Age. 
 
         \item [Parallel Coordinates] 
-                We expect to see a large amount of purple lines in between Age
+                We expect to see a large number of purple lines between Age
                 and Max HR. The added MCAR will manifest as isolated purple
                 lines across all features.
 
@@ -1478,16 +1563,16 @@ For Joint Missingness, the conditions were such:
 MICA API offers the following endpoints \cref{MICA_API_endpoints}.
 
 The \textbf{/info} sub-route is used for retrieving dataset statistics as well
-as state of the version history.
+as the state of the version history.
 \begin{description}[labelindent=1cm, leftmargin=2.5cm]
-        \item[GetFilesInfo] - Gets general information about current head
+        \item[GetFilesInfo] - Gets general information about the current head
                 of the history as well as the staged files. This is used within
                 the files tab of \mica.
 
         \item[GetParentHistory] - Gets information about the committed
                 history.
 
-        \item[GetMissiGInfo] - Gets MissiG info for given file UUID.
+        \item[GetMissiGInfo] - Gets MissiG info for a given file UUID.
 
         \item[GetMissingMatrixInfo] - Gets Missing Matrix info for a given file
                 UUID.
@@ -1495,7 +1580,7 @@ as state of the version history.
         \item[GetSample] - Retrieves a random sample from a given file UUID.
 
         \item[GetRows] - Given a list of indexes, retrieves row information
-                from indexes of a given file UUID.
+                from the indexes of a given file UUID.
 
         \item[GetCompareInfo] - Calculates and returns Wasserstein distance,
                 Kolmogorov-Smirnov Test, Variance ratio, Skew difference
@@ -1504,22 +1589,22 @@ as state of the version history.
 
 The \textbf{/dataset} sub-route is used to perform version control actions.
 \begin{description}[labelindent=1cm, leftmargin=2.5cm]
-        \item[DeleteChildFile] - Deletes staged file given file UUID.
+        \item[DeleteChildFile] - Deletes a staged file with a given file UUID.
 
         \item[CommitChild] - Given staged file UUID, appends to head of version
                 history.
 
-        \item[UploadParentFile] - Clears and sets root of history to uploaded
+        \item[UploadParentFile] - Clears and sets the root of the history to an uploaded
                 file.
 
-        \item[RevertToFile] - Reverts version history to given file UUID.
+        \item[RevertToFile] - Reverts version history to a given file UUID.
 
 \end{description}
 
 The \textbf{/impute} sub-route is used to perform imputation actions on a
 given file version.
 \begin{description}[labelindent=1cm, leftmargin=2.5cm]
-        \item[PostSimpleImpute] - Performs Mean, Median or Mode imputation for
+        \item[PostSimpleImpute] - Performs Mean, Median, or Mode imputation for
                 a given variable and file UUID.
 
         \item[PostKNNImpute] - Performs k-nearest neighbors imputation for a
@@ -1543,18 +1628,18 @@ interfaces.
 As mentioned in \cref{pre-imputations_analytics}, \mica includes a custom
 implementation of the MissiG visualization \cref{fig:missiGoutputs}. The
 currently selected variable is indicated by a red outline and can be changed if
-the user clicks another glyphs card. Viewing another files MissiG can be done
-by clicking the files corresponding button at the top of the MissiG tab. This
+the user clicks another glyphs card. Viewing another file's MissiG can be done
+by clicking the file's corresponding button at the top of the MissiG tab. This
 visualization was designed as a standalone react component that can be used in
-other react projects.
+other React projects.
 
 \subsubsection{Comparative Parallel Coordinates Visualization}      
 
 \mica includes a custom implementation for comparing parallel coordinate graphs
-\cref{fig:parallelcooroutputs}. Selecting a file will toggle what parallel
+\cref{fig:parallelcooroutputs}. Selecting a file will toggle which parallel
 coordinate graph will be rendered on top with a higher opacity. Missing values
 are rendered as purple lines connecting to the axis at the top. Variables can
-be reordered by clicking and dragging the top of axis. Similar to the MissiG
+be reordered by clicking and dragging the top of the axis. Similar to the MissiG
 component, this component is also designed as a standalone react component.
 
 \begin{figure}[H]
@@ -1573,7 +1658,7 @@ gradient depending on the magnitude of the value
 addition to this basic visualization, the user is able to sort variables by
 either row index, magnitude \cref{fig:missingnessmatrix_sorted} or missingness
 \cref{fig:missingnessmatrix_bubble_missing} by clicking the variable name of a
-bar. This was also architectured to be a standalone react component. 
+bar. This was also architected to be a standalone React component. 
         
 \begin{figure}[H]
         \centering
@@ -1586,7 +1671,7 @@ bar. This was also architectured to be a standalone react component.
 Between two selected file versions and the current head of the version history,
 distribution metrics are calculated and displayed in the comparison dialog
 \cref{fig:distributionmetricsoutput}. The distribution metrics Wasserstein
-Distance, Kolmogorov-Smirnov Test, Variance ratio and Skew Difference are
+Distance, Kolmogorov-Smirnov Test, Variance ratio, and Skew Difference are
 provided \cref{distribution_metrics_sec}.
 
 \begin{figure}[H]
@@ -1602,7 +1687,7 @@ This menu displays the current history state, listing each column and using a
 green background bar to represent the proportion of missing data
 \cref{fig:imputationtaboutput}. The user is able to select a variable and
 perform an imputation method listed to the right of the screen. Mean, Median,
-Mode, k-nearest neighbors with adjustable hyperparameter \textit{n} and MICE
+Mode, k-nearest neighbors with adjustable hyperparameter \textit{n}, and MICE
 are the provided options for imputation. Clicking "Apply Imputation" will
 create a version of the dataset that the user can analyze within the MissiG tab
 or the Files tab.
@@ -1618,13 +1703,13 @@ or the Files tab.
 \subsubsection{File Records}
 This component lists the currently uncommitted files that are generated from
 the current head of the file version history \cref{fig:filerecordoutput}.
-Actions to Download, Apply Imputation, Discard and Compare results are provided
+Actions to download, apply imputation, discard, and compare results are provided
 for each record. A drop-down menu shows a list of imputations performed on the
 file version in chronological order.
 
 Above this component is a menu for viewing information about the current head
 of the file history \cref{fig:Historyheadoutput}. The drop-down menu for this
-shows the list of variables present in the dataset as well as the type and
+shows the list of variables present in the dataset, as well as the type and
 null-counts for each. This also reveals a list of imputations performed on the
 dataset similar to the previously mentioned component.
 
@@ -1651,7 +1736,7 @@ dataset similar to the previously mentioned component.
 \end{figure}
 This component gives a visualization of the current state of the version
 history \cref{fig:historytimelineoutput}. Each node is given the option of the
-compare toggle as well as a revert option as described in
+compare toggle, as well as a revert option as described in
 \cref{post-imputation_analytics_sec}. File versions with applied imputation
 have the option to open a dropdown to view the applied imputations.
 
@@ -1659,30 +1744,30 @@ have the option to open a dropdown to view the applied imputations.
 
 This project successfully fulfilled functional requirements 2-7 with a partial
 implementation of 1. \mica provides both univariate and multivariate imputation
-methods as well as control some hyperparameter options relating to the KNN
-imputation method which satisfies F.R.2 and F.R.3. A custom interactive react
-component and backend code for the MissiG visualization was fully developed,
+methods, as well as control some hyperparameter options relating to the KNN
+imputation method, which satisfies F.R.2 and F.R.3. A custom interactive React
+component and backend code for the MissiG visualization were fully developed,
 satisfying F.R.4. Custom interactive react components were also developed for
 Parallel Coordinates and Missingness Matrix visualizations, this satisfies
 F.R.6. To pair with this, within the comparison tab, \mica calculates and
 displays distribution metrics, satisfying F.R.7. A basic implementation of
-version control for imputation methods supporting applying, deleting and
+version control for imputation methods supporting applying, deleting, and
 reverting operations meets F.R.5. F.R.1 was partially completed with the
-ability for users to upload a dataset; however the operation for exporting the
+ability for users to upload a dataset; however, the operation for exporting the
 imputed dataset was not met due to time constraints. Files are instead manually
 accessible from the Docker container within an "uploads/" directory.
 
-Non-functional requirements 1, 2, 4, 5 were met successfully with partial
+Non-functional requirements 1, 2, 4, and 5 were met successfully, with partial
 completions of the remaining 3 and 6. Effort regarding minimizing DOM edits and
 re-rendering proved to be successful in increasing the responsiveness of the
 UI. Caching responses from the MICA API also helped satisfy F.R.1. All UI
-navigation methods as well as menus can be accessible with only the use of a
+navigation methods, as well as menus, can be accessible with only the use of a
 touchscreen interface, satisfying F.R.2. The use of already highly optimized
-imputation python libraries satisfies F.R.5. \mica is fully Dockerised for full
+imputation Python libraries satisfies F.R.5. \mica is fully Dockerised for full
 portability between operating systems and computer architecture. This satisfies
 F.R.4. F.R.3 was partially obtained with the use of a decoupled design between
 MICA API and Impute Handler. However, extensibility is not met well enough. No
-implementation for user made plugin integration was created. Although unused
+implementation for user-made plugin integration was created. Although unused
 file versions are automatically cleaned up when the user is unable to access
 them via the version control system, files are stored with the naive approach
 of a separate file for each version. Storing file diff information could prove
@@ -1692,13 +1777,13 @@ more storage economical. Therefore, F.R.6 was not met.
 \section{Conclusion}
 The result of the overall project is a fully implemented all-in-one data
 imputation suite. The development of newly researched missing data
-visualizations, comparative missing data visualizations and an imputation
+visualizations, comparative missing data visualizations, and an imputation
 version control system has resulted in meeting the goal of creating a
 user-friendly application for the purpose of reducing cognitive overhead and
 improper dataset imputation.
 
 This part discusses the aims and objectives previously stated and confirms
-whether they have been achieved or not as well as future work regarding \mica
+whether they have been achieved or not, as well as future work regarding \mica
 and its related research.
 \subsection{Aims and Objectives}
 \subsubsection{Aims}
@@ -1709,9 +1794,9 @@ With regard to the main artifact, \mica provides a solution in three aspects.
                 of imputation algorithms as well as visualizations picked for
                 the express purpose of data imputation.
 
-        \item \mica utilizes state of the art, missing data research as well as
+        \item \mica utilizes state-of-the-art, missing data research as well as
                 newly developed visualizations in order to reduce the time
-                spent on the preprocessing of datasets as well as make it
+                spent on the preprocessing of datasets, as well as making it
                 easier for data science practitioners make the correct
                 decisions when imputing a dataset.
 
@@ -1729,25 +1814,25 @@ With regard to the main artifact, \mica provides a solution in three aspects.
 
         \item[\textbf{Missingness Structures}] This objective was met by
                 researching and presenting the missingness mechanisms MCAR, MAR
-                and MNAR as well as the missingness patterns amount, joint and
+                and MNAR, as well as the missingness patterns amount, joint and
                 conditional. The generation of synthetic missing data using the
                 UCI Heart Disease dataset was used to visualize how missingness
                 mechanisms and patterns appear in practical examples.
 
         \item[\textbf{Missing Data Visualizations}] This objective was met
-                through the review of recently published researched on missing
-                data visualizations as well as the implementation of three
-                comparative visualization methods within \mica: A interactive
+                through the review of recently published research on missing
+                data visualizations, as well as the implementation of three
+                comparative visualization methods within \mica: An interactive
                 implementation of a MissiG component, a custom Parallel
                 Coordinate graph component and an interactive Missingness
-                Matrix. These grouped together allow the user to visually spot
-                missingness mechanisms and patterns and conclude what
-                imputation method is most efficient.
+                Matrix. These are grouped together to allow the user to
+                visually spot missingness mechanisms and patterns, and conclude
+                what imputation method is most efficient.
         
         \item[\textbf{Imputation Version Control}] This objective was fulfilled
-                by the engineering of a novel Git styled version control system
+                by the engineering of a novel Git-styled version control system
                 for tracking imputation methods performed on a dataset. The
-                MICA API successfully manages the backend logic allowing data
+                MICA API successfully manages the backend logic, allowing data
                 science practitioners to track, apply and branch different
                 imputation operations and files without the cognitive overhead
                 of recording files manually and keeping track of scripts.
@@ -1757,7 +1842,7 @@ With regard to the main artifact, \mica provides a solution in three aspects.
                 met by the creation of \mica, a fully implemented,
                 containerized web application. By using a performant and
                 decoupled technology stack, the application exhibits a
-                low-latency intuitive interface that pushes users to a linear
+                low-latency, intuitive interface that pushes users to a linear
                 pre-imputation, imputation, and post-imputation step analytics
                 workflow.
 
@@ -1766,69 +1851,69 @@ With regard to the main artifact, \mica provides a solution in three aspects.
 \subsection{Future Work} 
 
 \mica currently supports only 5 methods of imputations. Adding further
-imputation methods such as "hot-deck imputation" would be trivial with the use
+imputation methods, such as "hot-deck imputation," would be trivial with the use
 of the Sci-kit learn library and would greatly improve the functionality and
-usability for data scientist practitioners. 
+usability for data scientists. 
 
-Further improvements on performance, particularly on optimizing JSON string
-representations of custom data structures such as the one used for representing
-a MissiG visualization, can help reduce latency on the client side as well as
-reduce round-trip-time on requests made to the MICA API. 
+Further improvements on performance, particularly in optimizing JSON string
+representations of custom data structures, such as the one used for representing
+a MissiG visualization can help reduce latency on the client side as well as
+reduce round-trip time on requests made to the MICA API. 
 
 Currently, multitouch gestures are unused within \mica; research and
 implementations could be worth experimentation in order to further improve
-usability. For example the ability to render large graphics and give the user
+usability. For example, the ability to render large graphics and give the user
 the ability to zoom in for greater clarity may prove useful for certain
 visualization methods.
 
-\mica currently only supports side by side comparisons of 2 different datasets
-maximum. This limitation makes it hard for users to compare more than 2
-different versions of imputation as the user is forced to switch between
+\mica currently only supports side-by-side comparisons of a maximum of 2
+different datasets. This limitation makes it hard for users to compare more
+than 2 different versions of imputation, as the user is forced to switch between
 comparing pairs of datasets instead of all at once in parallel. For complex
-workflows this results in a cumbersome user experience. This can be addressed
-by altering the currently implemented visualization components such as Parallel
-Coordinates, to allow for an arbitrary number of dataset versions.
+workflows, this results in a cumbersome user experience. This can be addressed
+by altering the currently implemented visualization components, such as
+Parallel Coordinates, to allow for an arbitrary number of dataset versions.
 
 The current way \mica stores dataset versions is by creating a copy of every
-dataset version in file storage. This is significantly inefficient especially
+dataset version in file storage. This is significantly inefficient, especially
 when handling large datasets. A proposed solution to this problem would be to
 store only the \textit{diffs} of the changes applied to a dataset. This was not
-implemented into \mica due to time constraints.
+implemented in \mica due to time constraints.
 
 \mica utilizes React components to render its web app. This was picked for the
 development of \mica as it allows for quick and simple implementations of
 features. However, render times for React are slower compared to newly
-developed web frameworks such as svelte. Memory usage also suffers as on idle
+developed web frameworks such as Svelte. Memory usage also suffers, as on idle
 \mica uses a significant amount of primary storage as compared to plain HTML
-and JavaScript or svelte. Rewriting the visualization components using a better
+and JavaScript or Svelte. Rewriting the visualization components using a better
 optimized web framework would make the user experience more responsive. 
 
-\mica currently treats all number data as numerical and string data as
-categorical. For cases such as in the UCI heart disease dataset, this means
+\mica currently treats all numeric data as numerical and string data as
+categorical. For cases, such as in the UCI heart disease dataset, this means
 users would have to encode the categorical features from numbers to strings
 before uploading the dataset to MICA API. This can be avoided by providing the
-user the ability to mark certain features as categorical from within \micas
+user with the ability to mark certain features as categorical from within \micas
 user interface. This feature was scoped out due to time constraints.
 
 As referenced by Shrivastava \etal \cite{shrivastava_impute-vss_2025}, the use
 of recent advancements in large language models may prove useful when analyzing
 complex missingness mechanisms and patterns present in datasets. An example
 possible use case would include passing to a specially trained LLM model
-visualizations, statistics and dataset samples in order to give analytics and
+visualizations, statistics, and dataset samples in order to give analytics and
 suggested imputation methods.
 
 Although \mica is capable of expanding to allow the implementation of other
 imputation algorithms, it fails to cater to highly specific imputation needs.
-Giving the user the ability to create scripts to perform custom
-imputation methods on would fill this need. This could be done with the already
-widely used python scripting language or a custom syntax specifically designed
-for imputation tasks.
+Giving the user the ability to create scripts to perform custom imputation
+methods would fill this need. This could be done with the already widely
+used Python scripting language or a custom syntax specifically designed for
+imputation tasks.
 
 Identifying missingness patterns could be assisted programmatically by
 designing an algorithm to analyze the difference between recorded distributions
-and joint missingness distributions as well as other metrics. The result of
-which would be an application that is able to altogether identify missingness
-patterns, suggest imputation methods and perform imputations. This leaves only
+and joint missingness distributions, as well as other metrics. The result of
+this would be an application that is able to identify missingness
+patterns, suggest imputation methods, and perform imputations. This leaves only
 the last step of analysis and final decision-making to the user.
 
 
@@ -1935,7 +2020,7 @@ ParentHistory []model.BasicInfo `json:"parent_history"`
 \begin{figure}[H]
     \centering
         \wideimage{missingnessmatrix.png}
-        \caption{Missingness Matrix comparison with on hover tooltip}
+        \caption{Missingness Matrix comparison with on-hover tooltip}
         \label{fig:missingnessmatrix}
 \end{figure}
 
